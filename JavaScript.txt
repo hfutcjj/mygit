@@ -1,0 +1,169 @@
+>>javascript六种数据类型：
+原始类型: boolean, number, string, undefined, null;
+对象: object;
+
+>>javascript没有块级作用域；
+for(var i = 0; i < 10; i++){
+	//...
+}
+console.log(i); //10
+
+>>连续赋值的陷阱
+function foo(){
+	var a = b = 1;
+}
+foo();
+console.log(typeof a); //'undefined'
+console.log(typeof b); //'number'
+这里的b隐式的创建为一个全局变量，应该改为：
+var a = 1, b = 1;
+
+>>try...catch
+//抛出基本类型如字符串
+try{
+	throw 'test ';
+}catch(ex){
+	console.log(ex);
+}finally{
+	console.log('finally');
+}
+//抛出对象
+try{
+	throw new Error('test');
+}catch(ex){
+	console.log(ex.message);
+}finally{
+	console.log('finally');
+}
+注：finally语句可有可无, 无论是否抛出异常，finally都会被执行；
+
+//for...in
+var obj = {x: 1, y: 2};
+for(var p in obj){
+	//...
+}
+注：使用for...in时要注意，
+1, 属性顺序不确定;
+2, 属性标签enumerable为false时不会出现;
+3, 属性受原型链的影响;
+
+>>with
+with可以关联一个对象到当前作用域。
+with(document.forms[0]){
+	console.log(name.value);
+}
+注: with语句有以下缺点：
+1，可读性差；
+2，让JS引擎优化更难；
+3，严格模式下被禁用；
+4，可被变量定义代替；
+使用变量定义来代替，如下：
+var form = document.form[0];
+console.log(form.name.value);
+
+>>读对象的属性前要判断对象是否存在
+var yz, obj = {};
+if(obj.y){
+	yz = obj.y.z;
+}
+上面的程序段可以简写如下：
+var yz = obj && obj.y && obj.y.z;
+
+>>属性的标签
+1, 四个静态标签和两个读写的方法:
+configurable, writable, enumerable, value;
+get, set;
+2, Object.defineProperty()
+//给对象添加一个属性，并给该属性指定相关标签
+var person = {};
+Object.defineProperty(person, 'name', {
+	enumerable: true,
+	value: 'zhao'
+});
+注：用Object.defineProperty()方法添加属性，默认情况下该属性的标签都为false；
+而用对象字面量的方式添加属性，属性的标签默认为true；
+3, Object.defineProperties()
+//给对象添加多个属性，并指定标签
+var person = {};
+Object.defineProperties(person, {
+	title: {value: 'fe', enumerable: true},
+	corp: {value: 'baba', enumerable: true},
+	salary: {value: 10000, enumerable: true, writable: true}
+});
+4, Object.getOwnPropertyDescriptor()
+//取对象的某个属性的所有标签，返回结果为一个对象
+Object.getOwnPropertyDescriptor(person, 'salary');
+//Object{value: 10000, writable: true, enumerable: true, configurable: false}
+5, Object.getOwnPropertyDescriptors()
+//取对象的所有属性的所有标签，返回结果为一个对象
+Object.getOwnPropertyDescriptors(person);
+//Object{title: {...}, corp: {...}, salary: {...}}
+6, get/set方法
+1)通过对象字面量来定义get/set方法
+var man = {
+	name: 'Bosn',
+	_age: null,
+	get age(){
+		if(this._age == undefined){
+			return new Date().getFullYear() - 1988;
+		}else{
+			return this._age;
+		}	
+	},
+	set age(val){
+		if(!isNaN(val) && val > 0 && val < 150){
+			this._age = val;
+		}else{
+			throw new Error('Incorrect val = ' + val);
+		}
+	}
+};
+man.age; //32
+man.age = 100;
+man.age; //100
+man.age = 'abc'; //error:Incorrect val = abc
+2)通过Object.defineProperties()方法来定义get/set方法
+var person = {};
+Object.defineProperties(person, {
+	title: {value: 'fe', enumerable: true},
+	corp: {value: 'baba', enumerable: true},
+	salary: {value: 10000, enumerable: true, writable: true},
+	luck: {
+		get: function(){
+			return Math.random() > 0.5 ? 'good' : 'bad';
+		}
+	},
+	promote: {
+		set: function(level){
+			this.salary *= 1 + level*0.1;
+		}
+	}
+});
+person.salary; //10000
+person.promote = 2;
+person.salary; //12000
+
+>>对象的序列化
+1, JSON.stringify(obj)
+将对象序列化为字符串
+2, JSON.parse(str)
+将json字符串解析为对象
+2, 可以通过toJSON来定制序列化的过程
+var ojb = {
+	x: 1,
+	y: 2,
+	o: {
+		o1: 1,
+		o2: 2,
+		toJSON: function(){
+			return this.o1 + this.o2;
+		}
+	}
+};
+JSON.stringify(obj); //'{"x":1,"y":2,"o":3}'
+
+>>对象转换为基本类型的过程
+首先查找对象的valueOf()方法，如果valueOf()方法不存在或者返回对象，
+则继续查找toString()方法，如果toString()方法也不存在或者返回对象，
+则报错；
+
