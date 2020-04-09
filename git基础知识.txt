@@ -1,0 +1,57 @@
+>>git是分布式版本控制系统，2005年由Linus开发，2008年GitHub网站上线；
+
+>>安装完git后进行名字和email地址的设置
+git config --global user.name "hfutcjj"
+git config --global user.email "*@qq.com"
+
+>>创建版本库
+mkdir mygit
+
+>>初始化git仓库
+cd mygit
+git init
+
+>>添加文件到暂存区
+git add <file>
+
+>>将文件由暂存区提交到仓库
+git commit -m 'add test.txt file'
+
+>>查看文件
+cat <file>
+
+>>查看仓库当前状态
+git status
+
+>>查看最近两次修改的不同
+git diff <file>
+
+>>查看提交的历史记录
+git log
+精简每条历史记录在一行显示: 
+git log --pretty=oneline
+
+>>查看历史命令
+git reflog
+
+>>版本回退(已经提交到版本库)
+git reset --hard HEAD^
+git reset --hard HEAD~1
+git reset --hard 1094a
+
+>>丢弃工作区文件的修改(仅修改工作区)
+git restore <file>
+
+>>退回提交给暂存区的文件(已经提交到暂存区)
+git restore --staged <file>
+
+>>关联一个远程库如github
+git remote add origin git@github.com:hfutcjj/mygit
+
+>>把本地库的内容推送到远程库
+git push -u origin master (第一次)
+git push origin master (以后)  
+
+>>从远程库克隆
+git clone git@github.com:hfutcjj/mygit.git
+
