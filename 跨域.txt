@@ -1,0 +1,19 @@
+>>跨域
+http://www.abc.com:8080/scripts/jquery.js
+协议: http
+子域名: www
+主域名: abc.com
+端口号: 8080
+请求资源路径: scripts/jquery
+当协议、子域名、主域名、端口号中任意一个不相同时，都算跨域；
+
+>>js同源策略的限制，js不能跨域调用
+
+>>处理跨域的方法
+1，js不能跨域，但后端可以跨域处理
+比如在北京服务器的后台(www.beijing.com/proxy.php)来调用上海服务器
+(www.shanghai.com/sevice.php)的服务，然后再把响应结果返回给前端；
+2，通过JSONP的方式，但JSONP只适用于GET请求；
+3，在服务器端添加两个头文件：
+header('Access-Control-Allow-Origin:*');
+header('Access-Control-Allow-Methods:POST,GET');
