@@ -1,0 +1,59 @@
+>>函数
+1, 强类型参数
+为参数列表中的参数指定类型，如果传入的实参类型不匹配，将会抛出TypeError异常；
+支持的类型：
+bool, float, int, string, array, callable, class name, interface name;
+2, 可变数量参数
+实现方法1：
+func_num_args();  //传入的参数个数
+func_get_arg(i);  //传入的第i个参数
+func_get_args();  //传入的参数组成的数组
+实现方法2：
+function fn(...$a){
+	//$a是传入的参数组成的数组
+}	
+3, 值传递和引用传递
+JS中的数组和对象都是按引用传递的，而PHP默认都是按值传递；
+function test(array $a){
+	$a[1] = 888;
+}
+$arr = [1, 2, 3];
+test($arr);
+print_r($arr);  //[1, 888, 3]
+如果需要改变参数本身，则改为按引用传递:
+function test(array &$a){
+	//...
+}
+4, 函数内默认不能使用外部定义的全局变量，可按下面这样使用
+$g_name = 'Lily';
+function test(){
+	//global $g_name;
+	//$GLOBALS['g_name'];
+}
+注：PHP中函数内部只能引用全局变量的值，不能改变全局变量：
+$a = 1;
+function test(){
+	global $a;
+	$a = 888;
+}
+echo $a; //1
+5, static变量
+function test(){
+	static $a = 0;
+	echo $a++;
+}
+test(); //0
+test(); //1
+test(); //2
+6, 可变函数
+变量名后有圆括号，PHP将寻找与变量值相同的函数名，并且调用它；
+function get_apple(){
+	return 'apple';
+}
+function get_orange(){
+	return 'orange';
+}
+function get_fruit($fruit){	//工厂模式
+	$fname = 'get_'.$fruit;
+	return $fname();
+}
