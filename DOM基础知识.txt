@@ -1,0 +1,48 @@
+>>DHTML时代，网景和微软的技术分歧很大，浏览器互不兼容，W3C为了统一局面，
+开发了DOM，这就是文档对象模型；
+
+>>文档类型
+常见的文档类型有HTML和XML，HTML侧重于显示，而XML侧重于保存数据;
+文档类型还有由XML扩展出的SVG和MathVG；
+
+>>常用节点的nodeType, nodeName, nodeValue
+以简单的HTML文档为例：
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>nodeType, nodeName, nodeValue</title>
+</head>
+<body>
+	<!--This is a comment-->
+	<div id="container">This is a text</div>
+</body>
+</html>
+取各常用节点对象：
+var divNode = document.getElementById('container');
+var attrNode = divNode.attributes[0];
+var textNode = divNode.childNodes[0];
+var commentNode = document.body.childNodes[1];
+var doctypeNode = document.doctype;
+var frag = document.createDocumentFragment();
+以上常用节点的nodeType, nodeName, nodeValue值总结如下：
+1)Element: 1 | DIV | null;
+2)Attr: 2 | id | container;
+3)Text: 3 | #text | This is a text;
+4)Comment: 8 | #comment | This is a comment;
+5)Document: 9 | #document | null;
+6)DocumentType: 10 | html | null;
+7)DocumentFragment: 11 | #document-fragment | null;
+注：
+1，Document是文档的根节点，它不出现在文档树中，它有两个子节点，即
+DocumentType节点和html节点，而html节点是文档树的根元素节点；
+2，DocumentFragment不会出现在文档树中，它相当于占位符，当被插入到文档树时，
+本身不会被插入，只插入它下面的所有子元素节点，如：
+var frag = document.createDocumentFragment();
+for(var i = 0; i < 10; i++){
+	var li = document.createElement('li');
+	li.innerHTML = 'text ' + i;
+	frag.appendChild(li);
+}
+document.getElementById('container').appendChild(frag);
+
