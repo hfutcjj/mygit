@@ -1,1 +1,37 @@
->>
+>>几种易错的嵌套规则
+1, 内联元素不能包含块元素
+<span><div></div></span> //错
+2，块元素不能放在p元素里面
+<p><div></div></p> //错
+3，有几种特殊的块级元素只能包含内联元素，不能包含块级元素，如
+h1, h2, h3, h4, h5, h6, p, dt
+4, 块元素与块元素并列，内联元素与内联元素并列
+<div><h2></h2><span></span></div> //错
+
+>>分组选择框
+<select>
+	<option value="">Please select</option>
+	<optgroup label="华东区"></optgroup>
+	<option value="1">上海</option>
+	<option value="2">南京</option>
+	<option value="3">杭州</option>
+	<optgroup label="华南区"></optgroup>
+	<option value="4">广州</option>
+	<option value="5">深圳</option>
+	<option value="6">厦门</option>
+</select>
+
+>>热点链接
+<img src="图形文件名" usemap="#图的名称">
+<map name="图的名称">
+	<area shape="形状" coords="区域坐标列表" href="URL资源地址">
+	<area shape="形状" coords="区域坐标列表" href="URL资源地址">
+</map>
+shape: 定义热点形状
+shape = rect[矩形] / circle[圆形] / poly[多边形]
+coords: 定义区域点的坐标
+<area shape="rect" coords="100,50,200,75" href="URL">
+<area shape="circle" coords="85,155,30" href="URL">
+<area shape="poly" coords="232,70,285,70,300,90,250,90,200,78" href="URL">
+注：矩形是左上角和右下角坐标，圆形是圆心坐标和长度，多边形是每个点的坐标；
+
