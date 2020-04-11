@@ -57,3 +57,20 @@ function get_fruit($fruit){	//工厂模式
 	$fname = 'get_'.$fruit;
 	return $fname();
 }
+
+>>日期与时间
+1，获取与设置时区
+默认时区是UTC, 获取时区有两种方法: 
+1)ini_get('date.timezone');
+2)date_default_timezone_get();
+设置时区有三种方法：
+1)修改PHP的配置文件，将date.timezone修改为中国的时区
+Asia/Shanghai或PRC；
+2)通过ini_set()函数设置
+ini_set('date.timezone', 'PRC'); 或
+ini_set('date.timezone', 'Asia/Shanghai');
+3)通过date_default_timezone_set()函数设置
+date_default_timezone_set('PRC'); 或
+date_default_timezone_set('Asia/Shanghai');
+注：设置时区的第一种方法对所有脚本都有效，后两种方法只对当前脚本有效；
+ini_get()与ini_set()还可以设置PHP的其他配置选项；

@@ -46,3 +46,59 @@ for(var i = 0; i < 10; i++){
 }
 document.getElementById('container').appendChild(frag);
 
+>>DOMReady
+1, window.onload = function(){
+	//...
+}
+这种方式不仅包含DOMReady，还包含了其他资源的加载，速度最慢；
+2, document.addEventListener('DOMContentLoaded', function(){
+	//...
+});
+DOMReady完毕就立即执行，无须等待其他资源的加载，速度最快；
+3, $(document).ready(function(){
+	//...
+});
+jquery封装的DOMReady，与第二种方式一样，速度很快；
+
+>>判断节点和文档类型的实现
+1, 是否为元素节点
+function isElement(elem){
+	return !!elem && elem instanceof Node && elem.nodeType == 1;
+}
+2, 文档是否为HTML
+function isHTML(doc){
+	return doc.createElement('div').nodeName === 
+		doc.createElement('DIV').nodeName;
+}
+注：在HTML中，元素的nodeName属性返回的元素名都是大写，根据这一点来判断；
+属性法容易被攻破，这是通过功能法来判断的；
+这个函数需要传入文档节点参数即document来判断；
+3, 文档是否为XML
+function isXML(doc){
+	return doc.createElement('div').nodeName !== 
+		doc.createElement('DIV').nodeName;
+}
+4, 元素是否为HTML的元素
+function isHTMLElement(elem){
+	if(isElement(elem)){
+		return isHTML(elem.ownerDocument);
+	}
+	return false;
+}
+注：该方法结合了上面实现的方法，elem.ownerDocument返回当前文档对象，即
+elem.ownerDocument === document; //true
+5, 元素是否为XML的元素
+function isXMLElement(elem){
+	if(isElement(elem)){
+		return isXML(elem.ownerDocument);
+	}
+	return false;
+}	
+
+>>节点间的包含关系
+node1.contains(node2):
+var div = document.createElementById('container');
+document.contains(div); //true
+document.body.contains(div.childNodes[0]); //true
+document.doctype.contains(div); //false
+
