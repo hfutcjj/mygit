@@ -32,4 +32,5 @@ $b = json_encode($a);
 echo $b; //[{"name":"zhao","age":30},{"name":"qian","age":40}]
 $c = json_decode($b); 
 print_r($c); //Array ( [0] => stdClass Object ( [name] => zhao [age] => 30 ) [1] => stdClass Object ( [name] => qian [age] => 40 ) )
-$d = json_decode($b, true); //Array ( [0] => Array ( [name] => zhao [age] => 30 ) [1] => Array ( [name] => qian [age] => 40 ) )  
+$d = json_decode($b, true); 
+print_r($d); //Array ( [0] => Array ( [name] => zhao [age] => 30 ) [1] => Array ( [name] => qian [age] => 40 ) )  
