@@ -88,7 +88,10 @@ date('Y-m-d H:i:s', time()+24*3600); //一天后的时间
 获取指定时间的时间戳，参数可从后往前依次省略，默认为当前时间单位;
 mktime(0, 0, 0, 6, 1, 1990); //1990年6月1日零点的时间戳
 2)strtotime(string $str)
-常用参数有 'now', '+2 years 3 months 1 day';
+常用参数有 'now', '+2 years 3 months 1 day'等;
 6, checkdate(month, day, year)
 检验指定的日期是否有效;
+注：php时间戳与js时间戳的区别:
+php通过 time() 返回的时间戳单位为秒;
+而js通过 new Date().getTime() 返回的时间戳单位为毫秒;
 

@@ -126,5 +126,5 @@ btn.onclick = function(e){
 	console.log(e);
 };
 事件对象的常用属性和方法有
-type, target, stopPropagation(), preventDefault();
+type, target, clientX, clientY, keyCode, stopPropagation(), preventDefault();
 
