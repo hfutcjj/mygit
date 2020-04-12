@@ -46,6 +46,9 @@ for(var i = 0; i < 10; i++){
 }
 document.getElementById('container').appendChild(frag);
 
+>>取某个节点下的所有元素节点
+var elems = node.getElementsByTagName('*');
+
 >>DOMReady
 1, window.onload = function(){
 	//...
@@ -101,4 +104,27 @@ var div = document.createElementById('container');
 document.contains(div); //true
 document.body.contains(div.childNodes[0]); //true
 document.doctype.contains(div); //false
+
+>>事件处理
+1, 事件冒泡
+事件由最具体的元素接收，然后逐级往上传播；
+大多浏览器都支持事件冒泡；
+2, 添加事件的方式
+1)内嵌到HTML元素
+<input type="button" id="btn" value="按钮" onclick="showMsg()">
+2)DOM0级事件处理程序
+var btn = document.getElementById('btn');
+btn.onclick = showMsg; //绑定事件
+btn.onclick = null; //清空事件
+3)DOM2级事件处理程序
+btn.addEventListener('click', showMsg, false); //第三个参数默认为false表示冒泡阶段捕获事件
+btn.removeEventListener('click', showMsg); //删除绑定的事件
+注：通过addEventListener添加的事件，只能通过removeEventListener来删除；
+DOM2级事件处理程序的优点是可以为一个事件添加多个事件处理程序;
+3, 事件对象
+btn.onclick = function(e){
+	console.log(e);
+};
+事件对象的常用属性和方法有
+type, target, stopPropagation(), preventDefault();
 

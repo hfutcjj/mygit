@@ -35,3 +35,11 @@ coords: 定义区域点的坐标
 <area shape="poly" coords="232,70,285,70,300,90,250,90,200,78" href="URL">
 注：矩形是左上角和右下角坐标，圆形是圆心坐标和长度，多边形是每个点的坐标；
 
+>>H5日期时间控件
+<input type="date">
+<input type="time">
+<input type="datetime"> //对于不支持的浏览器可用"datetime-local"代替
+<input type="month">
+<input type="week">
+注: 前端框架如jQuery也提供了很多日期时间的插件可供使用；
+

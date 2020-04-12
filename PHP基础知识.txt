@@ -74,3 +74,21 @@ date_default_timezone_set('PRC'); 或
 date_default_timezone_set('Asia/Shanghai');
 注：设置时区的第一种方法对所有脚本都有效，后两种方法只对当前脚本有效；
 ini_get()与ini_set()还可以设置PHP的其他配置选项；
+2, date(string $format, int $timestamp)
+获取格式化的本地时间，第二个参数可省略，默认为当前时间;
+date('Y-m-d H:i:s'); //当前时间
+date('Y-m-d H:i:s', time()+24*3600); //一天后的时间
+3, time()
+返回当前的时间戳, 单位为秒;
+4, microtime(bool $flag=false)
+返回微秒级的时间戳，默认返回'microsec sec'格式的字符串，
+参数为true则返回小数格式;
+5, 转换成指定时间的时间戳
+1)mktime(hour, minute, second, month, day, year)
+获取指定时间的时间戳，参数可从后往前依次省略，默认为当前时间单位;
+mktime(0, 0, 0, 6, 1, 1990); //1990年6月1日零点的时间戳
+2)strtotime(string $str)
+常用参数有 'now', '+2 years 3 months 1 day';
+6, checkdate(month, day, year)
+检验指定的日期是否有效;
+
