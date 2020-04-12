@@ -419,3 +419,15 @@ Student.prototype.learn = function(){
 通过Student.prototype = Object.create(Person.prototype)继承基类的原型;
 Student的原型链如下：
 Student.prototype -> Person.prototype -> Object.prototype -> null;
+
+>>各种对象的尺寸
+1, 盒子的宽度与高度
+box.offsetWidth;
+box.offsetHeight;
+2, 盒子的左边距和上边距
+box.offsetLeft;
+box.offsetTop;
+3, 窗口显示区域的宽度与高度，不包括滚动条
+document.documentElement.clientWidth || document.body.clientWidth;
+document.documentElement.clientHeight || document.body.clientHeight;
+
