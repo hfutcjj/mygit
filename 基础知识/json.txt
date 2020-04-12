@@ -1,0 +1,22 @@
+>>JSON即JavaScript对象表示法，独立于具体语言，是一种轻量级的数据交换格式;
+JSON语法简单，用于数据交换；而XML解析复杂，常用于数据存储;
+
+>>JSON本身是对象，但在应用中，前台与后台交换的是JSON串, 如
+'{"name": "zhao", "age": 30}';
+
+>>javascript中操作json的函数
+1，JSON.stringify()
+把js对象转换成json串；
+2，JSON.parse()
+把json串解析成js对象；
+
+>>php中操作json的函数
+1，json_encode()
+将php变量转换成json串;
+2，json_decode(string $json, bool $assoc=false)
+将json串解析成php变量，第二个参数默认为false会将json串解析成对象，为true则转换成关联数组;
+$json = '{"name": "zhao", "age": 30}';
+$r1 = json_decode($json);
+$r2 = json_decode($json, true);
+print_r($r1); //stdClass Object([name]=>zhao [age]=>30)
+print_r($r2); //Array([name]=>zhao [age]=>30)
