@@ -1,0 +1,78 @@
+<!--
+	抽奖系统实例
+	注意点：
+	1, 通过点击开始按钮和停止按钮进行抽奖的切换；
+	2，也可通过按键盘的Enter键进行抽奖的切换；
+	知识点：
+	1，开启计时器时一定要先判断timer是否存在，不然会造成计时器紊乱；
+	2，监听键盘Enter键要使用keydown/keyup事件，keypress只能监听可打印的字符，Enter键的keyCode值为13；
+-->
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>抽奖系统</title>
+<style>
+	*{margin: 0; padding: 0; font-family: "微软雅黑"; list-style: none; text-decoration: none;}
+	#box{width: 360px; height: 70px; margin: 0 auto; padding-top: 30px; text-align: center; 
+		font-size: 24px; font-weight: bold; color: red;}
+	.btns{width: 200px; height: 30px; margin: 0 auto;}
+	.btns span{display: block; float: left; width: 80px; height: 25px; line-height: 25px; 
+		background-color: #036; border: 1px solid #eee; border-radius: 6px; margin-right: 10px;
+		color: #fff; text-align: center; font-size: 14px; cursor: pointer;}
+</style>
+<script>
+	var prizes = ['IPhone 11', '洗衣机', '微波炉', '200元购物券', 
+			'谢谢参与', '5天带薪休假', '笔记本', '钢笔'],
+		timer = null;
+	window.onload = function(){
+		//开始按钮点击事件
+		document.getElementById('start').onclick = function(){
+			startFn();
+		};
+		//停止按钮点击事件
+		document.getElementById('stop').onclick = function(){
+			stopFn();
+		};
+		//监听键盘按键事件
+		document.onkeyup = function(e){
+			if(e.keyCode == 13){ //Enter键的keyCode值为13
+				if(!timer){
+					startFn();
+				}else{
+					stopFn();
+				}
+			}
+		};
+	};
+	
+	//抽奖开始
+	function startFn(){
+		if(!timer){
+			timer = setInterval(function(){
+				var random = Math.floor(Math.random()*prizes.length);
+				box.innerHTML = prizes[random];
+			}, 100);
+			document.getElementById('start').style.backgroundColor = '#aaa';
+		}
+	}
+	
+	//抽奖停止
+	function stopFn(){
+		if(timer){
+			clearInterval(timer);
+			timer = null;
+			document.getElementById('start').style.backgroundColor = '#036';
+		}
+	}
+
+</script>
+</head>
+<body>
+	<div id="box">奖品显示</div>
+	<div class="btns">
+		<span id="start">开 始</span>
+		<span id="stop">停 止</span>
+	</div>
+</body>
+</html>

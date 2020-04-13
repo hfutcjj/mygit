@@ -1,0 +1,94 @@
+<!--
+	下拉菜单演示鼠标和键盘事件
+	注意点：
+	1，点击标题框显示下拉菜单，点击下拉菜单的项目或者点击空白处，下拉菜单隐藏;
+	2，可使用键盘的上下键使下拉菜单移动，按Enter键选取当前内容
+	知识点：
+	1，上下两个块级元素边框重叠，可给下面的元素设样式margin-top: -1px;来消除重叠；
+	2，有包含关系的元素都实现了onclick事件时，应该用e.stopPropagation()阻止事件冒泡；
+-->
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>下拉菜单演示鼠标和键盘事件</title>
+<style>
+	*{margin: 0; padding: 0; font-family: "微软雅黑"; list-style: none; text-decoration: none;}
+	#box{width: 202px; margin: 80px auto;}
+	#box span{cursor: pointer; display: block; height: 24px; line-height: 24px;
+		padding: 2px 4px; border: 1px solid gray;}
+	#box ul{width: 200px; border: 1px solid gray; margin-top: -1px; display: none;}
+	#box ul li{height: 24px; line-height: 24px; cursor: pointer; padding: 2px 4px;}
+</style>
+<script>
+	window.onload = function(){
+		var box = document.getElementById('box'),
+			title = box.getElementsByTagName('span')[0],
+			menu = box.getElementsByTagName('ul')[0],
+			ls = box.getElementsByTagName('li'),
+			index = -1;
+		//点击标题框时显示下拉菜单
+		title.onclick = function(e){
+			menu.style.display = 'block';
+			e.stopPropagation(); //阻止事件冒泡
+		};
+		for(var i = 0; i < ls.length; i++){
+			//鼠标滑动到菜单项时改变背景颜色
+			ls[i].onmouseover = function(){
+				this.style.backgroundColor = '#aaa';
+			};
+			ls[i].onmouseout = function(){
+				this.style.backgroundColor = '#fff';
+			};
+			//鼠标点击菜单项把内容显示到标题框
+			ls[i].onclick = function(e){
+				title.innerHTML = this.innerHTML;
+				menu.style.display = 'none';
+				e.stopPropagation(); //阻止事件冒泡
+			};
+		}
+		//把多处用到的代码段封装成函数
+		var setBgColor = function(id){
+			for(var i = 0; i < ls.length; i++){
+				ls[i].style.backgroundColor = '#fff';
+			}
+			ls[id].style.backgroundColor = '#aaa';
+		};
+		//键盘事件
+		document.onkeyup = function(e){
+			if(e.keyCode == 38){ //向上
+				index--;
+				if(index < 0){index = ls.length-1;}
+				setBgColor(index);
+			}else if(e.keyCode == 40){ //向下
+				index++;
+				if(index > ls.length-1){index = 0;}
+				setBgColor(index);
+			}else if(e.keyCode == 13){ //Enter键
+				if(index != -1){
+					title.innerHTML = ls[index].innerHTML;
+					menu.style.display = 'none';
+				}
+			}
+		};
+		//点击文档其他区域则隐藏下拉菜单
+		document.onclick = function(){
+			menu.style.display = 'none';
+		};
+	};
+
+</script>
+</head>
+<body>
+	<div id="box">
+		<span>请选择分类</span>
+		<ul>
+			<li>ASP开发</li>
+			<li>.NET开发</li>
+			<li>PHP开发</li>
+			<li>Javascript开发</li>
+			<li>Java特效</li>
+		</ul>
+    </div>
+</body>
+</html>
