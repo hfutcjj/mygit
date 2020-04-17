@@ -100,4 +100,42 @@ reg.lastIndex; //0
 var r5 = reg.exec(s);
 r5; //同r1
 reg.lastIndex; //2
+注：lastIndex同样会影响修饰符为g的全文搜索的test()结果：
+var reg = /\w\d/g, s = 'a1b2';
+reg.test(s); //true
+reg.test(s); //true
+reg.test(s); //false
+可以通过每次构造一个新正则对象来消除结果的不一致性：
+/\w\d/g.test('a1b2'); //true(all the time)
 4, 字符串对象的方法
+1)s.search(reg)
+查找参数指定的子串的位置，返回匹配到的下标，不存在则返回-1;
+接收的参数可以是字符串，也可以是正则表达式；
+search()方法不执行全局搜索，它将忽略g，并且总是从字符串的开头进行查找：
+'aaa123bbb'.search(/\w\d/); //2
+2)s.match(reg)
+查找匹配的结果数组;
+这个方法reg是否为全局搜索对结果的影响很大，
+reg非全局返回第一次匹配的结果，包括分组，
+reg全局则返回所有匹配的结果，但不包括分组信息;
+注意这个方法与reg.exec(s)返回结果的区别；
+var s = 'a1b2c3d4', reg = /(\w)\d/;
+var r = s.match(reg);
+r; //['a1', 'a', index: 0]
+var s = 'a1b2c3d4', reg = /(\w)\d/g;
+var r = s.match(reg);
+r; //['a1', 'b2', 'c3', 'd4']
+3)s.replace(reg, rep)
+对字符串进行正则替换;
+第一个参数可以是字符串，也可以是正则表达式;
+第二个参数可以是替换字符串，也可以是回调函数，自定义替换结果；
+'a1b1c1'.replace('1', 'X'); //'aXb1c1'
+'a1b1c1'.replace(/1/g, 'X'); //'aXbXcX'
+'a1b2c3d4'.replace(/\d/g, function(match, index, origin){
+	return parseInt(match)+1;
+}); //'a2b3c4d5'
+注：replace()方法传入字符串只能替换第一个匹配
+4)s.split(reg)
+将字符串按指定参数分割成数组；
+'a,b,c,d'.split(','); //['a', 'b', 'c', 'd']
+'a1b2c3d4'.split(/\d/); //['a', 'b', 'c', 'd', '']
