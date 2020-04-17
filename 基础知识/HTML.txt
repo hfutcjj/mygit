@@ -1,3 +1,63 @@
+>>常见标签
+1, 图片
+<img src="" alt="" title="">
+2, 超链接
+<a href="" title="" target=""> 
+注：target取值有_self, _blank, _parent, _top，默认是_self;
+3，表格
+<table border="1">
+	<thead>
+		<tr>
+			<th>科目</th><th>分数</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>语文</td><td>60</td>
+		</tr>
+		<tr>
+			<td>数学</td><td>80</td>
+		</tr>
+		<tr>
+			<td>外语</td><td>80</td>
+		</tr>
+	</tbody>
+	<tfoot>
+		<td>总分</td><td>220</td>
+	</tfoot>
+</table>
+注：<tbody>包含的内容会优先显示，当表格很长，可以用多个<tbody>进行分段显示;
+4，表单
+<form method="post" action="test.php">
+	//文本框, label标签的for必须与input的id值一致
+	<label for="username">用户名: </label>
+	<input type="text" id="username" name="username" placeholder="请输入用户名">
+	//密码框
+	<input type="password">
+	//数字输入框
+	<input type="number">
+	//网址输入框
+	<input type="url">
+	//邮箱输入框
+	<input type="email">
+	//大段文本输入
+	<textarea rows="20" cols="50"></textarea>
+	//单选框
+	<input type="radio" name="gender" value="male" checked="checked">男
+	//复选框
+	<input type="checkbox" name="likes[]" value="1" checked="checked">跑步
+	//下拉列表框, 省略multiple则为单选
+	<select multiple="multiple">
+		<option value="1">跑步<option>
+		<option value="2" selected="selected">音乐<option>
+		<option value="3">读书<option>
+	</select>
+	//提交按钮
+	<input type="submit" value="提交">
+	//重置按钮
+	<input type="reset" value="重置">
+</form>
+
 >>几种易错的嵌套规则
 1, 内联元素不能包含块元素
 <span><div></div></span> //错
