@@ -40,9 +40,105 @@ font-size与line-height中间要加入'/'斜杠;
 5, letter-spacing: 10px; //字母间距
 6, text-align: center / left / right / justify; //对齐方式
 
->>em
+>>em 和 %
+1, em
 给非font-size属性设置em单位时，是相对于自身font-size的比值；
 给font-size设置em单位时，则是相对于父元素的font-size的比值;
+2, %
+给元素的width, height, padding, margin属性设置百分比，是参照父元素的宽度和高度的比值；
+给transform: translate(50%, 50%), 是按照元素自身的宽度和高度的比值；
+
+>>盒模型
+1, width / height
+注：默认情况下，盒子的宽度和高度指的是内容的尺寸，不包括边框和内外边距;
+2, border
+border: 2px solid red;
+border由三个具体属性组成：
+border-width;
+border-style: solid / dotted / dashed;
+border-color;
+border包括四个方向, 依次为
+border-top, border-right, border-bottom, border-left;
+3, padding
+padding: 20px 10px 15px 30px;
+4, margin
+margin: 20px 10px 15px 30px;
+
+>>布局模型
+1, 流模型(flow)
+默认的网页布局模式;
+2, 浮动模型(float)
+可以让块状元素在一行显示;
+float: left / right;
+3, 定位，又叫层模型
+1)position: static; //默认的流模式
+2)position: absolute; //绝对定位
+相对于其最接近的一个具有定位属性的父元素进行绝对定位;
+3)position: relative; //相对定位
+相对于自身在正常文档流中的原始位置进行定位;
+4)position: fixed; //固定定位
+相对于浏览器窗口进行定位;
+注：absolute和fixed会使定位元素脱离文档流，而relative不会;
+一般对父元素设置相对定位，具体子元素使用绝对定位;
+
+>>flex弹性盒模型
+//html
+<div class="parent">
+	<div class="child item1">1</div>
+	<div class="child item2">2</div>
+	<div class="child item3">3</div>
+</div>
+//css
+.parent{height: 600px; border: 1px solid red;
+	display: flex; //在父元素上设置弹性盒模型, 必选
+	flex-direction: row; //横向排列，可选
+	justify-content: flex-start; //横向对齐，可选
+	align-items: flex-start; //纵向对齐，可选
+}
+.child{width: 200px; height: 200px; border: 1px solid gray;}
+.item1{flex: 1;} //给子元素设置相对占比，可选
+.item2{flex: 2;}
+.item3{flex: 3;}
+注：
+1, 给父元素设置 display: flex; 可使所有子元素显示在一行；
+2, flex-direction设置排列放心，默认为row, 有如下可选值
+row / column;
+3, justify-content设置横向对齐，默认为flex-start，有如下可选值
+flex-start/flex-end/center/space-between/space-around;
+4, align-items设置纵向对齐，默认为flex-end，有如下可选值
+flex-start/flex-end/center/baseline/stretch;
+5, 给子元素设置flex值，可以设置子元素的占比，只能为整数值，设置了flex值后子元素的宽度属性会失效;
+
+>>水平居中
+1, 行内元素
+通过给父元素设置 text-align: center; 来实现;
+2, 块状元素
+div{width: 200px; margin: 0 auto;}
+
+>>垂直居中
+1, 内联元素
+给父元素设置line-height与height的值一致，使子元素垂直居中;
+<div>hello</div>
+div{width: 200px; height: 200px; line-height: 200px;}
+2, 块状元素(宽高已知)：定位 + 外边距
+父元素相对定位，子元素绝对定位，
+通过设置子元素的left, top为50%，margin-left与margin-top为宽度和高度的一半来实现垂直居中;
+<div class="parent">
+	<div class="child">
+</div>
+div.parent{height: 800px; border: 1px solid gray;
+	position: relative;}
+div.child{width: 200px; height: 200px; 
+	position: absolute; left: 50%; top: 50%;
+	margin-left: -100px; top: -100px;}
+3, 块状元素(宽高未知): 定位 + translate
+<div class="parent">
+	<div class="child">
+</div>
+div.parent{height: 800px; border: 1px solid gray;
+	position: relative;}
+div.child{position: absolute; left: 50%; top: 50%;
+	transform: translate(-50%, -50%);}
 
 >>元素分类
 1, 块状元素(block)
@@ -57,3 +153,115 @@ font-size与line-height中间要加入'/'斜杠;
 
 >>两个相邻的元素边框重叠时，可设其中一个元素的外边距为负值来消除重叠，如：
 margin-top: -1px;
+
+>>CSS3不同浏览器可能需要的前缀
+chrome和safari: -webkit
+firefox: -moz
+IE: -ms
+opera: -o
+
+>>CSS3能做什么
+1, 更强大的选择器
+2, 圆角效果
+3, 块阴影与文字阴影
+4, 更多样的色彩定义
+5, 渐变效果
+6, 个性化字体
+7, 多背景图
+8, 变换和动画
+9, 多栏布局
+10, 媒体查询
+
+>>边框
+1, border-radius 
+//边框圆角
+border-radius: 10px 10px 0 0; 四个方向分别为：
+border-top-left-radius, border-top-right-radius, 
+border-bottom-right-radius, border-bottom-left-radius;
+半圆：
+div{width: 200px; height: 100px; border-radius: 100px 100px 0 0;}
+圆：
+div{width: 100px; height: 100px; border-radius: 50px;}
+2, box-shadow 
+//盒阴影
+box-shadow: 4px 2px 5px red inset, 2px 3px 6px blue;
+参数依次为：
+x轴偏移量，y轴偏移量，模糊半径，模糊颜色，投影方式；
+偏移量可以为负值，右和下为正，左和上为负；
+投影方式有outset和inset，默认为outset；
+
+>>渐变颜色
+1，带透明度的颜色 
+rgba(100, 150, 200, 0.3)
+2，线性渐变
+linear-gradient(90deg, red, blue, green);
+第一个参数表示方向，可以是角度，如90deg，规定向上为0deg，
+也可以为英文，如to right，后面的参数表示两个或多个颜色值；
+3，径向渐变
+radial-gradient()
+
+>>字体和文本
+1, text-shadow //文本阴影
+text-shadow: 2px 4px 5px red;
+参数依次为：
+x轴偏移量，y轴偏移量，模糊半径，模糊颜色；
+2, @font-face //嵌入字体
+引用服务器端字体，客户端可以显示用户没有安装的字体;
+@font-face{
+	font-family: 'my font';
+	src: url('***'); //字体在服务器端的地址
+}
+div{
+	font-family: 'my font';
+}
+
+>>背景
+元素的背景包括边框，内边距和内容区域，不包括外边距;
+1, background-color 
+//背景颜色
+background-color: yellow / #00ff00 / rgb(255, 0, 255);
+2, background-image 
+//背景图片
+background-image: url('paper.jpg');
+background-image: linear-gradient(red, yellow, blue);
+注：默认情况下，图片放置在元素左上角，并在水平和垂直方向重复；
+3, background-repeat 
+//图像重复方式
+background-repeat: repeat / repeat-x / repeat-y / no-repeat;
+默认值为repeat;
+4, background-position 
+//图片位置
+background-position: left/center/right top/center/bottom;
+background-position: 200px 300px;
+background-position: 20% 50%;
+5, background-attachment 
+//图片是否固定
+设置背景图片是否固定或随着页面的其余部分滚动；
+background-attachment: scroll / fixed;
+默认值是scroll；
+6, background-size
+//背景图片大小
+background-size: 200px 100px;
+注：如果只给出一个值，则高度默认为auto，即保持图片纵横比的前提下自动计算高度；
+background-size: 50% 50%; //相对与背景尺寸的百分比，如果只给出一个值则同上
+background-size: cover; //图像缩放至能完全覆盖背景(>=背景)
+background-size: contain; //图像缩放至宽或高恰好被背景包含(<=背景)
+7, background-origin
+//背景图片从哪个位置开始显示
+background-origin: padding-box / border-box / content-box;
+默认值是padding-box, 如果背景不是no-repeat，那么这个属性无效，它会从边框开始显示；
+8, background-clip
+//背景图片显示区域
+background-clip: border-box / padding-box / content-box;
+默认值是border-box，即包括边框的整个盒子都能显示;
+总结：
+1, 后3个背景属性是CSS3新增的;
+2, 以上属性可以缩写成background, 如
+background: yellow url('xiaoxin.jpg') no-repeat fixed center;
+3, 可以同时设置多个背景图片, 中间用逗号隔开，如
+background-image: url('xiaoxin1.jpg'), url('xiaoxin2.jpg'), url('xiaoxin3.jpg');
+background-position: left top, 100px 0, 0 200px;
+background-repeat: no-repeat no-repeat repeat;
+
+>>CSS3选择器
+
