@@ -141,34 +141,51 @@ r; //['a1', 'b2', 'c3', 'd4']
 'a1b2c3d4'.split(/\d/); //['a', 'b', 'c', 'd', '']
 
 >>php中正则表达式
-1, preg_match($reg, $s, $match)
+1, php中正则表达式的定义
+$reg = '/(\w)\d/'; //要用引号括起来
+$reg = '/\w\d/i'; //忽略大小写
+$reg = '/\w\d+?/'; //懒惰模式
+2, php中正则相关的方法
+1), preg_match($reg, $s, $match)
 正则匹配，只匹配第一次，返回匹配的次数，即0和1；
 匹配的结果放在参数$match中, $match是一维数组;
 $r = preg_match('/(\w)\d/', 'a1b2c3d4', $match);
 $r; //1
 $match; //['a1', 'a']
-2, preg_match_all($reg, $s, $matches)
+2), preg_match_all($reg, $s, $matches)
 正则匹配，全文匹配, 返回匹配的次数，即0,1,2....;
 匹配的结果放在参数$matches中，$matches是二维数组;
 $r = preg_match_all('/(\w)\d/', 'a1b2c3d4', $matches);
 $r; //3
 $matches; //[['a1', 'b2', 'c3', 'd4'], ['a', 'b', 'c', 'd']]
-3, preg_replace($reg, $rep, $s)
+3), preg_replace($reg, $rep, $s)
 正则替换, 返回替换后的结果，可以按单一正则替换，也可以按数组正则替换，也可以对数组进行整个替换;
-1)$r = preg_replace('/\d/', 'X', 'a1b2c3d4');
+$r = preg_replace('/\d/', 'X', 'a1b2c3d4');
 $r; //'aXbXcXdX'
-2)$r = preg_replace(['/[12]/', '/[34]/'], ['X', 'Y'], 'a1b2c3d4');
+$r = preg_replace(['/[12]/', '/[34]/'], ['X', 'Y'], 'a1b2c3d4');
 $r; //'aXbXcYdY'
-3)$r = preg_replace('/\d/', 'X', ['a1b2', 'c3d4']);
+$r = preg_replace('/\d/', 'X', ['a1b2', 'c3d4']);
 $r; //['aXbX', 'cXdX']
 注：php的preg_replace是替换所有匹配的字符串；
 str_replace是php的字符串函数，是preg_replace()的子集；
-4, preg_split($reg, $s);
+4), preg_split($reg, $s);
 正则分割
 $r = preg_split('/\d/', 'a1b2c3d4');
 $r; //['a', 'b', 'c', 'd', '']
 注：explode()是php的字符串函数，是preg_split()的子集；
-5, preg_quote($s)
+5), preg_quote($s)
 对字符串中的正则元字符进行转义，这个函数不是很常用;
 $r = preg_quote('.\{');
 $r; //'\.\\\{'
+
+>>常用的正则表达式
+1，非空
+/.+/
+2, 保留两位小数的浮点数
+/^[-\+]?\d+\.\d{2}$/
+3，中国大陆的手机号
+/^1[34578]$\d{9}$/
+4, email地址
+/^\w+(\.\w+)*@\w+(\.\w+)*$/
+5, url地址
+/^(https?://)?(\w+\.)+[a-zA-Z]+$/
