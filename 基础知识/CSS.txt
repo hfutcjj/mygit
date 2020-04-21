@@ -174,7 +174,7 @@ opera: -o
 9, 多栏布局
 10, 媒体查询
 
->>边框
+>>CSS3边框
 1, border-radius 
 //边框圆角
 border-radius: 10px 10px 0 0; 四个方向分别为：
@@ -192,7 +192,7 @@ x轴偏移量，y轴偏移量，模糊半径，模糊颜色，投影方式；
 偏移量可以为负值，右和下为正，左和上为负；
 投影方式有outset和inset，默认为outset；
 
->>渐变颜色
+>>CSS3渐变颜色
 1, 带透明度的颜色 
 rgba(100, 150, 200, 0.3)
 2, 线性渐变
@@ -202,7 +202,7 @@ linear-gradient(90deg, red, blue, green);
 3, 径向渐变
 radial-gradient()
 
->>字体和文本
+>>CSS3字体和文本
 1, text-shadow //文本阴影
 text-shadow: 2px 4px 5px red;
 参数依次为：
@@ -217,7 +217,7 @@ div{
 	font-family: 'my font';
 }
 
->>背景
+>>CSS3背景
 元素的背景包括边框，内边距和内容区域，不包括外边距;
 1, background-color 
 //背景颜色
