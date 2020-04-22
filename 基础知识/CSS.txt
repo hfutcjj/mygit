@@ -336,5 +336,44 @@ input[type="text"]:read-only
 }
 注：:表示伪类, ::表示伪元素;
 
+>>transform(变换)
+transform有两点需要注意：
+1)只对块状元素和内联块状元素有效，对行内元素无效;
+2)所有的变换默认是以元素的中心位置进行变换，这个位置可以通过transform-origin来改变;
+1, rotate()
+旋转，参数为正如45deg表示顺时针，为负则逆时针;
+例如，使内部盒子旋转，但里面的文本不旋转：
+<div id="container">
+	<div><span>Hello</span></div>
+</div>
+#container{width: 200px; height: 200px; border: 1px solid red;}
+#container div{width: 200px; height: 200px; background-color: orange;
+	transform: rotate(45deg);}
+#container div span{display: block; transform: rotate(-45deg);}
+2, skew()
+扭曲，会改变块状元素的形状;
+transform: skew(30deg, 45deg); //元素在水平和垂直方向同时扭曲
+transform: skew(30deg); //元素仅在水平方向扭曲，省略y参数默认为0
+transform: skewX(30deg); //元素仅在水平方向扭曲
+transform: skewY(45deg); //元素仅在垂直方向扭曲
+3, scale()
+缩放;
+transform: scale(2, 0.5); //水平和垂直方向同时缩放
+transform: scale(2); //省略y值，则表示垂直方向和水平方向缩放的倍数一样
+transform: scaleX(2); //仅在水平方向缩放
+transform: scaleY(0.5); //仅在垂直方向缩放
+4, translate()
+平移，作用相当于相对定位;
+transform: translate(100px, 200px); //水平和垂直方向同时移动
+transform: translateX(100px); //仅水平方向移动
+transform: translateY(200px); //仅垂直方向移动
+注：可用translate()来实现元素的水平和垂直居中;
+5, transform-origin
+设置变换的原点，默认是元素的中心位置；
+transform-origin: left/center/right top/center/bottom;
+transform-origin: 50% 0;
+
+>>transition(过渡)
 
 
+>>

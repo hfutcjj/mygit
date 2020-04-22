@@ -1,3 +1,4 @@
+<?php
 /*
  *正则工具类RegexTool
  *可以返回是否匹配的布尔值或者匹配结果数组，可自由切换
@@ -82,3 +83,4 @@ class RegexTool{
 		return $this->regex($pattern, $subject);
 	}
 }
+?>
