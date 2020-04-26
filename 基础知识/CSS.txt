@@ -66,6 +66,11 @@ padding: 20px 10px 15px 30px;
 4, margin
 margin: 20px 10px 15px 30px;
 
+>>CSS3盒模型
+box-sizing: content-box(默认值) / border-box;
+content-box: 元素的width = 内容的宽度;
+border-box: 元素的width = 内容的宽度 + padding*2 + border*2;
+
 >>布局模型
 1, 流模型(flow)
 默认的网页布局模式;
@@ -374,6 +379,111 @@ transform-origin: left/center/right top/center/bottom;
 transform-origin: 50% 0;
 
 >>transition(过渡)
+1)在默认样式中声明初始样式和过渡属性；
+2)在最终状态中声明最终样式;
+div{width: 200px; height: 200px; border: 1px solid red;
+	transition: width 3s ease 0.5s;}
+div:hover{width: 800px;}
+注: 如果同时改变多个样式，可以将transition-property设置为all;
+1, transition-property
+需要过渡的属性，如果同时有多个，可以设置为all;
+2, transition-duration
+过渡的持续时间;
+3, transition-timing-function
+过渡函数，包括以下几种：
+ease, linear, ease-in, ease-out, ease-in-out; 默认为ease;
+4, transition-delay
+过渡的延迟时间
+总：transition包含以上所有属性，多个过渡属性可以设置为all，也可以用逗号隔开分开设置;
+transition: all 3s ease 0.5s;
+transition: background 0.8s ease-in 0.3s, color 0.6s ease-out 0.5s;
 
+>>animation(动画)
+1)定义关键帧;
+2)定义初始样式;
+3)在最终状态中定义动画;
+<div><span></span></div>
+@keyframes myframe{
+	0%{transform: translate(0, 0);} //可以用from代替
+	25%{transform: translate(180px, 0);}
+	50%{transform: translate(180px, 180px);}
+	75%{transform: translate(0, 180px);}
+	100%{transform: translate(0, 0);} //可以用to代替
+}
+div{width: 200px; height: 200px; border: 1px solid red;}
+span{display: inline-block; width: 20px; height: 20px; background-color: pink; border-radius: 10px; 
+	animation: myframe 5s ease 0.5s infinite;}
+注: 将animation-name设置为none可以取消任何动画;
+1, animation-name
+动画名称, none / 动画名称;
+2, animation-duration
+动画持续时间, 同transition-duration;
+3, animation-timing-function
+动画播放方式, 同transition-timing-function;
+4, animation-delay
+动画延迟时间, 同animation-delay;
+5, animation-iteration-count
+动画播放次数, 1 / 5 / infinite, 默认值为1;
+6, animation-direction
+动画播放方向, normal(正向) / alternate(交替), 默认为normal;
+7, animation-play-state
+动画播放状态, running / paused;
+如鼠标悬停时播放，鼠标移开则停止，
+div{animation-play-state: paused;}
+div:hover{animation-play-state: running;}
+8, animation-fill-mode
+动画开始之前与结束之后发生的动作, none / forwards / backwards / both;
+总: animation可以包含以上所有属性, 顺序如上，常用的是前5个属性的组合，如
+animation: myframe 5s ease 0.5s infinite; 
 
->>
+>>多列布局
+1, column-width
+每列的宽度, auto / 200px, 如为auto则由其他属性决定;
+2, column-count
+列数, auto / 3, 如为auto则表示1列;
+3, column-gap
+列间距，normal / 2em / 20px，默认为normal = 1em = font-size值;
+4, column-rule
+列间的边框，相当于border，区别是边框宽度改变不会影响列的位置;
+column-rule: 2px dotted gray;
+5, column-span
+跨列设置，应用于子列, none / all, 要么不跨，要么全跨;
+默认值为none, 表示不跨任何列，all表示跨所有列;
+总: columns综合设置, 如
+columns: 200px 3;
+
+>>媒体查询
+1, 媒体类型
+主要是十种, 常见的有all, screen, printm, handheld, tv等;
+2, 媒体特性
+主要有13种, 常见的有
+max-width, min-width, max-device-width, min-device-width等;
+3, 引入媒体查询
+1)<link rel="stylesheet" href="style.css" media="screen">
+2)@import方法
+<style>
+	@importurl(reset.css) screen;
+</style>
+3)@media方法
+成为媒体查询, 现在比较常用;
+<style>
+	@media screen{
+		/*样式代码*/
+	}
+</style>
+4, 举例
+@media screen and (max-width: 480px){
+	.ads{display: none;}
+}
+<link rel="stylesheet" media="screen and (max-device-width:480px)" href="iphone.css">
+//省略媒体类型默认为all
+<link rel="stylesheet" media="(max-device-width:480px)" href="iphone.css">
+//不同的媒体类型和媒体特性
+<link rel="stylesheet" media="handheld and (max-width:480px), screen and (min-width:960px)" href="iphone.css">
+@media screen and (min-width: 600px) and (max-width: 900px){
+	body{background-color: #f5f5f5;}
+}
+@media not print and (max-width: 1200px){
+	/**/
+} //not关键词表示取反
+
