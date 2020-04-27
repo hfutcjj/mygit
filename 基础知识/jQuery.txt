@@ -1,0 +1,132 @@
+>>jquery对象与DOM对象的转换
+1, DOM对象转换为jquery对象
+var div = document.getElementById('container');
+var jdiv = $(div);
+2, jquery对象转换为DOM对象
+var jdiv = $('div');
+var div = jdiv[0]; //通过数组下标
+var div = jdiv.get(0); //通过get()方法
+注：通过下标[0]或者.get(0)获取的是DOM元素，而通过.first()获得仍然是jquery对象;
+
+>>jquery选择器
+1, $('#container')
+id选择器
+2, $('.container')
+类选择器
+3, $('p')
+元素选择器
+4, $('*')
+全选选择器，选择所有元素节点组成的jquery对象;
+js中获取所有节点集合：document.getElementsByTagName('*');
+5, 层级选择器
+$('div>p') //直接子元素p
+$('div p') //所有后代p
+$('div+p') //紧跟其后的第一个兄弟p
+$('div~p') //后面的所有兄弟p
+6, 其他选择器
+$('div:first') //第一个
+$('div:last') //最后一个
+$('div:eq(index)') //= index
+$('div:gt(index)') //> index
+$('div:lt(index)') //< index
+$('div:even') //偶数(下标从0开始)
+$('div:odd') //奇数
+$('div:not(selector)') //否定
+$(':root') //文档的根元素
+$(':animated') //正在执行动画的
+$(':parent') //含有子元素或文本的元素
+$(':empty') //与':parent'相反
+$(':contains(text)') //包含指定文本的元素
+$(':has(selector)') //包含指定选择器的元素
+$(':visible') //显示的元素
+$(':hidden') //隐藏的元素(1,display: none; 2,type="hidden"的表单元素; 3,width和height设为0)
+$('[attribute']) //具有指定属性
+$('[attribute1][attribute2]') //具有多个指定属性
+$('[attribute="value"]') //属性等于指定值
+$('[attribute!="value"]') //属性不等于指定值
+$('[attribute^="value"]') //属性值以value开头
+$('[attribute$="value"]') //属性值以value结尾
+$('[attribute*="value"]') //属性值包含value串
+$('[attribute~="value"]') //属性值包含value单词
+$(':first-child') //是第一个子元素
+$(':last-child') //是最后一个子元素
+$(':only-child') //是唯一的子元素
+$(':nth-child(n)') //是第n个子元素，n从1开始，这与':eq(index)'不同
+$(':nth-last-child(n)') //是倒数第n个子元素
+$(':input') //匹配所有input, textarea, select和button元素, 注意与$('input')的区别
+$(':text') //文本框，等价于'[type="text"]', 下同
+$(':password') //密码框
+$(':radio') //单选框
+$(':checkbox') //复选框
+$(':submit') //提交按钮
+$(':reset') //重置按钮
+$(':button') //所有按钮
+$(':image') //图像域
+$(':file') //文件域
+$(':enabled') //可用的表单元素
+$(':disabled') //不可用的表单元素
+$(':checked') //选中的单选或复选框
+$(':selected') //选中的下拉列表项
+$(this) //把js的上下文对象this封装成jquery对象
+
+>>属性
+1, attr('name') //获取属性值
+2, attr('name', 'value') //设置属性值
+3, prop('name') //获取属性值
+4, prop('name', 'value') //设置属性值
+5, removeAttr('name') //移除属性
+
+>>文本与值
+1, html() //获取第一个元素的html内容
+2, html('value') //设置所有匹配元素的html内容
+3, html(function(index, value){}); //通过函数返回值设置匹配元素的html内容
+4, text() //获取所有元素的合并文本
+5, text('value') //设置所有匹配元素的text内容
+6, text(function(index, value){}); //通过函数返回值设置匹配元素的text内容
+7, val() //获取第一个表单元素的值
+8, val('value') //设置所有匹配表单元素的值
+9, val(function(index, value){}); //通过函数返回值设置匹配表单元素的值
+注: val()只能用在表单元素，而html()和text()不能用于表单元素;
+html()和val()只能获取匹配集合中第一个元素的值，而text()获取匹配集合所有元素的值;
+
+>>类
+1, addClass('name') //元素添加一个或多个类
+2, addClass(function(index, curClass){}) //通过函数返回值给元素添加类
+3, removeClass('name') //元素删除一个或多个类，参数为空则删除所有类
+4, removeClass(function(index, curClass){}) //通过函数返回值删除元素的类
+5, toggleClass('name') //切换类名，有则删除，没有则添加
+6, toggleClass(function(index, curClass){}) //通过函数返回值切换类
+
+>>样式
+1, 获取
+css('color') //获取单个样式属性的值
+css(['font-size', 'backgroundColor']) //获取多个样式属性值，传递数组，返回对象
+2, 设置
+css('font-size', '20px') //设置单个样式属性值
+css('width', function(index, value){
+	return parseInt(value) + 50 + 'px';
+}); //通过函数返回值设置样式属性
+css({
+	'font-size': '20px',
+	'backgroundColor': gray,
+	'border': '1px solid red'
+});	//通过对象设置多个样式属性
+注: css()方法支持驼峰写法与大小写混搭的写法，而js的style只支持驼峰写法;
+css('width', 50) 与 css('width', '50px') 的效果一样;
+
+>>存储数据
+1, 通过H5提供的data-前缀属性
+<ul>
+	<li data-animal-type="鸟类">喜鹊</li>
+	<li data-animal-type="鱼类">金枪鱼</li>
+	<li data-animal-type="蜘蛛">蝇虎</li>
+</ul>
+可以通过js动态修改，也支持CSS选择器进行样式设置;
+2, 通过jquery的data()方法
+data(key, value) //存数据
+data(key) //取数据
+removeData(key) //删除数据
+存数据是把数据绑定到内部的DOM对象上;
+
+>>
+

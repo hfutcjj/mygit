@@ -222,6 +222,11 @@ div{
 	font-family: 'my font';
 }
 
+>>文本溢出时显示省略号
+text-overflow: ellipsis; //文本溢出部分显示方式
+overflow: hidden; 
+white-space: nowrap; //文本在一行内显示
+
 >>CSS3背景
 元素的背景包括边框，内边距和内容区域，不包括外边距;
 1, background-color 
