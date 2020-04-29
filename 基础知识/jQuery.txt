@@ -128,5 +128,112 @@ data(key) //取数据
 removeData(key) //删除数据
 存数据是把数据绑定到内部的DOM对象上;
 
->>
+>>创建节点
+$('<div class="item">我是一段文本</div>');
+
+>>插入节点
+1, a.append(b) === b.appendTo(a) //在a的内部后面追加b
+可以接受HTML字符串、DOM元素、或者jquery对象, 也可以接受多个参数;
+$('.content').append(s);
+$('.content').append(elem);
+$('.content').append($(s));
+$('.content').append(s1, s2);
+2, a.prepend(b) === b.prependTo(a) //在a的内部前面添加b
+3, a.before(b) === b.insertBefore(a) //在a的外部前面添加b
+4, a.after(b) === b.insertAfter(a) //在a的外部后面添加b
+注: $('li').appendTo('div')会将页面上的li元素移动到div里面，如果要复制，可以用
+$('li').clone().appendTo('div');
+
+>>删除节点
+1, empty() //清空，仅移除子元素
+$('.test').empty()
+2, remove() //移除，自身及后代全部删除，包括绑定的事件
+此方法可接受一个选择器参数，表示仅删除匹配的元素
+$('p').remove();
+$('p').remove(':contains("3")');
+$('p:contains("3")').remove(); //等价
+$('p').filter(':contains("3")').remove() //等价
+3, detach() //删除, 参数同remove()
+与remove()不同，通过detach()删除的元素，上面绑定的数据和事件还在;
+var p = $('p').detach();
+$('body').append(p); 
+
+>>节点的复制、替换、包裹
+1, clone() //只克隆结构，事件和绑定的数据丢失
+clone(true) //结构、事件与数据都克隆
+2, a.replaceWith(b) == b.replaceAll(a)
+参数可以是字符串、DOM节点或者是jquery对象;
+返回被替换掉的jquery对象;
+3, wrap() //将匹配元素用指定参数包裹起来, 返回包裹之前的原始jquery对象
+$('p').wrap('<div></div>')
+4, unwrap() //删除匹配元素的父级
+
+>>遍历
+1, children() //返回子元素的集合
+children(selector) //返回符合指定选择器的子元素的集合
+2, find(selector) //查找符合条件的后代的集合
+find()必须传入参数，如果要查找所有后代，则使用 find('*');
+3, parent() //父元素
+4, parents() //所有祖先集
+parents(selector) //满足条件的祖先集
+5, closest(selector) //从自身开始往上查找，找到第一个匹配的祖先元素
+parents(selector)与closest(selector)的区别:
+前者从父元素开始查找，返回所有满足条件的祖先元素;
+后者从自身开始查找，返回第一个满足条件的祖先元素;
+6, next() //下一个兄弟元素
+7, prev() //上一个兄弟元素
+8, siblings() //所有兄弟元素
+注: 因为jquery对象是个合集，所以有些方法虽然看上去不需要参数，如
+parent(), next(), prev()等，但也可以传入参数对合集对象进行筛选，如
+parent(':last'), next(':contains("text")')等;
+
+>>add()
+给jquery合集对象中增加新的元素，参数可以是字符串、DOM对象以及jquery对象;
+$('li').add('<p></p>');
+$('li').add(document.createElement('p'));
+$('li').add($('<p></p>'));
+
+>>each()
+遍历jquery合集对象
+$('li').each(function(index, element){
+	if(index % 2 == 0){
+		$(this).css('color', 'red');
+	}
+});
+
+>>filter()与find()
+filter(selector)是从自身的合集中进行筛选;
+find(selector)是从后代中进行筛选;
+
+>>鼠标事件
+1, click 与 dblclick
+$('button').click(); //不带参数, 用程序触发按钮单击
+$('div').click(function(e){ //带参数，回调函数定义事件响应
+	//...
+});
+2, mousedown 与 mouseup
+$('div').mouseup(function(e){
+	alert(e.which); 
+});
+e.which表明是哪个鼠标键的动作，1--左键，2--中键，3--右键;
+3, mousemove
+//鼠标移动
+4, mouseover 与 mouseout
+//鼠标移入移出, 这两个事件会冒泡给祖先元素
+5, mouseenter 与 mouseleave
+//鼠标移入移出，这两个事件不会冒泡给祖先元素
+6, hover
+接收两个回调函数作为参数，相当于同时定义了mouseenter与mouseleave两个事件;
+$('div').hover(mouseenterFn, mouseleaveFn);
+7, focusin 与 focusout
+//元素或元素内的子元素获得和失去焦点的事件
+如输入框获得焦点时改变其父div的背景颜色
+<div>
+	<label>username: <input type="text"></label>
+</div>
+$('div').focusin(function(){
+	$(this).css('background-color', 'yellow');
+}).focusout(function(){
+	$(this).css('background-color', '#fff');
+});
 
