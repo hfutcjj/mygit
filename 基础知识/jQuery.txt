@@ -237,3 +237,166 @@ $('div').focusin(function(){
 	$(this).css('background-color', '#fff');
 });
 
+>>表单事件
+1, focus 与 blur
+//表单框获得与失去焦点事件
+注: focus与focusin的区别
+focus只在元素本身产生，不会冒泡到父元素，而focusin会冒泡到父元素；
+blur与focusout也是一样。
+<div>
+	<label>username: <input type="text"></label>
+</div>
+$('div').focusin(function(){ //有效
+	alert('focusin事件冒泡到父元素div');
+});
+$('div').focus(function(){ //无效
+	alert('focus事件不会冒泡到父元素div');
+});
+2, change
+//表单控件值的改变
+<input>文本输入框和<textarea>值的改变，当失去焦点后触发change事件;
+单选按钮、复选框和下拉选择框，当用鼠标做出选择时，立即触发change事件;
+$('input').change(function(e){
+	$('#result').html(e.target.value);
+});
+3, select
+//表单框中的文本选中事件
+4, submit
+//提交事件 
+可以在表单提交之前进行一些验证，可通过 e.preventDefault() 或 return false 
+来组织浏览器的默认提交行为;
+
+>>键盘事件
+1, keydown 与 keyup
+//键盘的按下与松开事件
+$('input').keyup(function(e){
+	alert(e.keyCode);
+});
+2, keypress
+//键盘点击事件
+注: keydown/keyup能捕获所有按键，而keypress只能捕获可打印的按键;
+输入当前按键值只能通过keyup实现;
+
+>>事件绑定与解绑
+1, on()
+//绑定事件
+可以传入参数，参数会自动作为事件对象的data属性，即 e.data
+$('div').on('click', callback);
+$('div').on('click', 6, function(e){
+	alert(e.data); //6
+});
+$('div').on('click', {name: 'zhao'}, function(e){
+	alert(e.data.name); //'zhao'
+});
+2, off()
+//事件解绑
+$('div').off('click'); //删除click事件
+$('div').off(); //删除所有事件
+3, 事件委托
+把时间绑定到祖先元素上，对下面的子元素进行事件委托;
+<div>
+	<button>btn</button>
+</div>
+$(document).on('click', 'div', function(e){
+	alert('click');
+});
+当在button上点击时，事件通过冒泡到达div时才处理;
+事件委托的好处：
+1)通过祖先给下面满足选择器条件的元素统一绑定事件;
+2)当添加新的元素，无须为其重新绑定事件，只要满足委托条件，事件自动生效;
+
+>>事件对象
+1, e.type //事件类型
+2, e.target //事件触发的原始DOM对象
+3. e.currentTarget //事件冒泡时的当前DOM对象，等于this
+4, e.pageX/e.pageY //鼠标在当前页面的坐标，不随滚动条变化
+5, e.clientX/e.clientY //鼠标相对视口的坐标
+6, e.which //鼠标事件则表示哪个鼠标键，键盘事件则代表keyCode
+7, e.keyCode //键盘按键码
+8, e.preventDefault() //阻止浏览器的默认行为
+9, e.stopPropagation() //阻止事件冒泡
+注: target 与 currentTarget 的区别：
+target是触发事件的原始DOM对象，不会变化;
+而currenTarget是冒泡过程中的当前DOM对象，是会变化的，等同于this;
+
+>>trigger() 与 triggerHandler()
+触发事件可以由用户交互触发，也可以由程序触发，就是用这两个函数;
+两者的区别：
+1)trigger()会引起事件的默认行为，而triggerHandler()不会;
+2)trigger()会触发匹配的所有元素，而triggerHandler()只触发第一个元素;
+3)trigger()触发的事件会冒泡，而triggerHandler()不会冒泡;
+//html
+<div>
+	<button>btn1</button>
+	<button>btn2</button>
+</div>
+<input type="button" value="trigger">
+<input type="button" value="triggerHandler">
+//绑定事件与触发事件
+$('div').click(function(e){
+	alert('div click');
+});
+$('button').click(function(e){
+	alert(e.target.innerHTML + ' click');
+});
+$('input:first').click(function(e){ //演示trigger触发
+	$('button').trigger('click');
+});
+$('input:last').click(function(e){ //演示triggerHandler触发
+	$('button').triggerHandler('click'); 
+});
+
+>>自定义事件
+可以通过on绑定自定义事件，然后通过trigger()调用;
+$('div').on('myFn', function(){
+	alert('This is a customize event.');
+});
+$('div').trigger('myFn'); //触发自定义事件
+自定义事件还可以传递参数;
+$('div').on('myFn', function(event, param1, param2){
+	alert(param1 + param2);
+});
+$('div').trigger('myFn', [1, 2]);
+
+>>显示与隐藏
+1, show(speed, callback) 
+显示，speed可为 slow / fast / 毫秒, callback 为动画执行结束会调用的函数;
+show(); //直接显示
+show('slow'); //渐显
+show(1000, function(){
+	alert('渐显完成');
+});
+
+2, hide(speed, callback)
+隐藏，参数同show();
+show()与hide()方法通过同时改变元素的宽度、高度和透明度来实现动画；
+3, toggle(speed, callback)
+自动在show()与hide()之间进行切换;
+
+>>滑动
+1, slideUp(speed, callback)
+上滑，参数同show();
+slideUp()与slideDown()方法是通过仅改变元素的高度来实现动画;
+2, slideDown(speed, callback)
+下滑，参数同slideUp();
+3, slideToggle(speed, callback)
+上滑与下滑自动切换;
+
+>>淡入淡出
+1, fadeOut(speed, callback)
+淡出, 参数同show()
+fadeOut()与fadeIn()方法是通过仅改变元素的透明度来实现动画;
+当透明度变为0时，元素从页面的布局中消失;
+2, fadeIn(speed, callback)
+淡入, 参数同fadeOut()
+3, fadeToggle(speed, callback)
+淡入淡出自动切换;
+4, fadeTo(speed, opacity, [callback])
+淡入淡出到指定透明度，前两个参数必须，第三个回调函数可选;
+fadeOut()是将opacity从0变到1，fadeIn()是将透明度从1变到0;
+
+>>自定义动画
+
+
+
+
