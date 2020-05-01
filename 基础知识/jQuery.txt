@@ -128,6 +128,47 @@ data(key) //取数据
 removeData(key) //删除数据
 存数据是把数据绑定到内部的DOM对象上;
 
+>>add()
+给jquery合集对象中增加新的元素，参数可以是字符串、DOM对象以及jquery对象;
+$('li').add('<p></p>');
+$('li').add(document.createElement('p'));
+$('li').add($('<p></p>'));
+
+>>each()
+1, 作为对象方法, 遍历jquery合集对象
+$('li').each(function(index, element){
+	if(index % 2 == 0){
+		$(this).css('color', 'red');
+	}
+});
+2, 作为类方法, 用来统一处理数组和对象
+$.each(array, function(index, element){});
+$.each(object, function(index, element){});
+
+>>$.inArray()
+查找某个元素在数组中的索引，不存在则返回-1;
+$.inArray(value, array, [fromIndex]);
+注: js中的indexOf()也可实现查找索引;
+类似的, php中的in_array()也可以;
+
+>>filter()与find()
+filter(selector)是从自身的合集中进行筛选;
+find(selector)是从后代中进行筛选;
+
+>>index()
+返回参数对象在jquery合集对象中的索引，没有则返回-1;
+参数可以为空，则表示jquery合集对象在同辈中的位置;
+参数也可以为DOM元素或者jquery对象，则表示参数对象在jquery合集对象中的索引;
+<ul>
+	<a>a link</a>
+	<li id="test1">1</li>
+	<li id="test2">2</li>
+	<li id="test3">3</li>
+</ul>
+$('li').index(); //1
+$('li').index(document.getElementById('test3')); //2
+$('li').index($('#test3')); //2
+
 >>创建节点
 $('<div class="item">我是一段文本</div>');
 
@@ -186,24 +227,6 @@ parents(selector)与closest(selector)的区别:
 注: 因为jquery对象是个合集，所以有些方法虽然看上去不需要参数，如
 parent(), next(), prev()等，但也可以传入参数对合集对象进行筛选，如
 parent(':last'), next(':contains("text")')等;
-
->>add()
-给jquery合集对象中增加新的元素，参数可以是字符串、DOM对象以及jquery对象;
-$('li').add('<p></p>');
-$('li').add(document.createElement('p'));
-$('li').add($('<p></p>'));
-
->>each()
-遍历jquery合集对象
-$('li').each(function(index, element){
-	if(index % 2 == 0){
-		$(this).css('color', 'red');
-	}
-});
-
->>filter()与find()
-filter(selector)是从自身的合集中进行筛选;
-find(selector)是从后代中进行筛选;
 
 >>鼠标事件
 1, click 与 dblclick
@@ -396,6 +419,35 @@ fadeOut()与fadeIn()方法是通过仅改变元素的透明度来实现动画;
 fadeOut()是将opacity从0变到1，fadeIn()是将透明度从1变到0;
 
 >>自定义动画
+1, animate(styles, [duration, easing, callback])
+第一个参数属性组是必须的，后面的三个参数可选;
+duration-动画的持续时间;
+easing-动画的速度函数;
+callback-动画完成后的回调函数;
+属性组里的属性值必须是带有数字的，才能运用动画效果;
+属性组里的属性值可以取下面这些值:
+500, '500px', '+=100px', 'show/hide/toggle';
+$('div').animate({
+	left: 50,
+	width: '50px',
+	opacity: 'show',
+	fontSize: '10em',
+}, 500);
+$('div').animate({
+	left: '+=50px'
+}, 'slow');
+2, animate(styles, [options])
+把更多可选的参数放到对象中，可以对动画的更多选项进行控制;
+3, stop(stopAll, goToEnd)
+当一个元素上添加了多个动画，即动画队列;
+stopAll与goToEnd默认都为false;
+$('div').animate({height: 300}, 5000);
+$('div').animate({width: 300}, 5000);
+$('div').animate({opacity: 0.3}, 5000);
+$('div').stop(); //只会停止第一个动画，第二个第三个继续
+$('div').stop(true); //停止第一个、第二个和第三个动画
+$('div').stop(true, true); //停止动画，直接跳到第一个动画的最终状态
+
 
 
 
