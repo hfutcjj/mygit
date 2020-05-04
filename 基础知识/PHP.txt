@@ -1,9 +1,53 @@
 >>函数
-1, 强类型参数
+1, 函数的分类
+1)系统函数: 字符串、数学、数组、日期时间....
+2)用户自定义函数;
+2, 函数名
+php的函数名默认是不区分大小写的，自定义的函数名最好是动词开头，如getExt, uploadFile等;
+php不支持函数重载，如果两个函数名相同，则报重复定义错误;
+可以在定义函数前判断函数是否存在，使用function_exists()，
+if(!function_exists('myFn')){
+	function myFn(){
+		//...
+	}
+}
+3, 返回值
+php的函数只能有0或1个返回值，如果要返回多个值，可以返回数组或对象;
+php的函数可以返回任意类型的值, 如果没有明确的返回值，则默认返回null;
+4, 函数注释
+php常用的函数注释:
+/*
+ *按照需求创建指定的表格
+ *@param number $rows
+ *@param number $cols
+ *@return string
+ */
+ function createTable($rows, $cols){
+	//...
+ }
+5, 变量作用域
+1)局部变量
+函数内定义的变量就是局部变量，局部变量又分为动态变量和静态变量;
+动态变量在函数执行完就立即释放，而静态变量则保存到静态内存中;
+function test(){
+	static $a = 0;
+	echo $a++;
+}
+test(); //0
+test(); //1
+test(); //2
+2)全局变量
+函数内默认不能使用外部定义的全局变量，可按下面这样使用
+$g_name = 'Lily';
+function test(){
+	//方法一: global $g_name;
+	//方法二: $GLOBALS['g_name'];
+}
+6, 强类型参数
 为参数列表中的参数指定类型，如果传入的实参类型不匹配，将会抛出TypeError异常；
 支持的类型：
 bool, float, int, string, array, callable, class name, interface name;
-2, 可变数量参数
+7, 可变数量参数
 实现方法1：
 func_num_args();  //传入的参数个数
 func_get_arg(i);  //传入的第i个参数
@@ -12,40 +56,19 @@ func_get_args();  //传入的参数组成的数组
 function fn(...$a){
 	//$a是传入的参数组成的数组
 }	
-3, 值传递和引用传递
-JS中的数组和对象都是按引用传递的，而PHP默认都是按值传递；
+8, 值传递和引用传递
+PHP默认都是按值传递, 而JS中的数组和对象都是按引用传递的;
 function test(array $a){
 	$a[1] = 888;
 }
 $arr = [1, 2, 3];
 test($arr);
-print_r($arr);  //[1, 888, 3]
+print_r($arr);  //[1, 2, 3]
 如果需要改变参数本身，则改为按引用传递:
 function test(array &$a){
 	//...
 }
-4, 函数内默认不能使用外部定义的全局变量，可按下面这样使用
-$g_name = 'Lily';
-function test(){
-	//global $g_name;
-	//$GLOBALS['g_name'];
-}
-注：PHP中函数内部只能引用全局变量的值，不能改变全局变量：
-$a = 1;
-function test(){
-	global $a;
-	$a = 888;
-}
-echo $a; //1
-5, static变量
-function test(){
-	static $a = 0;
-	echo $a++;
-}
-test(); //0
-test(); //1
-test(); //2
-6, 可变函数
+9, 可变函数
 变量名后有圆括号，PHP将寻找与变量值相同的函数名，并且调用它；
 function get_apple(){
 	return 'apple';
@@ -56,6 +79,24 @@ function get_orange(){
 function get_fruit($fruit){	//工厂模式
 	$fname = 'get_'.$fruit;
 	return $fname();
+}
+10, 回调函数
+回调函数就是调用函数的时候将另外一个函数的名称当做参数传递进去，
+并且在函数体中进行调用;
+1)系统函数应用回调函数的例子
+$a = array(1, 2, 3, 4);
+function test($x){return $x*2;}
+$b = array_map('test', $a);
+$b; //[2, 4, 6, 8]
+或者直接用匿名函数的形式来回调，与js的形式一样,
+$b = array_map(function($i){
+	return $i*2;
+}, $a);
+2)用户自定义函数应用回调函数的例子
+function study($name){echo $name.' is studying';}
+function play($name){echo $name.' is playing';}
+function doWhat($funcName, $name){
+	$funcName($name);
 }
 
 >>日期与时间
@@ -96,5 +137,171 @@ php通过 time() 返回的时间戳单位为秒;
 而js通过 new Date().getTime() 返回的时间戳单位为毫秒;
 
 >>类与对象
+1, 继承, 访问控制, static关键字
+继承一个类用extends关键字;
+可用$this访问自身的非静态属性和非静态方法, 如 $this->name, $this->getAge();
+可用self, static访问自身的静态属性, 如 self::$nation, static::$nation;
+在类外访问静态属性只能用类名，如 Person::$nation;
+静态方法只能访问静态属性;
+可用parent访问父类的方法, 如 parent::__construct(), parent::info();
+class Person{ //父类
+	public $name;
+	private $age;
+	public static $nation = 'China'; //静态属性
+	public function __construct($name, $age){
+		$this->name = $name;
+		$this->age = $age;
+	}
+	public function getAge(){
+		return $this->age;
+	}
+	public function info(){
+		echo 'My name is '.$this->name.'. I am '.$this->age.' years old.';
+	}
+	public static function changeNation($nation){ //静态方法
+		self::$nation = $nation;
+	}
+}
+class Student extends Person{ //子类
+	public $major;
+	public function __construct($name, $age, $city){
+		parent::__construct($name, $age); //调用父类构造函数
+		$this->city = $city;
+	}
+	public function info(){
+		echo 'My name is '.$this->name.'. I am '.$this->age.' years old.'.
+			' I am majoring in '.$this->major;
+	}
+}
+2, final关键字
+final修饰类名表示该类不能被继承, 如 final class Person{};
+final修饰方法表示该方法不能被重写，如 final public function getAge(){};
+3, 接口
+接口用interface定义, 接口只包含方法的的声明，接口不能实例化对象;
+类实现接口用implements，类要实现接口中定义的方法;
+接口之间也可以用extends继承;
+判断某个对象是否属于某个类或接口，可以用instanceof, 如 $obj instanceof ICanEat, $obj instanceof Human;
+interface ICanEat{ //接口
+	public function eat($food);
+}
+class Human implements ICanEat{ //实现接口
+	public function eat($food){
+		echo 'Human eating '.$food;
+	}
+}
+class Animal implements ICanEat{
+	public function eat($food){
+		echo 'Animal eating '.$food;
+	}
+}
+interface ICanWork{ //接口继承
+	public function work();
+}
+class Worker implements ICanWork{
+	public function work(){
+		echo 'Worker working';
+	}
+}
+4, 多态
+同一接口的不同实现，就叫多态;
+可以把对不同子类的调用统一当成接口来处理;
+function toEat($obj, $food){
+	if($obj instanceof ICanEat){
+		$obj->eat($food);
+	}
+}
+$boy = new Human();
+$dog = new Animal();
+toEat($boy, 'apple');
+toEat($dog, 'orange');
+5, 抽象类
+抽象类介于接口与具体类之间，允许有一部分方法没有定义;
+抽象类用abstract class定义, 抽象类里没实现的方法前面也要加abstract关键字;
+抽象类也不能实例化对象;
+abstract class ACanEat{
+	abstract public function eat($food);
+	public function breath(){
+		echo 'breath use the air';
+	}
+}
+class Human extends ACanEat{
+	public function eat($food){
+		echo 'Human eating '.$food;
+	}
+}
+class Animal extends ACanEat{
+	public function eat($food){
+		echo 'Animal eating '.$food;
+	}
+}
+6, 魔术方法
+1)__toString()
+把对象当做字符串时自动调用;
+2)__invoke()
+把对象当做函数时自动调用;
+3)__call(), callStatic()
+也称为PHP的方法重载;
+当访问对象不存在的方法时，__call()会被自动调用;
+当访问对象不存在的静态方法时，__callStatic()会被自动调用;
+这两个方法接收两个参数，第一个参数是方法名称，第二参数是方法接收的参数组成的数组;
+4)__get(), __set(), __isset(), __unset()
+也称为PHP的属性重载;
+不可访问属性包括未定义的属性和定义为private或protected的属性;
+给不可访问属性赋值时，自动调用__set();
+读取不可访问属性时，自动调用__get();
+不可访问属性调用isset()时，自动调用__isset();
+不可访问属性调用unset()时，自动调用__unset();
+5)__clone()
+用clone关键字复制对象时自动调用, 默认的__clone()会--复制属性，可以在自定义的
+__clone()方法里覆盖某些需要更改的属性，不需要更改的属性还会按默认的自动复制;
+该方法不接受任何参数;
+class Test{
+	private $data = array();
+	public static $cloneCount = 0;
+	public function __toString(){
+		return 'this is a test';
+	}
+	public function __invoke($x){
+		echo 'use object as function with param '.$x;
+	}
+	public function __call($name, $args){
+		echo 'calling '.$name.' with params: '.implode(',', $args);
+	}
+	public static function __callStatic($name, $args){
+		echo 'calling static '.$name.' with params: '.implode(',', $args);
+	}
+	public function __get($name){
+		if(isset($this->data[$name])){
+			return $this->data[$name];
+		}else{
+			return null;
+		}
+	}
+	public function __set($name, $value){
+		$this->data[$name] = $value;
+	}
+	public function __isset($name){
+		return isset($this->data[$name]) ? true : false;
+	}
+	public function __unset($name){
+		if(isset($this->data[$name])){
+			unset($this->data[$name]);
+		}
+	}
+	public function __clone(){
+		self::$cloneCount++;
+	}
+}
+$obj = new Test();
+echo $obj; //$obj.__toString()
+$obj(3); //$obj.__invoke(3)
+$obj->run('zhao', 30); //$obj.__call('run', ['zhao', 30])
+Test::runStatic('zhao', 30); //$obj.__callStatic('runStatic', ['zhao', 30])
+$obj->name = 'zhao'; //$obj.__set('name', 'zhao')
+echo $obj->name; //$obj.__get('name')
+echo isset($obj->name); //$obj.__isset('name')
+unset($obj->name); //$obj.__unset('name');
+$obj2 = clone $obj; //$obj.__clone()
+
 
 
