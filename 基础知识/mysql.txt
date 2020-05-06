@@ -1,0 +1,179 @@
+>>mysql目录结构
+1, bin，存储可执行文件;
+2, data，存储数据文件;
+3, docs, 文档;
+4, include, 存储包含的头文件;
+5, lib, 存储库文件;
+6, share, 错误信息和字符集文件;
+
+>>启动和关闭mysql服务
+1, net start mysql //启动
+2, net stop mysql //关闭
+注: net start/stop 也能启动与关闭其他服务;
+
+>>登录与退出
+1, mysql -hlocalhost -uroot -p -P3306 //登录
+如果是本地登录，端口号是默认的3306，则可省略-h与-P参数;
+2, 退出
+exit / quit / \q;
+
+>>操作数据库
+1, 创建数据库
+create database test;
+create database if not exists test;
+create database character set [=] utf8;
+2, 显示所有数据库
+show databases;
+3, 查看创建数据库的信息
+show create database test;
+4, 修改数据库
+alter database test character set [=] utf8;
+5, 删除数据库
+drop database test;
+drop database if exists test;
+6, 打开数据库
+use test;
+7, 显示当前打开的数据库名
+select database();
+8, 设置客户端的编码
+set names utf8 / gbk;
+注: 设置数据库服务器的编码需要在配置文件中设置;
+
+>>数据类型
+1, 整型
+1)tinyint: 1字节
+有符号: -128~127; 无符号: 0~255; (百)
+2)smallint: 2字节
+有符号: -32768~32767; 无符号: 0~65535; (万)
+3)mediumint: 3字节
+有符号: -8388608~8388607; 无符号: 0~16777215; (百万)
+4)int: 4字节
+有符号: -2147483648~2147483647; 无符号: 0~4294967259; (十亿)
+5)bigint: 8字节
+有符号: -2^63~2^63-1; 无符号: 0~2^64-1;
+2, 浮点型
+1)float(m, d): 单精度浮点, m是数字总位数，d是小数点后面的位数;
+2)double(m, d): 双精度浮点;
+3, 字符型
+1)char(m): 定长, m个字节 <= 255字节
+2)varchar(m): 不定长 <= 65535字节
+3)tinytext: <= 2^8字节
+3)text: <= 2^16字节
+4)mediumtext: <= 2^24字节
+5)longtext: <= 2^32字节
+6)enum('value1', 'value2', ...): 枚举
+7)set('value1', 'value2', ...): 集合
+4, 日期时间类型
+1)year: 1字节
+2)date: 3字节
+3)time: 3字节
+4)datetime: 8字节
+5)timestamp: 4字节
+注: 实际开发中日期时间类型经常用整型代替;
+
+>>操作数据表
+1, 查看当前数据库中的所有表
+show tables;
+show tables from mysql;
+2, 创建表
+create table [if not exists] tname(
+	cname ctype,
+	...
+)engine=InnoDB default charset=utf8;
+举例:
+create table if not exists t(
+	id int unsigned primary key auto_increment,
+	name varchar(20) not null,
+	age tinyint unsigned,
+	salary float(8, 2)
+);
+3, 查看创建的数据表结构信息
+show columns from t; 
+desc t; //这两种查询一样，都是显示所有列的信息
+show create table t; //显示创建表的信息
+4, 约束
+约束保证数据的完整性和一致性;
+约束分为列级约束和表级约束;
+1)primary key //主键, 一张表只能有一个主键列，主键自动为 not null 和 unique;
+2)not null //非空约束
+3)unique //唯一性约束
+4)auto_increment //自动编号, 只能用于主键;
+5)default //默认值
+6)外键约束
+foreign key (pid) references province(id);
+foreign key (pid) references province(id) on delete cascade;
+支持外键约束的表的存储引擎必须是InnoDB;
+子表的外键列与父表的参照列的数据类型必须要兼容;
+外键约束的参照操作有:
+cascade(级联): 从父表删除或更新时，自动修改子表;
+set null(置空): 从父表删除或更新时，将子表对应字段置为空;
+restrict(拒绝): 拒绝对父表的删除或更新;
+注: 实际开发中物理的外键约束用得比较少，一般用程序来逻辑的控制;
+5, 修改表的结构
+1)添加列
+alter table tname add [column] cname ctype [first|after cname];
+2)删除列
+alter table tname drop [column] cname;
+3)修改列
+modify只能修改列的类型和位置:
+alter table tname modify [column] cname ctype [first|after cname];
+change除了能修改列的类型和位置，还能修改列名:
+alter table tname change [column] coldname cnewname ctype [first|after cname];
+4)添加约束
+alter table tname add [constraint pk_tname_id] primary key (id);
+alter table tname add [constraint uq_tname_name] unique (name);
+alter table tname add [constraint fk_tname_pid] foreign key (pid) references province (id);
+alter table tname alter cname set default 15;
+alter table tname alter cname drop default;
+5)删除约束
+alter table tname drop primary key;
+alter table tname drop [index|foreign key] constraint_name;
+6)修改表名
+alter table tname rename [to|as] tnewname;
+6, 插入记录
+insert [into] tname[(cname, ...)] values (val, ...);
+举例:
+insert into tname values (default/null, 'zhao', 30, 5200);
+insert into tname(name, age, salary) values ('zhao', 30, 5200);
+insert into tname(cnames) values (...), (...), ...;
+insert into tname(cnames) select cnames from t2;
+注: 插入数据时，对于带有auto_increment约束的主键，省略时可以用default/null来代替;
+对于有默认值的字段，可以不插入值，也可以插入default;
+7, 更新数据
+1)单表更新
+update tname set cname = value where condition;
+update tname set cname1 = value1, cname2 = value2 where condition;
+2)多表更新
+
+8, 删除数据
+1)单表删除
+delete from tname where condition;
+2)多表删除
+
+9, 查询数据
+select [distinct] [tname.]cnames [as cnewnames]
+	from tname where condition
+	group by cname [having condition]
+	order by cname [asc|desc]
+	limit [offset], count;
+举例:
+select Dno, avg(Sage) from Student group by Dno having avg(Sage) < 30 order by Dno desc;
+注: 进行分组查询时，查询的字段必须是分组的字段或者其他字段的聚合函数;
+limit 10; //返回查询结果的前10条
+limit 3, 10; //返回从第4条结果开始的10条记录
+注: limit可用于后端实现查询分页显示;
+
+>>子查询
+出现在其他sql语句内的select子句, 叫子查询;
+1)用于where中的比较时，子查询返回一条结果可以用于比较运算符，返回多条结果则必须用[not] in;
+select * from teacher where Salary > (select avg(Salary) from teacher);
+select * from course where Cno in (select Cno from SC where Sno = '1001');
+2)批量插入
+3)多表更新
+4)多表删除
+
+>>连接
+
+
+
+
