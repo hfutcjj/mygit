@@ -87,6 +87,8 @@ create table if not exists t(
 	age tinyint unsigned,
 	salary float(8, 2)
 );
+还可以在创建数据表的时候直接插入数据:
+create table [if not exists] tname(cnames ctypes) select ...;
 3, 查看创建的数据表结构信息
 show columns from t; 
 desc t; //这两种查询一样，都是显示所有列的信息
@@ -144,12 +146,15 @@ insert into tname(cnames) select cnames from t2;
 update tname set cname = value where condition;
 update tname set cname1 = value1, cname2 = value2 where condition;
 2)多表更新
-
+update t1 inner join t2 on t1.c1 = t2.c2 set t1.c = value where condition;
+update t1 inner join t2 on t1.c1 = t2.c2 set t2.c = value where condition;
 8, 删除数据
 1)单表删除
 delete from tname where condition;
 2)多表删除
-
+delete t1 from t1 inner join t2 on t1.c1 = t2.c2 where condition;
+delete t1, t2 from t1 inner join t2 on t1.c1 = t2.c2 where condition;
+注: 把要删除记录的表放在 delete 和 from 之间;
 9, 查询数据
 select [distinct] [tname.]cnames [as cnewnames]
 	from tname where condition
@@ -169,10 +174,20 @@ limit 3, 10; //返回从第4条结果开始的10条记录
 select * from teacher where Salary > (select avg(Salary) from teacher);
 select * from course where Cno in (select Cno from SC where Sno = '1001');
 2)批量插入
+create table tname(cnames ctypes) select ...;
+insert into tname(cnames) select ...;
 3)多表更新
 4)多表删除
 
 >>连接
+1)内连接
+select * from student t1 [inner] join dept t2 on t1.Dno = t2.Dno;
+等价于
+select * from student t1, dept t2 where t1.Dno = t2.Dno;
+2)左外连接
+select * from student t1 left [outer] join dept t2 on t1.Dno = t2.Dno;
+3)右外连接
+select * from student t1 right [outer] join dept t2 on t1.Dno = t2.Dno;
 
 
 
