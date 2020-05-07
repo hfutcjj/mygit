@@ -13,20 +13,20 @@ git init
 git init 也可以把其他已存在的目录变成git可管理的仓库;
 
 >>添加文件到暂存区
-git add 'text.txt' //添加一个文件
+git add text.txt //添加一个文件
 git add . //添加所有改动的文件
 
 >>将文件由暂存区提交到仓库
 git commit -m 'add test.txt file'
 
 >>查看文件
-cat <file>
+cat test.txt
 
 >>查看仓库当前状态
 git status
 
->>查看最近两次修改的不同
-git diff <file>
+>>查看工作区做了哪些修改
+git diff test.txt
 
 >>查看提交的历史记录
 git log
