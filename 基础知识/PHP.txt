@@ -27,7 +27,6 @@ settype($a, 'string');
 5, 字符串转换成其他类型
 (int)'3.2abc'->3.2, (float)'3.2abc'->3.2;
 (bool)''->false, (bool)'0'->false, (bool)' '->true;
-6, 
 
 >>转换成布尔值为false的几种情形
 0, 0.0, '0', '', [] -> false 
