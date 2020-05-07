@@ -315,8 +315,8 @@ $obj2 = clone $obj; //$obj.__clone()
 1, 字符串函数
 1)strlen(): 获取字符串的字节长度，用于英文
 2)mb_strlen(): 获取字符串的字符长度，用于中文
-strlen('赵钱孙'); //9
-mb_strlen('赵钱孙'); //3
+strlen('中国人'); //9
+mb_strlen('中国人'); //3
 3)substr_count(): 某字符串出现的次数
 substr_count('This is a test', 'is'); //2
 4)substr(): 字符串截取，按字节截取

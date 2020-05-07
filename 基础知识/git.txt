@@ -1,18 +1,20 @@
 >>git是分布式版本控制系统，2005年由Linus开发，2008年GitHub网站上线；
+版本控制只能跟踪文本文件，而word格式、图片、视频等都属于二进制文件，版本控制系统跟踪不了;
 
 >>安装完git后进行名字和email地址的设置
 git config --global user.name "hfutcjj"
 git config --global user.email "*@qq.com"
 
->>创建版本库
+>>创建并初始化版本库(repository)
 mkdir mygit
-
->>初始化git仓库
 cd mygit
 git init
+注: git init 后，当前目录下就多了一个 .git 的目录，这个目录就是Git来跟踪管理版本库的;
+git init 也可以把其他已存在的目录变成git可管理的仓库;
 
 >>添加文件到暂存区
-git add <file>
+git add 'text.txt' //添加一个文件
+git add . //添加所有改动的文件
 
 >>将文件由暂存区提交到仓库
 git commit -m 'add test.txt file'
@@ -54,4 +56,6 @@ git push origin master (以后)
 
 >>从远程库克隆
 git clone git@github.com:hfutcjj/mygit.git
+
+
 
