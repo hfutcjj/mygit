@@ -1,3 +1,7 @@
+>>转换成布尔值为false的几种情形
+0, 0.0, '0', '', false, [] -> false 
+这些值用empty()得到的结果都为true;
+
 >>字符串
 1, 单引号与双引号
 单引号将里面的变量原样输出，而双引号会解析里面的变量;
@@ -14,6 +18,7 @@ $name; //'z*ao'
 1)隐式转换
 echo输出任何类型，都会转换成字符串;
 true->1, false->''; 
+0->'';
 null->'';
 resource->Resource id#数字;
 数组->'Array', 同时报警告;
@@ -27,9 +32,99 @@ settype($a, 'string');
 5, 字符串转换成其他类型
 (int)'3.2abc'->3.2, (float)'3.2abc'->3.2;
 (bool)''->false, (bool)'0'->false, (bool)' '->true;
+6, 字符串函数
+1)判断是否是字符串
+is_string('hello'); //true
+2)字符串的长度
+strlen('hello'); //5
+strlen('中国人'); //9, 以字节为单位
+mb_strlen('中国人'); //3, 以字符为单位
+3)字符与对应的ascii码的相互转换
+ord($c); //字符->ascii码
+chr($n); //ascii码->字符
+4)字符串截取
+substr('abcdef', 1, 3); //'bcd'
+substr('abcdef', 1); //'bcdef'
+substr('abcdef', -1, 1); //'f'
+substr('我是中国人', 6, 9); //'中国人', 按字节截取
+mb_substr('我是中国人', 2, 3); //'中国人', 按字符截取
+5)字符串查找
+strpos()返回第一次出现的索引，没找到则返回false, 可选的参数表示查找的位置;
+strrpos()从右边开始查找;
+strpos('hello,world', 'o'); //4
+strpos('hello,world', 'o', 5); //7
+strpos('hello,world', '*'); //false
+strrpos('hello,world', 'o'); //7
+6)字符串比较
+比较两个字符串的大小，小返回-1，相等返回0，大于则返回1;
+strcmp('aa', 'bb');  //-1
+7)去掉首尾的空格
+trim(' *^hello^^*  '); //'*^hello^^*'
+trim('*^hello^^*', '*^'); //'hello'
+ltrim(' hello '); //'hello '
+rtrim(' hello '); //' hello'
+8)大小写转换
+strtolower('Hello'); //'hello'
+strtoupper('Hello'); //'HELLO'
+ucfirst('hello,world'); //'Hello,world', 首字母大写
+9)将字符串分割成数组
+explode('|', 'one|two|three|four'); //['one', 'two', 'three', 'four']
+explode('|', 'one|two|three|four', 2); //['one', 'two|three|four']
+10)字符串替换
+str_replace('o', '*', 'hello world'); //'hell* w*rld'
+str_replace('\\', '/', dirname(__FILE__)); //'D:/web/www'
+11)子串出现的次数
+substr_count('This is a test', 'is'); //2
+12)重复字符串
+str_repeat('hi', 3); //'hihihi'
+13)反转字符串
+按字节反转，只能用于英文字符串;
+strrev('hello'); //'olleh'
+14)过滤html标记
+去掉字符串中的html标记, 可选的第二个参数表示需保留的标记
+$s = '<div><span>hello</span> <a href="#">baidu</a></div>';
+strip_tags($s); //'hello baidu'
+strip_tags($s, '<a>'); //'hello <a href="#">baidu'
+strip_tags($s, '<span><a>'); //'<span>hello</span> <a href="#">baidu</a>'
+15)随机打乱一个字符串
+str_shuffle('hello'); //'leolh'
 
->>转换成布尔值为false的几种情形
-0, 0.0, '0', '', [] -> false 
+>>日期与时间
+1，获取与设置时区
+默认时区是UTC, 获取时区有两种方法: 
+1)ini_get('date.timezone');
+2)date_default_timezone_get();
+设置时区有三种方法：
+1)修改PHP的配置文件，将date.timezone修改为中国的时区
+Asia/Shanghai或PRC；
+2)通过ini_set()函数设置
+ini_set('date.timezone', 'PRC'); 或
+ini_set('date.timezone', 'Asia/Shanghai');
+3)通过date_default_timezone_set()函数设置
+date_default_timezone_set('PRC'); 或
+date_default_timezone_set('Asia/Shanghai');
+注：设置时区的第一种方法对所有脚本都有效，后两种方法只对当前脚本有效；
+ini_get()与ini_set()还可以设置PHP的其他配置选项；
+2, date(string $format, int $timestamp)
+获取格式化的本地时间，第二个参数可省略，默认为当前时间;
+date('Y-m-d H:i:s'); //当前时间
+date('Y-m-d H:i:s', time()+24*3600); //一天后的时间
+3, time()
+返回当前的时间戳, 单位为秒;
+4, microtime(bool $flag=false)
+返回微秒级的时间戳，默认返回'microsec sec'格式的字符串，
+参数为true则返回小数格式;
+5, 转换成指定时间的时间戳
+1)mktime(hour, minute, second, month, day, year)
+获取指定时间的时间戳，参数可从后往前依次省略，默认为当前时间单位;
+mktime(0, 0, 0, 6, 1, 1990); //1990年6月1日零点的时间戳
+2)strtotime(string $str)
+常用参数有 'now', '+2 years 3 months 1 day'等;
+6, checkdate(month, day, year)
+检验指定的日期是否有效;
+注：php时间戳与js时间戳的区别:
+php通过 time() 返回的时间戳单位为秒;
+而js通过 new Date().getTime() 返回的时间戳单位为毫秒;
 
 >>函数
 1, 函数的分类
@@ -139,43 +234,6 @@ function doWhat($funcName, $name){
 require_once只包含一次，可防止重复定义;
 2)include, include_once
 用include包含文件，如果文件不存在，只报警告，程序继续执行;
-
->>日期与时间
-1，获取与设置时区
-默认时区是UTC, 获取时区有两种方法: 
-1)ini_get('date.timezone');
-2)date_default_timezone_get();
-设置时区有三种方法：
-1)修改PHP的配置文件，将date.timezone修改为中国的时区
-Asia/Shanghai或PRC；
-2)通过ini_set()函数设置
-ini_set('date.timezone', 'PRC'); 或
-ini_set('date.timezone', 'Asia/Shanghai');
-3)通过date_default_timezone_set()函数设置
-date_default_timezone_set('PRC'); 或
-date_default_timezone_set('Asia/Shanghai');
-注：设置时区的第一种方法对所有脚本都有效，后两种方法只对当前脚本有效；
-ini_get()与ini_set()还可以设置PHP的其他配置选项；
-2, date(string $format, int $timestamp)
-获取格式化的本地时间，第二个参数可省略，默认为当前时间;
-date('Y-m-d H:i:s'); //当前时间
-date('Y-m-d H:i:s', time()+24*3600); //一天后的时间
-3, time()
-返回当前的时间戳, 单位为秒;
-4, microtime(bool $flag=false)
-返回微秒级的时间戳，默认返回'microsec sec'格式的字符串，
-参数为true则返回小数格式;
-5, 转换成指定时间的时间戳
-1)mktime(hour, minute, second, month, day, year)
-获取指定时间的时间戳，参数可从后往前依次省略，默认为当前时间单位;
-mktime(0, 0, 0, 6, 1, 1990); //1990年6月1日零点的时间戳
-2)strtotime(string $str)
-常用参数有 'now', '+2 years 3 months 1 day'等;
-6, checkdate(month, day, year)
-检验指定的日期是否有效;
-注：php时间戳与js时间戳的区别:
-php通过 time() 返回的时间戳单位为秒;
-而js通过 new Date().getTime() 返回的时间戳单位为毫秒;
 
 >>类与对象
 1, 继承, 访问控制, static关键字
@@ -344,59 +402,70 @@ echo isset($obj->name); //$obj.__isset('name')
 unset($obj->name); //$obj.__unset('name');
 $obj2 = clone $obj; //$obj.__clone()
 
+>>php操作mysql
+1, mysqli扩展
+现在操作数据库一般用mysqli扩展和PDO，mysqli扩展的特点:
+有基于面向对象和面向过程的两套处理方式;
+支持预处理语句;
+支持事务;
+2, 检测mysqli扩展是否开启
+1)phpinfo();
+2)检测扩展是否已加载
+extension_loaded('mysqli'); //true
+3)检测函数是否存在
+function_exists('mysqli_connect'); //true
+4)得到当前已经开启的扩展
+get_loaded_extensions(); //array(...)
+3, 面向对象的mysqli
+1)建立连接, 打开指定的数据库
+$conn = new mysqli('localhost', 'root', 'password', 'test');
+//$conn = new mysqli('localhost', 'root', 'password');
+//$conn->select_db('test');
+if($conn->connect_errno){
+	die('Connect Error: '.$conn->connect_error);
+}
+注: connect_errno是错误编号，如果连接成功该属性为0, connect_error是错误信息;
+$conn是一个对象，包含服务端、客户端和本次连接的各种属性和方法;
+2)设置客户端字符集
+$conn->query('set names utf8');
+//$conn->set_charset('utf8');
+3)执行sql语句
+$conn->query($sql); //执行单条sql语句
+对于select/show/desc查询，执行成功返回mysqli_result对象，失败返回false;
+对于其他sql语句的查询，执行成功返回true, 失败返回false;
+4)插入、更新、删除数据
+$sql = "insert/update/delete";
+$r = $conn->query($sql); //$r为true或false
+if($r){
+	//$conn->insert_id --本次插入的第一条数据的id
+	//$conn->affected_rows --受影响记录的条数
+}else{
+	//error --错误号, error --错误信息
+	echo 'Error '.$conn->errno.': '.$conn->error;
+}
+5)查询数据
+$sql = "select id, username, age from user";
+$r = $conn->query($sql); //$r为mysqli_result对象或false
+if($r && $r->num_rows > 0){
+	//方法一: 返回所有结果
+	//返回结果为二维数组，默认参数为MYSQLI_NUM
+	$rows = $r->fetch_all(MYSQLI_NUM/MYSQLI_ASSOC/MYSQLI_BOTH);
+	//方法二: 每次返回一条结果
+	$row = $r->fetch_row(); //一维索引数组
+	$row = $r->fetch_assoc(); //一维关联数组
+	$row = $r->fetch_array(); //一维混合数组
+	$row = $r->fetch_object(); //返回对象
+	while($row = $r->fetch_assoc()){
+		//...
+	}
+}else{
+	echo '查询错误或者结果集中没有数据';
+}
+
+
 >>php常用的系统函数
 1, 字符串函数
-1)strlen(): 获取字符串的字节长度，用于英文
-2)mb_strlen(): 获取字符串的字符长度，用于中文
-strlen('中国人'); //9
-mb_strlen('中国人'); //3
-3)substr_count(): 某字符串出现的次数
-substr_count('This is a test', 'is'); //2
-4)substr(): 字符串截取，按字节截取
-substr('abcdef', 1, 3); //'bcd'
-substr('abcdef', 1); //'bcdef'
-substr('abcdef', -1, 1); //'f'
-5)mb_substr(): 字符串截取，按字符截取
-substr('我是中国人', 6, 9); //'中国人'
-mb_substr('我是中国人', 2, 3); //'中国人'
-6)strchr()(同名strstr()): 从指定位置截取一直到最后
-strchr('name@example.com', '@'); //'@example.com'
-strchr('name@example.com', '@', true); //'name'
-7)strrchr(): 与strchr()一样，只是从右边开始查找字符，常用于获取文件后缀名
-strchr('My name is bing', 'n'); //'name is bing'
-strrchr('My name is bing', 'n'); //'ng'
-substr(strrchr('xiaoxin.jpg', '.'), 1); //'jpg'
-8)strtolower(): 所有字符转化为小写
-9)strtoupper(): 所有字符转化为大写
-10)strrev(): 反转字符串，按字节反转，只能用于英文字符串
-11)strpos(): 从字符串中查找子串的位置，从左开始查找，也可以传入开始查找的位置
-strpos('My name is bing', 'n'); //3
-strpos('My name is bing', 'n', 4); //13
-12)strrpos(): 与strpos()一样，只是从右开始查找
-13)trim(): 去掉字符串两边的字符，默认是空格
-trim(' *^hello^^*  '); //'*^hello^^*'
-trim('*^hello^^*', '*^'); //'hello'
-14)str_split(): 把字符串分割到数组中, 可选的第二个参数指定每一段的长度
-str_split('hello'); //['h', 'e', 'l', 'l', 'o']
-str_split('hello world', 3); //['hel', 'lo ', 'wor', 'ld']
-15)chunk_split(): 在字符串中按部分插入指定字符，默认是空格
-chunk_split('hello world', 3); //'hel lo wor ld'
-chunk_split('hello world', 3, '*'); //'hel*lo *wor*ld*'
-16)str_repeat(): 把字符串重复n次
-str_repeat('hi', 3); //'hihihi'
-17)str_replace(): 字符串替换
-str_replace('o', '*', 'hello world'); //'hell* w*rld'
-str_replace('\\', '/', dirname(__FILE__)); //'D:/web/www'
-18)ucfirst(): 字符串的首字母大写
-ucfirst('hello, world'); //'Hello, world'
-19)explode(): 将一个字符串分割成数组
-explode('|', 'one|two|three|four'); //['one', 'two', 'three', 'four']
-explode('|', 'one|two|three|four', 2); //['one', 'two|three|four']
 2, 日期时间函数
-1)time(): 当前时间的时间戳，单位秒
-2)date(): 将指定的时间戳转换成规定格式的字符串，默认是当前时间
-3)strtotime(): 时间日期格式的字符串转换成对应的时间戳
-4)microtime(): 返回微秒时间戳，根据传入的布尔值可返回小数格式或数组格式
 3, 数学函数
 1)abs(): 绝对值
 2)floor(): 向下取整
@@ -414,28 +483,30 @@ min([2, 3, 1, 6]); //1
 8)max(): 最大值
 4, 数组函数
 1)count(): 数组元素的个数
-2)array_keys(): 返回数组的所有键名组成的数组
-3)array_values(): 返回数组的所有值组成的数组
+2)in_array(): 判断元素是否在数组中
+in_array('b', ['a', 'b', 'c']); //true
+3)array_keys(): 返回数组的所有键名组成的数组
+4)array_values(): 返回数组的所有值组成的数组
 $a = ['name'=>'zhao', 'age'=>30, 'city'=>'hefei'];
 array_keys($a); //['name', 'age', 'city']
 array_values($a); //['zhao', 30, 'hefei']
-4)implode()(同名join()): 将数组拼接成字符串, 与explode()相反
+5)implode()(同名join()): 将数组拼接成字符串, 与explode()相反
 implode(',', ['one', 'two', 'three']); //'one,two,three'
-5)array_merge(): 数组合并, 如果索引相同则覆盖
+6)array_merge(): 数组合并, 如果索引相同则覆盖
 array_merge(['name'=>'zhao', 30], ['name'=>'qian', 40]); //['name'=>'qian', 30, 40]
-6)array_reverse(): 反转数组
-7)array_flip(): 交换数组的键和值
+7)array_reverse(): 反转数组
+8)array_flip(): 交换数组的键和值
 array_flip(['name'=>'zhao', 30]); //['zhao'=>'name', 30=>1]
-8)array_push(): 数组后面插入值, 得到数组元素的个数
-9)array_pop(): 数组后面删除元素，返回删除的元素值
-10)array_shift(): 数组前面删除元素，返回删除的元素值
-11)array_unshift(): 数组前面插入值, 得到数组元素的个数
-12)sort(): 排序，用于索引数组，对关联数组应用sort()也返回索引数组
-13)rsort(): 与sort()相反
-14)ksort(): 按索引排序
-15)krsort(): 与ksort()相反
-16)asort(): 按值排序
-17)arsort(): 与asort()相反
+9)array_push(): 数组后面插入值, 得到数组元素的个数
+10)array_pop(): 数组后面删除元素，返回删除的元素值
+11)array_shift(): 数组前面删除元素，返回删除的元素值
+12)array_unshift(): 数组前面插入值, 得到数组元素的个数
+13)sort(): 排序，用于索引数组，对关联数组应用sort()也返回索引数组
+14)rsort(): 与sort()相反
+15)ksort(): 按索引排序
+16)krsort(): 与ksort()相反
+17)asort(): 按值排序
+18)arsort(): 与asort()相反
 5, 判断变量
 1)is_bool(): 判断是否是布尔类型
 2)is_float(): 判断浮点型
