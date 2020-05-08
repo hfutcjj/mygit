@@ -26,7 +26,7 @@ cat test.txt
 git status
 
 >>查看工作区做了哪些修改
-git diff test.txt
+git diff test.txt //把工作区修改的文件跟已提交的当前版本做对比
 
 >>查看提交的历史记录
 git log
@@ -40,6 +40,15 @@ git reflog
 git reset --hard HEAD^
 git reset --hard HEAD~1
 git reset --hard 1094a
+注: HEAD是指向当前版本的指针;
+HEAD表示当前版本(即最新的提交), 上一个版本就是HEAD^(同HEAD~1)，上上一个就是HEAD^^(同HEAD~2)，依次类推;
+也可以用版本号的id来表示，只用写前面几位，只要系统能区分是哪个版本id就可以;
+
+>>工作区、版本库(=暂存区stage+分支)
+我们工作的目录，就是工作区;
+.git目录就是版本库, 版本库包括暂存区和系统自动创建的第一个分支master(HEAD就是指向mster的指针);
+git add 是把工作区修改的文件放到暂存区;
+git commit 是把暂存区的文件全部提交到分支;
 
 >>丢弃工作区文件的修改(仅修改工作区)
 git restore <file>
