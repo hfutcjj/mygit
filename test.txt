@@ -1,4 +1,3 @@
 test.txt
 this is added.
 this is to add.
-我是中国人.

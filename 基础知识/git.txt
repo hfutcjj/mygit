@@ -26,7 +26,9 @@ cat test.txt
 git status
 
 >>查看工作区做了哪些修改
-git diff test.txt //把工作区修改的文件跟已提交的当前版本做对比
+git diff test.txt //工作区跟暂存区做比较
+git diff HEAD -- test.txt //工作区跟分支做比较
+git diff --cached test.txt //暂存区跟分支做比较
 
 >>查看提交的历史记录
 git log

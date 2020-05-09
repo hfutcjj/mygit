@@ -426,11 +426,14 @@ if($conn->connect_errno){
 }
 注: connect_errno是错误编号，如果连接成功该属性为0, connect_error是错误信息;
 $conn是一个对象，包含服务端、客户端和本次连接的各种属性和方法;
+也可以不指定数据库，后面的sql语句在表前加所属数据库名, 如
+$sql = "select * from test.user";
 2)设置客户端字符集
 $conn->query('set names utf8');
 //$conn->set_charset('utf8');
 3)执行sql语句
 $conn->query($sql); //执行单条sql语句
+$conn->multi_query($sql); //执行多条sql语句
 对于select/show/desc查询，执行成功返回mysqli_result对象，失败返回false;
 对于其他sql语句的查询，执行成功返回true, 失败返回false;
 4)插入、更新、删除数据
@@ -461,7 +464,102 @@ if($r && $r->num_rows > 0){
 }else{
 	echo '查询错误或者结果集中没有数据';
 }
-
+6)预处理语句
+预处理语句用于插入的例子:
+$sql = "insert into user(name, age) values (?, ?)";
+//准备预处理语句，返回mysqli_stmt对象
+$stmt = $conn->prepare($sql);
+//绑定参数, s--字符串, i--整数, d--浮点数
+$name = 'zhao';
+$age = 30;
+$stmt->bind_param('si', $name, $age);
+//执行预处理语句
+$r = $stmt->execute();
+if($r){
+	//$stmt->insert_id 
+	//$stmt->affected_rows 
+}else{
+	echo 'Error '.$conn->errno.': '.$conn->error;
+}
+预处理语句用于查询的例子:
+$sql = "select id, name, age from user where id > ?";
+$stmt = $conn->prepare($sql);
+$id = 10;
+$stmt->bind_param('i', $id);
+$r = $stmt->execute();
+if($r){
+	//绑定结果集中的值到变量
+	$stmt->bind_result($id, $name, $age);
+	//遍历结果集
+	while($stmt->fetch()){
+		echo "ID: $id, name: $name, age: $age.<br>";
+	}
+}
+使用预处理语句的优点:
+服务器只在第一次解析查询，后面就节约了解析与编译的开销;
+只有参数发送到服务器，而不是整个查询语句，这减少了网络流量;
+安全性提高，防sql注入攻击;
+7)事务处理
+$conn->autocommit(false); //先关闭自动提交，默认是true
+$s1 = "update account set money = money - 200 where id = 1";
+$r1 = $conn->query($s1);
+$affect1 = $conn->affected_rows;
+$s2 = "update account set money = money + 200 where id = 2";
+$r2 = $conn->query($s2);
+$affect2 = $conn->affected_rows;
+if($r1 && $affect1>0 && $r2 && $affect2>0){
+	$conn->commit(); //提交
+	echo '转账成功';
+	$conn->autocommit(true); //开启自动提交
+}else{
+	$conn->rollback(); //回滚
+	echo '转账失败';
+}
+$conn->close();
+注: 使用事务前要先关闭自动提交，关闭了自动提交必须通过$conn->commit()提交才能真正执行;
+8)关闭数据库
+$conn->close();
+4, 面向过程的mysqli
+//连接数据库
+$conn = mysqli_connect('localhost', 'root', 'password', 'test') or 
+	die(mysqli_connect_errno().':'.mysqli_connect_error());
+//设置字符集
+mysqli_set_charset($conn, 'utf8');
+//执行插入
+$sql = "insert into user(name, age) values ('zhao', 30)";
+$r = mysqli_query($conn, $sql);
+if($r){
+	//mysqli_insert_id($conn)
+	//mysqli_affected_rows($conn)
+}else{
+	echo mysqli_errno($conn).':'.mysqli_error($conn);
+}
+//执行更新和删除
+$sql = "update user set age = age + 10 where id = 20;";
+$sql .= "delete from user where id = 30";
+$r = mysqli_multi_query($conn, $sql);
+var_dump($r);
+//预处理语句
+$sql = "insert into user(name, age) values (?, ?)";
+$stmt = mysqli_prepare($conn, $sql);
+$name = 'zhao';
+$age = 30;
+mysqli_stmt_bind_param($stmt, 'si', $name, $age);
+$r = mysqli_stmt_execute();
+var_dump($r);
+//执行查询
+$sql = "select id, name, age from user";
+$r = mysqli_query($conn, $sql);
+if($r && mysqli_num_rows($r) > 0){
+	while($row = mysqli_fetch_assoc($r)){
+		echo "ID: {$row['id']}, name: {$row['name']}, price: {$row['price']}<br>";
+		//$rows[] = $row;
+	}
+}else{
+	echo '查询错误或者结果集中没有数据';
+}
+//关闭连接
+mysqli_close($conn);
 
 >>php常用的系统函数
 1, 字符串函数
