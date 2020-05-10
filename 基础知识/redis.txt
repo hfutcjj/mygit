@@ -1,0 +1,123 @@
+>>什么是redis
+1, redis是远程的
+redis可以安装在服务端和客户端，一般指的是服务端的redis;
+2, redis是基于内存的
+redis的数据和结构都存于内存，所以速度非常快，而mysql是存于硬盘的;
+3, redis是非关系型的数据库
+关系型如mysql在使用前必须定义好数据字典，而redis不用;
+
+>>redis的应用场景
+1, 缓存
+把常用的数据缓存起来，不用每次都从mysql中查询，是提升系统性能的常用方法之一;
+2, 队列
+使用list类型的压入和弹出操作来模拟队列;
+3, 数据存储
+redis可以把数据定期持久化到硬盘中，这样就保证了数据的完整性;
+
+>>redis默认端口: 6379
+
+>>登录redis
+1, 服务端cmd
+cd d:/redis
+redis-server.exe [redis.windows.conf]
+2, 客户端cmd
+cd d:/redis
+redis-cli.exe [-h 127.0.0.1] [-p 6379]
+
+>>redis数据类型
+1, String
+可以是字符串、整数或浮点，统称为元素;
+常用操作: set--设置值, get--取值, incr--自增, incrby--加法, decrby--减法;
+set s1 'hello world' 
+get s1 //'hello world'
+set s2 10
+get s2 //10
+incr s2 //自增1, 11
+incrby s2 5 //加, 16
+decrby s2 10 //减, 6
+2, List
+元素序列;
+常用操作: lpush--左进, lpop--左出, rpush--右进, rpop--右出, llen--长度;
+lpush list1 3
+lpush list1 5
+lpush list1 9
+rpop list1 //3
+llen list1 //2
+3, Set
+无序的元素集合, 元素必须唯一;
+常用操作: sadd--添加, srem--删除, scard--长度, sismember--元素是否存在;
+sadd set1 3
+sadd set1 5
+sadd set1 9
+scard set1 //3
+sismember set1 5 //1
+srem set1 9 
+sismember set1 9 //0
+4, Hash
+key-value的散列组, 其中key是字符串, value是元素, key必须唯一;
+常用操作: hset--添加, hget--取值, hmget--取多个值, hlen--长度;
+hset hash1 k1 3
+hset hash1 k2 5
+hset hash1 k3 5
+hget hash1 k2 //5
+hlen hash1 //3
+hset hash1 k3 9 //修改value
+hmget hash1 k1 k2 //3 5
+5, Sort Set(也称为Zset)
+score-value的有序集合, 其中score为浮点, value为元素;
+常用操作: zadd--添加, zcard--长度, zrange--显示排序结果;
+zadd zset1 8.8 v1
+zadd zset1 9.9 v2
+zadd zset1 7.7 v3
+zcard zset1 //3
+zrange zset1 0 2 [withscores] //'v3' 'v1' 'v2
+
+
+>>php安装redis扩展
+下载php_redis.dll文件，放到php的ext目录下;
+启用php.ini中的 extension=php_redis.dll;
+然后重启php服务器，通过phpinfo()查看redis扩展是否安装成功;
+
+>>phpredis
+phpredis的帮助文档地址: https://github.com/phpredis/phpredis
+执行phpredis需要打开服务端的redis;
+0, 连接redis
+$redis = new Redis();
+$redis->connect('127.0.0.1', 6379);
+1, String类型操作
+$redis->set('s1', 'hello');
+$val = $redis->get('s1'); //'hello'
+$redis->set('s1', 3);
+$redis->incrby('s1', 2);
+$val = $redis->get('s1'); //5
+2, List类型操作
+$redis->delete('list1'); //清空
+$redis->lPush('list1', 'a');
+$redis->lPush('list1', 'b');
+$redis->lPush('list1', 'c');
+$len = $redis->lLen('list1'); //3
+$val = $redis->rPop('list1'); //'a'
+3, Set类型操作
+$redis->delete('set1');
+$redis->sAdd('set1', 'a');
+$redis->sAdd('set1', 'b');
+$redis->sAdd('set1', 'c');
+$redis->sAdd('set1', 'c');
+$len = $redis->sCard('set1'); //3
+$val = $redis->sMembers('set1'); //['a', 'b', 'c']
+4, Hash类型操作
+$redis->delete('hash1');
+$redis->hSet('hash1', 'name', 'zhao');
+$redis->hSet('hash1', 'age', 30);
+$name = $redis->hGet('hash1', 'name'); //'zhao'
+$age = $redis->hGet('hash1', 'age'); //30
+$val =$redis->hMget('hash1', ['name', 'age']); //['name'=>'zhao', 'age'=>30]
+5, Sort Set类型操作
+$redis->delete('zset1');
+$redis->zAdd('zset1', 90.2, 'zhao');
+$redis->zAdd('zset1', 98.6, 'qian');
+$redis->zAdd('zset1', 82.5, 'sun');
+$val = $redis->zRange('zset1', 0, -1); //['sun', 'zhao', 'qian']
+$val = $redis->zRange('zset1', 0, -1, true); //['sun'=>82.5, 'zhao'=>90.2, 'qian'=>98.6]
+$val = $redis->zRevRange('zset1', 0, 2); //['qian', 'zhao', 'sun']
+
