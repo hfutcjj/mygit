@@ -13,6 +13,16 @@ JSON语法简单，用于数据交换；而XML解析复杂，常用于数据存�
 >>php中操作json的函数
 1，json_encode()
 将php变量转换成json串;
+$rs = array();
+$rs['result'] = 1;
+$rs['msg'] = '成功';
+$rs['data'] = array(
+	array('name'=>'zhao', 'age'=>30),
+	array('name'=>'qian', 'age'=>32),
+	array('name'=>'sun', 'age'=>26)
+);
+$json = json_encode($rs);
+$rs; //'{"result":1,"msg":"\u6210\u529f","data":[{"name":"zhao","age":30},{"name":"qian","age":32},{"name":"sun","age":26}]}'
 2，json_decode(string $json, bool $assoc=false)
 将json串解析成php变量，第二个参数默认为false会将json串解析成对象，为true则转换成关联数组;
 $json = '{"name": "zhao", "age": 30}';
