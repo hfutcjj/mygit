@@ -1,0 +1,103 @@
+>>NoSQL( = not only SQL)
+1, NoSQL指的是非关系型的数据库, 用于超大规模数据的存储; 数据存储不需要固定的模式，易扩展;
+2, NoSQL的优点和缺点
+优点: 高可扩展性; 分布式计算; 低成本; 架构的灵活性, 半结构化数据; 没有复杂的关系;
+缺点: 没有标准化; 有限的查询功能; 最终一致是不直观的程序;
+3, NoSQL数据库分类
+列存储、文档存储、key-value存储、图存储、对象存储、xml数据库;
+其中, mongoDB是文档存储, redis是key-value存储;
+文档存储一般用类似json的格式存储, 存储的内容是文档型的, 
+这样也就有机会对某些字段建立索引，实现关系数据库的某些功能;
+key-value存储的数据库能够能过key快速查找value;
+
+>>分布式系统
+分布式系统是建立在网络之上的软件系统;
+分布式系统的优点:
+可靠性、可扩展性、资源共享、灵活性、更快的速度、开放系统、更高的性能;
+分布式系统的缺点:
+故障排除、安全性、软件支持、网络设施;
+
+>>mongoDB概念
+mongoDB是一个基于分布式文件存储的开源数据库, 介于关系型与非关系型之间;
+在高负载的情况下，添加更多的节点，可以保证服务器的性能;
+
+>>mongoDB安装
+安装完mongoDB然后创建数据目录;
+cmd: d: -> mkdir data -> cd data -> mkdir db -> cd db
+启动mongoDB: 
+net start mongoDB
+停止mongoDB:
+net stop mongoDB
+
+>>连接mongoDB
+mongodb://localhost //通过默认端口27017
+mongodb://admin:123456@loacalhost //使用用户admin使用密码123456连接本地的mongodb服务
+mongodb://admin:123456@localhost/test //使用用户名和密码登录到指定数据库
+mongodb://host1,host2:27018,host3:27019 //同时连接多个服务器
+
+>>mongoDB基础
+1, 与SQL的对应关系
+SQL -- mongoDB
+数据库database -- 数据库database
+表table -- 集合collection
+行row -- 文档document
+列column -- 字段field
+索引index -- 索引index
+连接join -- 嵌入文档, mongoDB不支持连接
+主键primary key -- mongoDB自动将_id字段设置为主键;
+2, mongoDB区分类型和大小写, 不能有重复的键;
+文档的键必须是字符串，值可以是任意类型;
+一个集合中可以有不同格式的文档，但一般要有一定的关联性;
+
+>>mongoDB常用的数据类型
+1, String
+字符串都是UTF-8编码;
+2, Integer
+3, Boolean
+4, Double
+5, Array //用于将数组或列表或多个值存储为一个键
+6, Timestamp
+时间戳类型一般用于mongoDB内部使用;
+7, Object //用于内嵌文档
+8, Null
+9, Date
+10, ObjectID //用于创建文档的ID
+ObjectID包含12字节 = 时间戳(4B) + 机器标识码(3B) + 进程id组成的PID(2B) + 随机数(3B);
+可以从ObjectID中获取时间戳
+var newObject = ObjectId()
+newObject.getTimestamp()
+ObjectID转为字符串
+newObject.str
+11, Binary Data //用于存储二进制数据
+12, Code //用于在文档中存储js代码
+13, Regular expression //用于存储正则表达式
+
+>>mongodb常用命令
+1, 数据库
+1)use dbname
+数据库存在则切换到数据库，不存在则创建数据库;
+2)show dbs
+查看所有数据库
+3)db.dropDatabase()
+删除数据库
+2, 集合
+1)db.createCollection('t1')
+use test
+db.createCollection('t1') //进入test库创建集合t1
+db.createCollection('t2', {
+	capped: true, //固定集合
+	autoIndexId: true, //自动在_id字段创建索引
+	size: 6142800, //集合空间大小(KB)
+	max: 10000 //文档最大个数
+});
+创建集合t1
+2)show tables/collections
+查看当前数据库下所有集合
+3)db.tname.drop()
+删除集合
+
+
+
+
+
+

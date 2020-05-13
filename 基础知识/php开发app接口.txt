@@ -45,6 +45,43 @@ $rs['msg'] = $msg;
 $rs['data'] = $data;
 echo json_encode($rs);
 
+>>app接口的鉴权
+客户端需要凭证才能调用接口;
+1, 传统web是基于cookie和session的
+客户端输入用户名和密码 --> 服务端验证 --> 
+服务端保存用户session信息 --> session_id写入cookie返回给客户端 -> 
+以后客户端携带含有session_id的cookie -> 服务端验证session_id;
+2, app是基于JWT(JsonWebToken)
+服务端认证以后，生成一个json串，返回给用户,
+后续客户端所有的请求都会带上这个json串,
+服务端依靠这个json判断用户身份;
+
+>>JWT的组成
+1, Header
+{
+	"alg": "HS256", //采用的加密算法
+	"typ": "JWT"  //类型
+}	
+header需要经过Base64Url编码后作为JWT的第一部分;
+2, Payload
+信息载体, 常用的有:
+iss: 签发者
+exp: 过期时间戳
+sub: 面向的用户
+aud: 接收方
+iat: 签发时间
+{
+	"sub": "1234567890",
+	"name": "John Doe",
+	"admin": true
+}
+payload也需要经过Base64Url编码后作为JWT的第二部分;
+3, Signature
+创建签名, 使用编码后的header和payload以及一个密钥, 使用header中指定的签名算法进行签名;
+HMACSHA256(
+	base64UrlEncode(header) + '.' + 
+	base64UrlEncode(payload), 
+	secret)
 
 
 
