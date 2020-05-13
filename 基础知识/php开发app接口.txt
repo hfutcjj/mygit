@@ -51,7 +51,7 @@ echo json_encode($rs);
 客户端输入用户名和密码 --> 服务端验证 --> 
 服务端保存用户session信息 --> session_id写入cookie返回给客户端 -> 
 以后客户端携带含有session_id的cookie -> 服务端验证session_id;
-2, app是基于JWT(JsonWebToken)
+2, app是基于JWT(JsonWebToken)--json web令牌
 服务端认证以后，生成一个json串，返回给用户,
 后续客户端所有的请求都会带上这个json串,
 服务端依靠这个json判断用户身份;
@@ -81,7 +81,24 @@ payload也需要经过Base64Url编码后作为JWT的第二部分;
 HMACSHA256(
 	base64UrlEncode(header) + '.' + 
 	base64UrlEncode(payload), 
-	secret)
+	secret
+)
+
+>>封装jwt
+设计成单例模式:
+class JwtAuth{
+	private static $instance;
+	public static function getInstance(){
+		if(is_null(self::$instance)){
+			self::$instance = new JwtAuth();
+		}
+		return self::$instance;
+	}
+	private function __construct(){} //禁止从外部构造对象
+	private function __clone(){} //禁止克隆
+}
+
+
 
 
 

@@ -1,0 +1,58 @@
+>>composer的概念
+composer是PHP的一个依赖管理工具, 我们可以在项目中声明所依赖的外部工具库, 
+composer会帮你安装这些依赖的库文件;
+
+>>composer的安装
+需要开启openssl配置, 在php.ini中开启extension=php_openssl.dll;
+安装composer后，查看是否安装成功:
+composer --version
+更改Packagist为国内镜像:
+composer config -g repo.packagist composer https://packagist.phpcomposer.com
+
+>>composer的使用
+1, 在项目的目录下创建一个composer.json文件，文件描述了项目的依赖关系;
+文件格式如下: 
+{
+    "require": {
+        "monolog/monolog": "1.2.*"
+    }
+}
+然后cmd进入项目目录, 运行
+composer install
+2, 也可以使用require命令直接安装，不需要添加配置文件;
+在项目的目录下运行: 
+composer require monolog/monolog
+3, update命令
+update命令用于更新项目里所有的包, 或某些指定的包:
+composer update //更新所有依赖
+composer update monolog/monolog 更新指定的包
+composer update monolog/monolog symfony/dependecy-injection //更新指定的多个包
+composer update monolog/monolog symfony/* //通过通配符匹配包
+注: 包能升级的最高版本会受到composer.json里配置的版本的约束;
+4, remove命令
+remove命令用于移除一个包及其依赖(在依赖没有被其他包使用的情况下);
+composer remove monolog/monolog
+5, search命令
+search命令可以搜索包;
+composer search monolog //输出包及其描述信息
+6, show命令
+show命令可以列出当前项目使用到包的信息;
+composer show //列出所有已经安装的包
+composer show monolog/* //通过通配符进行筛选
+composer show monolog/monolog 显示具体某个包的信息
+
+>>基本约束
+1, 精确版本
+可以告诉composer安装的具体版本，如1.0.2;
+2, 范围
+通过比较操作符来指定包的范围, 包括: >, >=, <, <=, !=;
+>=1.0
+>=1.0 <2.0
+>=1.0 <1.1 || >=1.2
+3, 通配符
+1.0.*相当于>=1.0 <1.1;
+
+
+
+
+

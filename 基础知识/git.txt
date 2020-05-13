@@ -58,15 +58,29 @@ git restore <file>
 >>退回提交给暂存区的文件(已经提交到暂存区)
 git restore --staged <file>
 
->>关联一个远程库如github
-git remote add origin git@github.com:hfutcjj/mygit
+>>删除文件
+git rm test.txt
+git commit -m 'remove test.txt'
+
+>>关联本机和github网站
+本地仓库和github仓库之间的传输是通过SSH加密的;
+在本地电脑创建SSH key, 并把key添加到github, 就可以推送了;
+
+>>关联本地仓库和github远程仓库
+git remote add origin git@github.com:hfutcjj/mygit.git
+注: 在本地的mygit库下运行这条命令;
+添加后origin就是远程库的名字，这是默认叫法，也可以改成别的;
 
 >>把本地库的内容推送到远程库
 git push -u origin master (第一次)
 git push origin master (以后)  
+注: 其实是把本地的master分支推送到github上的master分支;
 
 >>从远程库克隆
 git clone git@github.com:hfutcjj/mygit.git
+注: git支持ssh和https等多种协议, 如果公司只开放了http端口, 那么就只能使用https;
+
+
 
 
 
