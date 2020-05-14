@@ -72,16 +72,18 @@ newObject.str
 12, Code //用于在文档中存储js代码
 13, Regular expression //用于存储正则表达式
 
->>mongodb常用命令
-1, 数据库
-1)use dbname
+>>操作数据库
+1, 切换/创建数据库
+use dbname
 数据库存在则切换到数据库，不存在则创建数据库;
-2)show dbs
-查看所有数据库
-3)db.dropDatabase()
-删除数据库
-2, 集合
-1)db.createCollection('t1')
+2, 查看所有数据库
+show dbs
+3, 删除数据库
+db.dropDatabase()
+
+>>操作集合
+1, 创建集合
+db.createCollection('t1')
 use test
 db.createCollection('t1') //进入test库创建集合t1
 db.createCollection('t2', {
@@ -90,11 +92,80 @@ db.createCollection('t2', {
 	size: 6142800, //集合空间大小(KB)
 	max: 10000 //文档最大个数
 });
-创建集合t1
-2)show tables/collections
-查看当前数据库下所有集合
-3)db.tname.drop()
-删除集合
+2, 查看当前数据库下所有集合
+show tables/collections
+3, 删除集合
+db.tname.drop()
+
+>>操作文档
+所有存储在集合中的数据都是BSON格式(binary json);
+1, 插入文档
+db.tname.insert()
+注: 如果集合tname不存在，则自动创建集合并将文档插入;
+1)插入单条数据
+db.tname.insertOne({name: 'zhao', age: 30, city: 'hefei'})
+doc1 = {name: 'qian', age: 32, city: 'nanjing')
+db.tname.insertOne(doc1)
+2)插入多条数据
+db.tname.insertMany({name: 'zhao'}, {name: 'qian'}, {name: 'sun'})
+可以直接插入数组;
+var arr = [];
+for(var i = 1; i <= 100; i++){
+	arr.push({num: i});
+}
+db.tname.insert(arr);
+2, 更新文档
+1)update()方法
+db.tname.updateOne({name: 'qian'}, {$set: {age: 50}}) //更新找到的第一条文档
+db.tname.updateMany({name: 'qian'}, {$set:{age: 50}}) //更新找到的所有文档
+2)save()方法
+通过传入的文档来替换指定id的文档
+db.tname.save({
+	'_id': ObjectId('56064f89ade2f21f36b03136'),
+	name: 'cao',
+	age: 33
+})
+3, 删除文档
+db.tname.deleteOne({name: 'cao'}) //只删除找到的第一条记录
+dt.tname.deleteMany({name: 'cao'}) //删除找到的所有记录
+db.tname.deleteMany({}) //清空集合tname里所有文档
+4, 查询文档
+db.tname.find() //查询所有数据
+db.tname.find().pretty() //以易读的方式显示
+1)条件操作符
+db.tname.find({age: 20}) //查询条件: age=20
+db.tname.find({age: {$gt: 20}}) //查询条件: age>20
+其他的比较条件: $lt(<), $lte(<=), $gte(>=), $ne(!=);
+同时运动多个条件运算符的例子:
+age > 20 and age < 30
+db.tname.find({age: {$gt: 20, $lt: 30}})
+2)and
+db.tname.find({name: 'zhao', age: 30})
+3)or
+db.tname.find({$or: [{name: 'zhao'}, {name: 'qian'}]})
+and和or联合查询的例子:
+age < 30 and (name = 'cao' or city = 'hefei')
+db.tname.find({age: {$lt: 30}, $or: [{name: 'cao'}, {city: 'hefei'}]})
+4)可根据字段的类型查找 $type
+db.tname.find({'title': {$type: 'string'}})
+5)limit
+查询指定的条数, 用limit()
+db.tname.find().limit(3)
+跳过指定数量的条数，用skip()
+db.tname.find().skip(3)
+举例, 查询从第4条开始的10条数据
+db.tname.find().limit(10).skip(3)
+注: limit()和skip()的顺序可以交换
+6)排序
+db.tname.find().sort({age: 1})
+1表示升序, -1表示降序
+注: sort(), skip(), limit()放在一起时顺序可以任意，但执行顺序是 sort->skip->limit;
+
+
+
+
+
+
 
 
 
