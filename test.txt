@@ -1,4 +1,5 @@
 //test.txt
 this is added;
 this is to add;
-I am master;
+
+git2/test.txt;
