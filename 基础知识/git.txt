@@ -85,10 +85,14 @@ git clone git@github.com:hfutcjj/mygit.git
 git branch
 //创建分支
 git branch dev
+//删除分支
+git branch -d dev
 //切换分支
-git checkout dev
+git switch dev 或 git checkout dev
 //创建并切换分支可以合并成一句
-git checkout -b dev
+git switch -c dev 或 git checkout -b dev
+//合并dev到当前分支
+git merge dev
 
 
 
