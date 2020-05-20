@@ -93,6 +93,9 @@ git switch dev 或 git checkout dev
 git switch -c dev 或 git checkout -b dev
 //合并dev到当前分支
 git merge dev
+//解决冲突
+当合并分支遇到冲突时，必须手动编辑合并失败的文件，然后再提交;
+
 
 
 
