@@ -99,6 +99,8 @@ git switch -c dev 或 git checkout -b dev
 git merge dev
 //解决冲突
 当合并分支遇到冲突时，必须手动编辑合并失败的文件，然后再提交;
+//删除远程分支
+git push origin --delete dev
 
 >>多人协作
 //创建远程origin的dev分支到本地
