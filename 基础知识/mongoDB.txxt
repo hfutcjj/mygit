@@ -161,11 +161,95 @@ db.tname.find().sort({age: 1})
 1表示升序, -1表示降序
 注: sort(), skip(), limit()放在一起时顺序可以任意，但执行顺序是 sort->skip->limit;
 
+>>索引
+索引是对数据库中一列或多列的值进行排序的数据结构;
+1, 创建索引
+db.tname.createIndex({'title': 1}) //创建索引, 1--升序，-1--降序
+db.tname.createIndex({'title': 1, 'description': -1}) //创建多个字段的索引
+db.tname.createIndex({open: 1, close: 1}, {background: true}) //接收可选参数
+2, 查看索引
+db.tname.getIndexes()
+3, 查看索引大小
+db.tname.totalIndexSize()
+4, 删除所有索引
+db.tname.dropIndexes() //删除所有索引
+db.tname.dropIndex('indexName') //删除指定索引
 
+>>聚合
+聚合常与分组一起使用;
+常用的聚合函数有:
+$sum, $avg, $min, $max, $first, $last;
+db.tname.aggregate([{$group: {_id: '$name', avg_score: {$avg: '$score'}}}])
+等价于 select name _id, avg(score) avg_score from tname group by name;
 
+>>管道
+mongoDB的聚合管道将文档在一个管道处理完毕后将结果传递给下一个管道处理;
+//$match筛选集合中的文档，然后将符合条件的记录送到下一阶段$group管道操作符处理;
+db.tname.aggregate([
+	{$match: {score: {$gt: 70, $lte: 90}}},
+	{$group: _id: null, count: {$sum: 1}}
+]);
+//$skip管道操作符过滤掉前五个文档
+db.tname.aggregate({$skip: 5});
 
+>>复制
+将数据同步在多个服务器的过程;
+主节点记录读写的操作日志，从节点轮询主节点获取这些操作，然后对自己的数据执行这些操作, 
+从而保证各个服务器节点的数据一致性;
 
+>>分片
+当一台机器满足不了数据的存储容量以及可接受的读写吞吐量, 就可以在多台机器上分割数据;
 
+>>备份与恢复
+1, 备份
+//进入mongoDB安装目录的bin目录下运行
+mongodump -h dbhost -d dbname -o dbdirectory
+2, 恢复
+mongorestore -h <hostname><:port> -d dbname <path>
+
+>>监控
+1, mongostat
+进入bin目录下运行mongostat命令, 会间隔固定时间获取mongodb的运行状态并输出;
+2, mongotop
+输出每个集合层次的各种操作的统计数据，默认每秒输出一次;
+
+>>安装mongoDB PHP扩展
+下载php_mongodb.dll文件，放置于php的ext目录下;
+在php.ini中添加配置: extension=php_mongodb.dll;
+重启服务器;
+如果安装成功，通过phpinfo()就能看到mongodb的信息;
+
+>>php操作mongodb
+1, 连接数据库
+$manager = new  MongoDB\Driver\Manager('mongodb://localhost:27017');
+2, 插入数据
+$bulk = new MongoDB\Driver\BulkWrite;
+$bulk->insert(['name'=>'zhao', 'age'=>30]);
+$manager->executeBulkWrite('test.tname', $bulk);
+3, 查询数据
+$filter = ['age'=>['$gt'=>30]];
+$options = [
+	'projection'=>['_id'=>0],
+	'sort'=>['age'=>-1]
+];
+$query = new MongoDB\Driver\Query($filter, $options);
+$cursor = $manager->executeQuery('test.tname', $query);
+foreach($cursor as $doc){
+	//$document是stdClass Object
+	echo "Name: {$doc->name}, age: {$doc->age} <br>";
+}
+//更新数据
+$bulk = new MongoDB\Driver\BulkWrite;
+$bulk->update(
+	['name'=>'zhao'],
+	['$set'=>['age'=>80]],
+	['multi'=>false, 'upsert'=>false]
+);
+$result = $manager->executeBulkWrite('test.tname', $bulk);
+//删除数据
+$bulk = new MongoDB\Driver\BulkWrite;
+$bulk->delete(['name'=>'zhao'], ['limit'=>0]); //limit为1删除一条，为0删除所有匹配数据
+$result = $manager->executeBulkWrite('test.tname', $bulk);
 
 
 
