@@ -100,6 +100,15 @@ git merge dev
 //解决冲突
 当合并分支遇到冲突时，必须手动编辑合并失败的文件，然后再提交;
 
+>>多人协作
+//创建远程origin的dev分支到本地
+git switch -c dev origin/dev 或 git checkout -b dev origin/dev
+注: 新建后就可以直接推送到远程库, 也可以直接git pull
+//指定本地dev分支与远程origin/dev的链接
+git branch --set-upstream-to=origin/dev dev
+注: 已存在的分支必须与远程分支关联后才能git pull
+//多人协作推送冲突
+git pull 把最新的提交从origin/dev抓取到本地，在本地解决冲突后再重新提交和推送;
 
 
 
