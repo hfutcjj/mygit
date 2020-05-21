@@ -34,6 +34,8 @@ git diff --cached test.txt //暂存区跟分支做比较
 git log
 精简每条历史记录在一行显示: 
 git log --pretty=oneline
+以更精简的版本id显示提交历史:
+git log --pretty=oneline --abbrev-commit
 
 >>查看历史命令
 git reflog
@@ -112,6 +114,32 @@ git branch --set-upstream-to=origin/dev dev
 //多人协作推送冲突
 git pull 把最新的提交从origin/dev抓取到本地，在本地解决冲突后再重新提交和推送;
 
+>>标签
+标签就是给某个历史版本id取的别名，如v1.2;
+标签是指向commit的死指针，分支是指向commit的活指针;
+1, 创建标签
+git tag v1.0 //给当前版本打标签
+git log --pretty=oneline --abbrev-commit
+git tag v1.1 f52c633 //给某个历史版本打标签
+git tag -a v1.2 -m 'version 1.2 released' 1094ab //创建带有说明文字的标签
+2, 查看标签
+git tag //查看所有标签名
+git show v1.1 //查看某个标签的具体信息
+3, 删除标签
+git tag -d v1.1 //删除本地标签
+git push origin :refs/tags/v1.1 //删除远程标签
+注: 删除远程标签之前要先删除本地标签;
+4, 推送标签到远程
+git push origin v1.1 //推送某个本地标签
+git push origin --tags //推送全部本地标签
+
+>>github
+在github上，可以任意fork开源仓库;
+自己拥有fork后的仓库的读写权限;
+可以推送pull request给官方仓库来贡献代码;
+
+>>gitee
+国内的git托管服务;
 
 
 
