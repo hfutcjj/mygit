@@ -72,6 +72,11 @@ class testView{
 		echo $data;
 	}
 }
+
+>>MVC的变形
+1, 无Model模式的web开发, 常用于不用操作数据库的静态页面;
+2, 无View模式的api接口开发, 常用于开发app接口;
+3, Model再分层和Controller再分层;
 	
 
 
