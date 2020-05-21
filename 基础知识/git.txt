@@ -81,6 +81,7 @@ git remote -v //远程库的详细信息
 git push -u origin master (第一次)
 git push origin master (以后)  
 注: 其实是把本地的master分支推送到github上的master分支;
+与push相反的操作是pull;
 
 >>从远程库克隆
 git clone git@github.com:hfutcjj/mygit.git
@@ -133,13 +134,26 @@ git push origin :refs/tags/v1.1 //删除远程标签
 git push origin v1.1 //推送某个本地标签
 git push origin --tags //推送全部本地标签
 
->>github
+>>忽略特殊文件
+在根目录下创建.gitignore文件, 把要忽略的文件名填上去;
+
+>>配置别名
+1, 全局配置(这台电脑上当前用户的所有仓库)
+git config --global alias.st status
+当前用户的git配置文件放在用户主目录的.gitconfig, 可以修改该文件来定制配置;
+2, 仅针对当前仓库
+git config alias.st status
+仓库的配置文件放在.git/config, 也可以通过修改这个文件来配置当前仓库的命令别名;
+
+>>GitHub
 在github上，可以任意fork开源仓库;
 自己拥有fork后的仓库的读写权限;
 可以推送pull request给官方仓库来贡献代码;
 
->>gitee
+>>Gitee
 国内的git托管服务;
 
+>>SourceTree
+git的图形界面工具(GUI);
 
 
