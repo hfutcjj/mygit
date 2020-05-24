@@ -1,0 +1,213 @@
+>>nginx下tp路由访问出现404错误解决方案
+修改nginx.config文件如下
+server {
+	listen 80;
+	server_name localhost;
+	index index.html index.htm index.php;
+	root D:/web/www/tp/public;
+	#error_page 404 = /404.html;
+	#error_page 502 = /502.html;
+	if (!-e $request_filename) {
+		rewrite ^/(.*)$ /index.php/$1 last;
+		break;
+	}
+	location ~ [^/]\.php(/|$) {
+		fastcgi_split_path_info ^(.+\.php)(/.+)$;
+		try_files $fastcgi_script_name =404;
+		set $path_info $fastcgi_path_info;
+		fastcgi_param PATH_INFO $path_info;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_index index.php;
+		include fastcgi.conf;
+	}
+	location ~ .*\.(gif|jpg|jpeg|png|bmp|swf|flv|mp4|ico)$ {
+		expires 30d;
+		access_log off;
+	}
+	location ~ .*\.(js|css)?$ {
+		expires 7d;
+		access_log off;
+	}
+	location ~ /\.ht {
+		deny all;
+	}
+}
+
+>>配置
+修改public/index.php文件, 添加
+//定义配置文件目录
+define('CONF_PATH', __DIR__.'/../config/');
+新建与application同级的文件夹config, 在里面添加配置文件;
+配置文件都是以数组的形式返回;
+能通过助手函数config()输出所有配置;
+1, 惯例配置
+位于thinkphp/convention.php, 是框架自带的配置文件, 一般不修改该文件;
+2, 应用配置
+在config文件夹下新建配置文件, 如config.php, database.php, session.php, cookie.php等;
+这些配置文件会覆盖惯例配置中的配置项;
+应用配置对这个应用有效;
+3, 模块配置
+新建config/index/config.php, 设置index模块的配置项;
+新建config/admin/config.php, 设置admin模块的配置项;
+模块配置仅对特定模块有效;
+4, 场景配置
+在config/config.php中添加一项: 'app_status'=>'home'或'office';
+新建config/home.php, 设置home的配置选项;
+新建config/office.php, 设置office的配置选项;
+5, 动态配置
+在控制器的构造函数中或者某个方法中配置; 
+Config::set('key', 'value');
+config('key', 'value');
+
+>>Config类与config()助手函数
+1, Config类
+Config类位于thinkphp/library/think/config/Config.php, 使用Config类需要先导入;
+use think\Config;
+Config::set('username', 'tangbing');
+echo Config::get('username');
+echo Config::has('username');
+//也可以写成 $res = \think\Config::get();
+2, config()助手函数
+助手函数位于thinkphp/helper.php文件, 助手函数全局可用，不需要导入;
+$res = config('username');
+echo config('?username'); //前面加个?号，判断是否存在
+
+>>系统环境变量
+Env类位于thinkphp/library/think/Env.php, 使用Env类需要先导入, use \think\Env;
+新建与application同级的文件.env配置文件, 在.env文件填写相关环境配置;
+.env经常与config文件配合使用，用于开发环境、测试环境与线上环境的切换;
+//.env
+status=dev
+[database]
+username=root
+password=root
+//config/config.php
+return [
+	'status' => Env::get('app_status', 'dev'); //如果没有设置app_status环境变量，则默认使用第二个参数的值
+];
+//config/database.php
+return [
+	'username' => Env::get('database.username', 'root'),
+	'password' => Env::get('database.password', 'root');
+];
+//config/dev.php
+return [
+	'app_now_status' => 'dev'
+];
+//config/test.php
+return [
+	'app_now_status' => 'test'
+];
+//config/prod.php
+return [
+	'app_now_status' => 'prod'
+];
+当不同环境之间切换时，只用修改.env文件;
+
+>>绑定入口文件
+在public/index.php中添加
+define('BIND_MODULE', 'admin'); //url: localhost/user/validate
+define('BIND_MODULE', 'admin/user'); //url: localhost/validate
+define('BIND_MODULE', 'admin/user/validate'); //url: localhost
+
+>>请求对象Request
+Request是单例模式的对象, 只能通过Request::instance()实例化;
+1, 获取请求对象的三种方式
+1)使用request()助手函数
+2)使用Request对象，需要先引入
+use think\Request;
+$request = Request::instance();
+3)直接使用注入对象
+public function index(Request $request){ //... }
+2, 请求对象的方法
+$request->param(); //通过所有方法传递过来的参数
+$request->get(); //通过GET请求的参数数组
+$request->get('id'); //具体的参数值, 下同
+$request->get('id', 100); //取get过来的id值，没有传则去默认的100
+$request->post();
+$request->method(); //当前请求的类型, get或post
+$request->isAjax();
+$request->session();
+$request->cookie();
+$request->module(); //当前模块
+$request->controller(); //当前控制器
+$request->action(); //当前方法
+3, 助手函数input()
+助手函数位于thinkphp/helper, 底层调用的是Request类的方法;
+可用来快捷获取param, post, get, session, cookie, file等的值;
+input('id') //$request->param('id')
+input('get.id'); //$request->get('id')
+input('get.id', 100); //如果没有传id则默认取100
+input('session.username');
+注: 以下三种获取参数的方式等价
+$request->session('username');
+input('session.username');
+session('username');
+
+>>响应对象Response
+public function getUserInfo($type = 'json'){
+	Config::set('default-return-type', $type);
+	$res = [
+		'code' => 200,
+		'data' => ['name'=>'zhao', 'age'=>30]
+	];
+	return $res;
+	//等价于 return json_encode($res);
+}
+
+>>视图和模板
+1, 调用视图
+1)使用助手函数view()
+//app/index/controller/Index.php
+public function index(){
+	return view(); //app/index/view/Index/index.html
+	return view('main'); //app/index/view/index/main.html
+	return view('page/main'); //app/index/view/page/main.html
+}
+2)使用模板控制器的方法(推荐)
+//app/index/controller/Index.php
+namespace app\index\controller;
+use think\Controller;
+class Index extends Controller{
+	public function index(){
+		return $this->fetch('main');
+	}
+}
+3)不调用视图，直接输出字符串
+$this->assign('name', 'zhao');
+$this->display('My name is {$name}');
+注: fetch()是调用视图文件, 而display()直接将字符串输出，常用于简单调试;
+2, 从控制器向视图传递数据的四种方式
+1)直接传参
+//app/index/controller/Index.php
+public function index(){
+	return $this->fetch('main', ['name'=>'zhao', 'age'=>30]);
+}
+//app/index/view/index/main.html
+<div>Name: {$name}, age: {$age}</div>
+2)通过assign()方法
+$this->assign('name', 'zhao');
+$this->assign('age', 30);
+return $this->fetch('main');
+3)$this->view->city = 'hefei';
+4)use think\View;
+View::share('major', 'maths');
+注: 视图模板编译后的文件保存在runtime/temp文件夹中;
+3, 更改模板配置
+模板配置在惯例配置thinkphp/convention.php里的template键里, 如果要更改模板配置, 
+可以把template的值复制到应用配置里，再修改;
+4, 字符串替换
+模板提供了预定义的字符串替换, 如
+__STATIS__: /static //根目录就是入口文件所在的目录，也就是public
+__JS__: /static/js
+__CSS__: /static/css
+也可以自己定义字符串替换:
+复制惯例配置中'view_replace_str'=> [], 在其中添加自定义字符串的配置, 如
+'view_replace_str'=[
+	'__CSS__' => '/front/css,
+	'__UPLOAD__' => '/upload'
+];
+
+
+
+
