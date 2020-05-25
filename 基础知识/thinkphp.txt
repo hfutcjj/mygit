@@ -58,6 +58,7 @@ define('CONF_PATH', __DIR__.'/../config/');
 在控制器的构造函数中或者某个方法中配置; 
 Config::set('key', 'value');
 config('key', 'value');
+注: 开发时一定要设置'app_debug'=>true, 否则错误不显示;
 
 >>Config类与config()助手函数
 1, Config类
@@ -170,7 +171,7 @@ namespace app\index\controller;
 use think\Controller;
 class Index extends Controller{
 	public function index(){
-		return $this->fetch('main');
+		return $this->fetch('main'); //参数的意义同view()
 	}
 }
 3)不调用视图，直接输出字符串
@@ -178,14 +179,14 @@ $this->assign('name', 'zhao');
 $this->display('My name is {$name}');
 注: fetch()是调用视图文件, 而display()直接将字符串输出，常用于简单调试;
 2, 从控制器向视图传递数据的四种方式
-1)直接传参
+1)直接传参(常用)
 //app/index/controller/Index.php
 public function index(){
 	return $this->fetch('main', ['name'=>'zhao', 'age'=>30]);
 }
 //app/index/view/index/main.html
 <div>Name: {$name}, age: {$age}</div>
-2)通过assign()方法
+2)通过assign()方法(常用)
 $this->assign('name', 'zhao');
 $this->assign('age', 30);
 return $this->fetch('main');
@@ -202,11 +203,147 @@ __STATIS__: /static //根目录就是入口文件所在的目录，也就是publ
 __JS__: /static/js
 __CSS__: /static/css
 也可以自己定义字符串替换:
-复制惯例配置中'view_replace_str'=> [], 在其中添加自定义字符串的配置, 如
+复制惯例配置中'view_replace_str'=>[], 在其中添加自定义字符串的配置, 如
 'view_replace_str'=[
 	'__CSS__' => '/front/css,
 	'__UPLOAD__' => '/upload'
 ];
+5, 系统变量
+视图中可以直接通过$Think来调用系统变量，无须通过控制器传参;
+//main.html
+<div>{$Think.server.OS}</div> //等价于<?php echo $_SERVER['OS'] ?>
+<div>{$Think.session.name}</div>
+<div>{$Think.cookie.email}</div>
+<div>{$Think.get.id}</div>
+<div>{$Think.request.id}</div>
+6, 变量调节器
+视图中的变量可以使用函数以及运算来对输出进行调节;
+<div>name: {$name|strtoupper}</div>
+<div>name: {$name|substr=0,5}</div> //变量默认为第一个参数
+<div>name: {$name|str_replace='o','*',###}</div> //变量不是第一个参数则用###来占位
+<div>a+b: {$a+$b}</div>
+7, 变量的默认值
+使用default，如果没有从控制器传参，则使用默认值，如果有从控制器传参则使用传参的值;
+{$name|default='zhao'}
+8, 变量的原样输出
+{literal}{$name}{/literal} //原样输出{$name}
+9, 模板注释
+{/*This is template comment*} //页面看不到, 查看源代码也看不到
+而<!--This is html comment-->从源代码中能看到;
+10, 条件判断
+<!--if-->
+{if $level>=2 and $level<=5}
+	<div>This is a normal level</div>
+{else}
+	<div>The level is not normal</div>
+{/if}
+<!--switch-->
+{switch name="Think.get.level"}
+	{case value="0|1"}<div>优秀</div>{/case} //0|1表示0或1
+	{case value="2"}<div>良好</div>{/case}
+	{case value="3"}<div>及格</div>{/case}
+	{default}其他
+{/switch}
+11, 循环
+视图模板的循环有三种形式
+<!--for-->
+{for start="1" end="10" step="2" name="i"}
+	<div>{$i}</div> //step可省略, 默认为1, name可省略, 默认为i
+{/for}
+<!--foreach方式1(常用)-->
+{foreach $arr as $key=>$value}
+	<div>{$key}: {$value.name}, {$value.age}</div>
+{/foreach}
+<!--foreach方式2-->
+{foreach name="arr" key="k" item="v"}
+	<div>{$k}: {$v.name}, {$v.age}</div>
+{/foreach}
+<!--volist-->
+{volist name="arr" id="value"}
+	<div>{$value.name}, {$value.age}</div>
+{/volist}
+12, 模板的布局
+//目录结构
+view 
+	common 
+		header.html --------被包含头模块
+		footer.html --------被包含尾模块
+		base.html ----------基类模块
+	index
+		main.html
+		page1.html 
+		page2.html
+	layout.html ------------模板文件
+1)模板包含 {include file=""}
+//main.html
+{include file="common/header"}
+<div>This is container.</div>
+{include file="common/footer"}
+2)模板继承 {extend name=""}
+//base.html
+<div>
+	{block name="myname"}This is index/main.{/block}
+</div>
+//index.html
+{extend name="common/base"}
+//page1.html
+{extend name="common/base"}
+<div>
+	{block name="myname"}This is index/page1.{/block}
+</div>
+//page2.html
+{extend name="common/base"}
+<div>
+	{block name="myname"}This is index/page2.{/block}
+</div>
+3)模板文件layout.html
+修改应用配置，增加
+'template' => [
+	'layout_on' => true,
+	'layout_name' => 'layout'
+],
+这样，控制器所有的视图$this->fetch()都指向view/layout.html文件了;
+//layout.html
+<div>__CONTENT__</div>  //__CONTENT__会由具体文件中的内容替换
+//main.html
+This is main.
+//page1.html
+This is page1.
+//page2.html
+This is page2.
+
+>>模型
+1, 设置数据库配置
+在应用配置中新建database.php文件，将惯例配置中的数据库部分复制过来并修改;
+2, 连接数据库的四种方式
+//config.php
+return [
+	'app_debug' 	=> true,
+	'my_database' 	=> [
+		'type' 		-> 'mysql',
+		'hostname'  => '127.0.0.1',
+		....
+	]
+];
+//database.php
+return [
+	'type' 		=> 'mysql',
+	'hostname'  => '127.0.0.1',
+	....
+];
+1)use think\Db;
+$conn = Db::connect();
+2)$conn = Db::connect([
+	'type' => 'mysql',
+	'hostname' => '127.0.0.1',
+	....
+]);
+等价于 $conn = Db::connect(Config::get('my_database'));
+3)$conn = Db::connect('my_database');
+4)$conn = Db::connecct('mysql://root:root@127.0.0.1:3306/test#utf8');
+参数格式为: tpye://username:password@hostname:port/database#charset;
+
+
 
 
 
