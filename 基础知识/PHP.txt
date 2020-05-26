@@ -652,5 +652,97 @@ array_flip(['name'=>'zhao', 30]); //['zhao'=>'name', 30=>1]
 7)base64_encode(): 对数据进行base64加密
 8)base64_decode(): base64解密
 
+>>命名空间
+1, 解决两类问题
+防止命名冲突; 为长标识符名创建别名;
+2, 受命名空间约束的代码: 类、接口、函数、常量;
+命名空间必须在所有代码之前声明;
+3, 同一个文件中可定义多个命名空间(不提倡);
+#test.php
+namespace MyProject {
+	const CONNECT_OK = 1;
+	class Connection{/* ... */}
+	function connect(){/* ... */}
+}
+namespace { //全局空间
+	session_start();
+	$a = MyProject\connect();
+	echo MyProject\Connection::start();
+}
+4, 命名空间下类/函数/常量的引用
+1)相对于命名空间
+new Foo(); --> currentnamespace\Foo;
+new subnamespace\Foo(); --> currentnamespace\subnamespace\Foo;
+2)全局命名空间
+new \currentnamespace\Foo();
+举例
+#file1.php
+namespace My\subnamespace;
+function strlen(){}
+#file2.php
+namespace My;
+include 'file1.php'
+function strlen(){}
+//调用
+strlen(); //My\strlen
+subnamespace\strlen(); //My\subnamespace\strlen
+\subnamespace\strlen(); //subnamespace\strlen, 没有定义此命名空间则报错
+\strlen(); //全局strlen
+5, 命名空间下动态访问的陷阱
+动态访问时字符串不会按相对于当前命名空间进行解析;
+namespace My;
+class Person(){
+	public function say(){}
+}
+$obj = new Person(); //可以
+$s = 'Person';
+$obj = new $s(); //不可以, 会访问全局\Person
+$s = 'My\Person';
+$obj = new $s(); //可以, 等价于 new Person();
+6, __NAMESPACE__常量 和 namespace关键字
+__NAMESPACE__常量是当前命名空间的字符串;
+namespace关键字表示当前命名空间，相当于类中的self，但不是字符串;
+访问上例中My命名空间下的Person类的几种方式:
+1)$obj = new Person();
+2)$obj = new \My\Person();
+3)$obj = new namespace\Person();
+4)$s = 'My\Person';
+$obj = new $s();
+5)$s = __NAMESPACE__.'\Person';
+$obj = new $s();
+7, 导入和别名
+1)导入命名空间、类、函数和常量
+namespace foo;
+use My\Full\NSname; //与use My\Full\NSname as NSname相同
+use My\Full\Classname as Another; //导入类并设置别名
+use function My\Full\functionName; //导入函数，要用use function
+use const My\Full\CONSTNAME; //导入常量，要用use const
+2)use可以在一行中导入多个
+use My\Full\Classname as Another, My\Full\NSname;
+3)导入和动态名称
+use My\Full\Classname as Anthoer;
+$obj = new Another(); //My\Full\Classname
+$s = 'Another';
+$obj = new $a; //Another, 因为字符串是完全限定的
+8, 全局空间
+如果没有定义命名空间，则是全局空间;
+namespace A\B\C;
+function fopen(){ //这个函数是A\B\C\fopen
+	/*....*/
+	$f = \fopen(...); //调用全局的fopen函数
+	return $f;
+}
+9, 类的解析与函数/常量的不同之处
+类只解析到所属命名空间，如果不存在则报错;
+而函数和常量如果所属命名空间中不存在，则会到全局空间中查找;
+namespace A\B\C;
+class Exception extends \Exception{}
+$a = new Exception('hi'); //$a是类A\B\C\Exception的一个对象
+$b = new \Exception('hi'); //$a是全局类Exception的一个对象
+$c = new ArrayObject(); //报错, 当前命名空间不存在ArrayObject类
+$d = strlen('hello'); //当前命名空间不存在, 到全局空间查找strlen
+$e = __FILE__; //当前命名空间不存在, 到全局空间查找__FILE__
+
+
 
 
