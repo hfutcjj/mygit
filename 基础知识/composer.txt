@@ -8,6 +8,7 @@ composer会帮你安装这些依赖的库文件;
 composer --version
 更改Packagist为国内镜像:
 composer config -g repo.packagist composer https://packagist.phpcomposer.com
+更新composer为最新版本: composer self-update
 
 >>composer的使用
 1, 在项目的目录下创建一个composer.json文件，文件描述了项目的依赖关系;

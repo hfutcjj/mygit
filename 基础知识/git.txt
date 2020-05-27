@@ -84,7 +84,7 @@ git push origin master (以后)
 与push相反的操作是pull;
 
 >>从远程库克隆
-git clone git@github.com:hfutcjj/mygit.git
+git clone git@github.com:hfutcjj/mygit.git [myfolder]
 注: git支持ssh和https等多种协议, 如果公司只开放了http端口, 那么就只能使用https;
 
 >>分支管理

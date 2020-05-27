@@ -1,37 +1,11 @@
->>nginx下tp路由访问出现404错误解决方案
-修改nginx.config文件如下
-server {
-	listen 80;
-	server_name localhost;
-	index index.html index.htm index.php;
-	root D:/web/www/tp/public;
-	#error_page 404 = /404.html;
-	#error_page 502 = /502.html;
-	if (!-e $request_filename) {
-		rewrite ^/(.*)$ /index.php/$1 last;
-		break;
-	}
-	location ~ [^/]\.php(/|$) {
-		fastcgi_split_path_info ^(.+\.php)(/.+)$;
-		try_files $fastcgi_script_name =404;
-		set $path_info $fastcgi_path_info;
-		fastcgi_param PATH_INFO $path_info;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_index index.php;
-		include fastcgi.conf;
-	}
-	location ~ .*\.(gif|jpg|jpeg|png|bmp|swf|flv|mp4|ico)$ {
-		expires 30d;
-		access_log off;
-	}
-	location ~ .*\.(js|css)?$ {
-		expires 7d;
-		access_log off;
-	}
-	location ~ /\.ht {
-		deny all;
-	}
-}
+>>设置域名绑定
+打开apache的配置文件httpd.conf, 添加
+<VirtualHost *:80>
+    DocumentRoot "/home/www/tp5/public"
+    ServerName tp5.com
+</VirtualHost>
+打开系统文件C:/Windows/System32/drivers/etc/hosts文件, 修改
+127.0.0.1 tp5.com
 
 >>配置
 修改public/index.php文件, 添加
@@ -111,39 +85,66 @@ define('BIND_MODULE', 'admin'); //url: localhost/user/validate
 define('BIND_MODULE', 'admin/user'); //url: localhost/validate
 define('BIND_MODULE', 'admin/user/validate'); //url: localhost
 
+>>路由
+1, tp采用单一入口模式访问应用，所有的请求都定位到入口文件, 系统从url参数解析当前请求的
+模块、控制器和操作，标准的url访问格式：http://localhost/index.php/模块/控制器/操作;
+入口文件默认可隐藏，隐藏后的url格式：http://localhost/模块/控制器/操作;
+2, 命名规范: 模块名和操作名必须小写，控制器名和文件名保持一致，首字母大写;
+控制器名如果采用驼峰命名，如HelloWorld，默认必须采用hello_world的形式访问，可以修改
+配置文件的'url_convert'=>true来支持驼峰访问;
+3, 带参数的url
+http://localhost/index/index/index/name/zhao/age/30
+http://localhost/index/index/index?name=zhao&age=30
+url会自动寻找同名的参数，参数的先后顺序可以随意;
+还可以精简url的参数形式省略参数名，修改配置 'url_param_type'=>1就可以，此时url变成
+http://localhost/index/index/index/zhao/30
+4, 自定义路由
+修改application/route.app文件；
+
 >>请求对象Request
-Request是单例模式的对象, 只能通过Request::instance()实例化;
-1, 获取请求对象的三种方式
-1)使用request()助手函数
-2)使用Request对象，需要先引入
-use think\Request;
-$request = Request::instance();
-3)直接使用注入对象
-public function index(Request $request){ //... }
-2, 请求对象的方法
-$request->param(); //通过所有方法传递过来的参数
-$request->get(); //通过GET请求的参数数组
-$request->get('id'); //具体的参数值, 下同
-$request->get('id', 100); //取get过来的id值，没有传则去默认的100
-$request->post();
-$request->method(); //当前请求的类型, get或post
-$request->isAjax();
-$request->session();
-$request->cookie();
-$request->module(); //当前模块
-$request->controller(); //当前控制器
-$request->action(); //当前方法
-3, 助手函数input()
-助手函数位于thinkphp/helper, 底层调用的是Request类的方法;
-可用来快捷获取param, post, get, session, cookie, file等的值;
-input('id') //$request->param('id')
-input('get.id'); //$request->get('id')
-input('get.id', 100); //如果没有传id则默认取100
+Request对象处理客户端的数据以及服务器端的环境变量; 需要引入use think\Request;
+Request对象封装了$_GET, $_POST, $_REQUEST, $_SESSION, $_COOKIE, $_FILES等全局变量的值;
+1, Request对象的几种调用方式
+1)$req = Request::instance(); //单例模式
+$req->param('id');
+2)class Index{
+	public function index(Request $req){ //自动注入请求对象
+		echo $req->param('id'); 
+	}
+}
+3)class Index extends Controller{
+	public function index(){
+		echo $this->request->param('id'); //think\Controller包含request属性
+	}
+}
+4)echo request()->param('id'); //request()助手函数
+5)echo input('session.username'); //input()助手函数
+6)echo session('username'); //session()助手函数
+2, 获取请求信息
+1)获取请求参数
+$req->param(); //返回所有请求参数的数组, 不需要区分请求的类型，统一获取
+$req->param('name');
+$req->param('name', 'zhao'); //第二个参数是默认值
+$req->param('name', 'zhao', 'strtolower'); //第三个参数是过滤规则
+$req->get();
+$req->get('name');
+$req->post();
+$req->cookie();
+$req->session();
+$req->file();
+$req->method(); //请求的类型
+$req->url(); //获取当前的url地址，有关url信息的有很多其他方法，具体参考文档
+$req->module(); //当前模块
+$req->control(); //当前控制器
+$req->action(); //当前操作
+$req->routeInfo(); //路由信息
+$req->dispatch(); //调度信息
+2)使用助手函数input()
+input('get.');
+input('get.name');
+input('cookie.');
 input('session.username');
-注: 以下三种获取参数的方式等价
-$request->session('username');
-input('session.username');
-session('username');
+input('file.image');
 
 >>响应对象Response
 public function getUserInfo($type = 'json'){
@@ -155,6 +156,20 @@ public function getUserInfo($type = 'json'){
 	return $res;
 	//等价于 return json_encode($res);
 }
+
+>>重定向
+public function show($name){
+	if($name == 'baidu'){
+		$this->redirect('http://www.baidu.com');
+		//return redirect('http://www.baidu.com'); //等价, 这是使用redirect()助手函数
+	}else{
+		return $this->fetch();
+	}
+}
+
+>>命名空间
+app命名空间代表application；
+think命名空间代表thinkphp/library/think;
 
 >>视图和模板
 1, 调用视图
@@ -342,8 +357,16 @@ $conn = Db::connect();
 3)$conn = Db::connect('my_database');
 4)$conn = Db::connecct('mysql://root:root@127.0.0.1:3306/test#utf8');
 参数格式为: tpye://username:password@hostname:port/database#charset;
-
-
+3, 原生查询
+$rs = Db::query('select * from tname where id = ?', [3]);
+$rs = Db::execute('insert into tname(name, age) values(?, ?)', ['zhao', 30]);
+4, 构造器查询
+$rs = Db::table('tname')->where(['id'=>3])->select(); //二维数组
+$rs = Db::name('tname')->where(['id'=>3]->find(); //一维数组
+$rs = Db::table('tname')->where(['id'=>3])->value('name'); //一条记录的name字段的值，一个值
+$rs = db('tname')->where(['id'=>3])->column('name'); //所有满足条件的记录的name字段的值，一维数组
+注: table()里的表名含前缀, 而name()不含前缀;
+Db::table('tname') 与 db('tname') 等价，后者是助手函数;
 
 
 
