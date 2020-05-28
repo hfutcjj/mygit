@@ -327,7 +327,7 @@ This is page1.
 //page2.html
 This is page2.
 
->>模型
+>>数据库操作
 1, 设置数据库配置
 在应用配置中新建database.php文件，将惯例配置中的数据库部分复制过来并修改;
 2, 连接数据库的四种方式
@@ -357,17 +357,104 @@ $conn = Db::connect();
 3)$conn = Db::connect('my_database');
 4)$conn = Db::connecct('mysql://root:root@127.0.0.1:3306/test#utf8');
 参数格式为: tpye://username:password@hostname:port/database#charset;
-3, 原生查询
+3, 原生操作
+//查询
 $rs = Db::query('select * from tname where id = ?', [3]);
+//执行插入、更新、删除
 $rs = Db::execute('insert into tname(name, age) values(?, ?)', ['zhao', 30]);
-4, 构造器查询
-$rs = Db::table('tname')->where(['id'=>3])->select(); //二维数组
-$rs = Db::name('tname')->where(['id'=>3]->find(); //一维数组
-$rs = Db::table('tname')->where(['id'=>3])->value('name'); //一条记录的name字段的值，一个值
-$rs = db('tname')->where(['id'=>3])->column('name'); //所有满足条件的记录的name字段的值，一维数组
+4, tp封装的操作
+//查询
+$db= Db::table('tname'); //等价于$Db::name('tname'), 等价于db('tname')
+$rs = $db->where(['id'=>3])->select(); //所有记录, 二维数组
+$rs = $db->where(['id'=>3]->find(); //仅第一条记录，一维数组
+$rs = $db->where(['id'=>3])->value('name'); //一条记录的name字段的值，一个值
+$rs = $db->where(['id'=>3])->column('name'); //所有满足条件的记录的name字段的值，一维数组
+$rs = $db->where('age', '>', 20)
+		->field('avg(age) as avg_age, level')
+		->group('level')
+		->order('level desc')
+		->limit(2, 10)
+		->select(); //链式查询，注意操作的顺序
 注: table()里的表名含前缀, 而name()不含前缀;
 Db::table('tname') 与 db('tname') 等价，后者是助手函数;
+//插入
+$db = Db::table('tname');
+$rs = $db->insert(['name'=>'zhao', 'age'=>30]); //返回被影响的行数
+$rs = $db->insertGetId(['name'=>'zhao', 'age'=>30]); //返回插入的Id
+$data = [['name'=>'zhao', 'age'=>30], ['name'=>'qian', 'age'=>32]];
+$rs = $db->insertAll($data); //插入多条数据, 返回影响的行数(也就是插入的条数)
+//更新
+$rs = $db->where(['name'=>'zhao'])->update(['age'=>88]); //返回被影响的行数
+$rs = $db->where(['name'=>'zhao']->setField('age', 99); //更新一个字段的值
+$rs = $db->where(['name'=>'zhao']->setInc('age', 10); //set age = age + 10
+$rs = $db->where(['name'=>'zhao']->setDec('age', 10); //set age = age - 10
+//删除
+$rs = $db->where(['name'=>'zhao'])->delete(); //返回被影响的行数
+注: 更新和删除操作必须传where条件，否则报错;
+5, 条件构造器
+$db->where(['id', ['gt', 3]]); //参数以数组的形式
+$db->where('id', '>', 3); //=(eq), <>(neq), >(gt), >=(egt), <(lt), <=(elt)
+$db->where('id', 'between', '1,10'); //between/between/in/notin, '1,10'/[1,10]
+$db->where('id', 'exp', '>1 and <10'); //自定义条件
+$db->where('id', '>', 1)->where('id', '<', 10); //and
+$db->where('id', '>', 1)->whereOr('id, '<', 10); //or
+注: 可以用buildSql()来构造原生的sql语句;
 
+>>模型
+1, 模型命名
+模型名与数据表的名称一致，遵循驼峰命名法, user->User.php, user_info->UserInfo.php;
+namespace app\index\model;
+use think\Model;
+class User extends Model{
+	//...
+}
+2, 引入模型的几种方式
+1)use app\index\model\User; //推荐
+User::get(1)->toArray();
+2)use app\index\model\User;
+$userModel = new User(); //实例化
+3)use think\Loader;
+$userModel = Loader::model('User'); //通过Laoder类，当模型很多时，无须引入模型
+4)$userModel = model('User'); //model()助手函数
+3, 查询
+$userModel = new User();
+$rs = $userModel->where('age', '>', 30)->select();
+foreach($rs as $v){
+	print_r($v->toArray());
+}
+//或
+$rs = $userModel->get(1);
+echo $rs->name;
+4, 插入
+//插入单条数据
+$userModel->insert(['name'=>'zhao', 'age'=>30]); 
+//插入多条数据
+$userModel->insertAll([[...], [...]]); //接收二维数组
+5, 更新
+$userModel->where('id', '5')->update(['age'=>32]);
+注: insert和update操作都可以用save()替换;
+6, 删除
+$userModel->where('name', 'exp', 'is null')->delete();
+7, 聚合操作
+$userModel->count(); //计数
+$userModel->where('age', '>', 30)->count(); //带条件
+$userModel->avg('age'); 
+$userModel->where('age', '>', 30)->avg('age'); 
+常用的聚合函数有: count(), max(), min(), sum(), avg()等;
+8, 模型获取器(自动转换字段值)
+数据库中User表的字段sex存储的值为0,1,2, 页面输出时自动显示'为止','男','女';
+//模型文件 app/index/model/User.php
+class User extends Model{
+	public function getSexAttr($val){ //函数名必须为getSexAttr
+		return $val==0 ? '未知' : ($val==1 ? '男' : '女');
+	}
+}
+//控制器文件 app/index/controller/Index.php
+class Index extends Controller{
+	public function index(){
+		return User::get(1)->sex; //直接输出'男', '女' 或 '未知'
+	}
+}
 
 
 
