@@ -328,6 +328,10 @@ This is page1.
 This is page2.
 
 >>数据库操作
+tp中的数据库操作有三种方式: 
+数据库原生查询(SQL查询);
+数据库链式查询(查询构造器);
+模型的对象化查询;
 1, 设置数据库配置
 在应用配置中新建database.php文件，将惯例配置中的数据库部分复制过来并修改;
 2, 连接数据库的四种方式
@@ -359,22 +363,45 @@ $conn = Db::connect();
 参数格式为: tpye://username:password@hostname:port/database#charset;
 3, 原生操作
 //查询
-$rs = Db::query('select * from tname where id = ?', [3]);
+$rs = Db::query('select * from tname where id = $id'); //不安全
+$rs = Db::query('select * from tname where id = ?', [$id]); //参数绑定形式
+$rs = Db::query('select * from tname where id = :id', ['id'=>$id]]); //占位符绑定形式
+$rs = Db::query("desc tname");
+$rs = Db::query("show variables like '%char%'");
 //执行插入、更新、删除
 $rs = Db::execute('insert into tname(name, age) values(?, ?)', ['zhao', 30]);
-4, tp封装的操作
+$rs = Db::execute('update tname set age = age + 1 where name = ?', ['zhao']);
+$rs = Db::execute('delete from tname where name = ?', ['zhao']);
+$rs = Db::execute('truncate table tname');
+注: 1)Db::query()执行读操作，返回二维数组；Db::execute()执行写操作，返回影响的记录数；
+2)也支持查询的时候切换数据库, 如
+$rs = Db::connect('mysql://root:123456@127.0.0.1:3306/dbname2#utf8')->query('select * from tname');
+为了简化代码，通常在配置文件(如application/config.php)中定义好多个数据库的连接配置, 如
+'db1'=>[
+	//配置参数
+],
+'db2'=>[
+	//配置参数
+]
+$db1 = Db::connect('db1');
+$db2 = Db::connect('db2');
+$rs1 = $db1->query('...');
+$rs2 = $db2->query('...');
+4, 链式操作(查询构造器)
+查询构造器的优点是基于PDO实现，对不同的数据库驱动都是统一的语法;
 //查询
 $db= Db::table('tname'); //等价于$Db::name('tname'), 等价于db('tname')
 $rs = $db->where(['id'=>3])->select(); //所有记录, 二维数组
-$rs = $db->where(['id'=>3]->find(); //仅第一条记录，一维数组
-$rs = $db->where(['id'=>3])->value('name'); //一条记录的name字段的值，一个值
-$rs = $db->where(['id'=>3])->column('name'); //所有满足条件的记录的name字段的值，一维数组
+$rs = $db->where('id', 3)->find(); //仅第一条记录，一维数组
+$rs = $db->where(’id', 3)->value('name'); //一条记录的name字段的值，一个值
+$rs = $db->where('id', 3)->column('name'); //所有满足条件的记录的name字段的值，一维数组
 $rs = $db->where('age', '>', 20)
 		->field('avg(age) as avg_age, level')
 		->group('level')
 		->order('level desc')
 		->limit(2, 10)
-		->select(); //链式查询，注意操作的顺序
+		->select(); 
+注: 链式操作不分先后，只要在select()方法之前调用就行;
 注: table()里的表名含前缀, 而name()不含前缀;
 Db::table('tname') 与 db('tname') 等价，后者是助手函数;
 //插入
@@ -384,10 +411,10 @@ $rs = $db->insertGetId(['name'=>'zhao', 'age'=>30]); //返回插入的Id
 $data = [['name'=>'zhao', 'age'=>30], ['name'=>'qian', 'age'=>32]];
 $rs = $db->insertAll($data); //插入多条数据, 返回影响的行数(也就是插入的条数)
 //更新
-$rs = $db->where(['name'=>'zhao'])->update(['age'=>88]); //返回被影响的行数
-$rs = $db->where(['name'=>'zhao']->setField('age', 99); //更新一个字段的值
-$rs = $db->where(['name'=>'zhao']->setInc('age', 10); //set age = age + 10
-$rs = $db->where(['name'=>'zhao']->setDec('age', 10); //set age = age - 10
+$rs = $db->where('name', 'zhao')->update(['age'=>88]); //返回被影响的行数
+$rs = $db->where('name', 'zhao')->setField('age', 99); //更新一个字段的值
+$rs = $db->where('name', 'zhao')->setInc('age', 10); //set age = age + 10
+$rs = $db->where('name', 'zhao')->setDec('age', 10); //set age = age - 10
 //删除
 $rs = $db->where(['name'=>'zhao'])->delete(); //返回被影响的行数
 注: 更新和删除操作必须传where条件，否则报错;
@@ -399,6 +426,21 @@ $db->where('id', 'exp', '>1 and <10'); //自定义条件
 $db->where('id', '>', 1)->where('id', '<', 10); //and
 $db->where('id', '>', 1)->whereOr('id, '<', 10); //or
 注: 可以用buildSql()来构造原生的sql语句;
+6, 事务处理
+//回调函数形式
+Db::transaction(function(){
+	Db::table('user')->insert(['name'=>'hu', 'age'=>20]);
+	Db::execute('update tcount set len=len+1');
+});
+//手动控制事务的提交与回滚
+Db::startTrans();
+try{
+	Db::table('user')->where('name', 'hu')->delete();
+	Db::execute('update tcount set len=len-1');
+	Db::commit(); //提交事务
+}catch(\Exception $e){
+	Db::rollback(); //执行失败则回滚事务
+}
 
 >>模型
 1, 模型命名
@@ -455,6 +497,8 @@ class Index extends Controller{
 		return User::get(1)->sex; //直接输出'男', '女' 或 '未知'
 	}
 }
+9, 软删除
+不真正删除数据库中的数据，而是将某个字段置为null或0，表示该条记录不存在;
 
 
 
