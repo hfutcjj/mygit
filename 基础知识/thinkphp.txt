@@ -404,6 +404,7 @@ $rs = $db->where('age', '>', 20)
 注: 链式操作不分先后，只要在select()方法之前调用就行;
 注: table()里的表名含前缀, 而name()不含前缀;
 Db::table('tname') 与 db('tname') 等价，后者是助手函数;
+注: 如果查询结果为空，select()返回空数组，find()返回null;
 //插入
 $db = Db::table('tname');
 $rs = $db->insert(['name'=>'zhao', 'age'=>30]); //返回被影响的行数
@@ -419,12 +420,16 @@ $rs = $db->where('name', 'zhao')->setDec('age', 10); //set age = age - 10
 $rs = $db->where(['name'=>'zhao'])->delete(); //返回被影响的行数
 注: 更新和删除操作必须传where条件，否则报错;
 5, 条件构造器
-$db->where(['id', ['gt', 3]]); //参数以数组的形式
+$db->where('name', 'null'); //id=3 或 name is null 的形式
 $db->where('id', '>', 3); //=(eq), <>(neq), >(gt), >=(egt), <(lt), <=(elt)
 $db->where('id', 'between', '1,10'); //between/between/in/notin, '1,10'/[1,10]
-$db->where('id', 'exp', '>1 and <10'); //自定义条件
 $db->where('id', '>', 1)->where('id', '<', 10); //and
 $db->where('id', '>', 1)->whereOr('id, '<', 10); //or
+$db->where('id', 'exp', '>1 and <10'); //自定义条件
+//原生字符串查询
+$db->where('id > 10 and name is not null');
+$db->where('id > ? and age < ?', [5, 30]); //参数绑定防止sql注入
+$db->where('id > :id and age < :age', ['id'=>5, 'age'=>30]); 
 注: 可以用buildSql()来构造原生的sql语句;
 6, 事务处理
 //回调函数形式
