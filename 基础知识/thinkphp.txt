@@ -488,8 +488,8 @@ $userModel->where('age', '>', 30)->count(); //带条件
 $userModel->avg('age'); 
 $userModel->where('age', '>', 30)->avg('age'); 
 常用的聚合函数有: count(), max(), min(), sum(), avg()等;
-8, 模型获取器(自动转换字段值)
-数据库中User表的字段sex存储的值为0,1,2, 页面输出时自动显示'为止','男','女';
+8, 模型读取器(自动转换字段值)
+数据库中User表的字段sex存储的值为0,1,2, 页面输出时自动显示'未知','男','女';
 //模型文件 app/index/model/User.php
 class User extends Model{
 	public function getSexAttr($val){ //函数名必须为getSexAttr
@@ -502,7 +502,28 @@ class Index extends Controller{
 		return User::get(1)->sex; //直接输出'男', '女' 或 '未知'
 	}
 }
-9, 软删除
+9, 模型修改器
+//模型文件 app\index\model\User.php
+class User extends Model{
+	public function setBirthdayAttr($val){
+		return strtotime($val);
+	}
+}
+//控制器文件 app\index\controller\Index.php
+class Index extends Controller{
+	public function index(){
+		$user = new UserModel();
+		$user->name = 'zhao';
+		$user->age = 30;
+		$user->birthday = '1989-07-01';
+		if($user->save()){
+			return '新增成功';
+		}else{
+			return $user->getError();
+		}
+	}
+}
+10, 软删除
 不真正删除数据库中的数据，而是将某个字段置为null或0，表示该条记录不存在;
 
 
