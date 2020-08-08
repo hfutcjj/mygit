@@ -184,33 +184,39 @@ var arr = [1, 2, 4];
 var arr = new Array(1, 2, 4);
 
 >>常用的数组方法
-1, arr.push()
+1, Array.isArray()
+判断一个对象是否为数组；
+注意该方法属于Array构造器的方法，其他方法为Array.prototype的方法；
+2，arr.indexOf()，arr.lastIndexOf()
+查找元素在数组中的下标，如果不存在则返回-1;
+也可以指定查找的起始位置；
+3, arr.push()
 将元素添加到数组尾部，返回数组的长度
-2, arr.pop()
+4, arr.pop()
 删除数组的最后一个元素，并返回该元素
-3，arr.unshift()
+5，arr.unshift()
 将元素添加到数组头部，返回数组的长度
-4，arr.shift()
+6，arr.shift()
 删除数组的第一个元素，并返回该元素
-5，arr.join()
+7，arr.join()
 将数组元素以指定分隔符连接成字符串，如果不指定分隔符，默认以逗号分隔；
-6，arr.reverse()
-书序逆序，注意该方法为本地方法，会修改原数组
-7，arr.sort()
+8，arr.reverse()
+数组逆序，注意该方法为本地方法，会修改原数组
+9，arr.sort()
 默认按字符串的顺序来排序，如果需要按数字的顺序或者要排序对象，需要自定义函数来排序；
 该方法也是本地方法，会修改原数组；
-8，arr.concat()
-数组连接
+10，arr.concat()
+数组连接, 该方法不会改变原数组
 var arr = [1, 2, 3];
 arr.concat([10, 11], 13); //[1, 2, 3, 10, 11, 13]
-9, arr.slice(start, end)
+11, arr.slice(start, end)
 返回数组片段
-10，arr.splice()
+12，arr.splice()
 数组拼接，返回被删除的元素组成的数组，该方法为本地方法，会修改原数组
 var arr = [1, 2, 3, 4];
 var b= arr.splice(1, 2, 'a', 'b'); //[1, 4, 'a', 'b']
 b; //[2, 3]
-11, arr.forEach()
+13, arr.forEach()
 遍历数组
 var arr = [1, 2, 3];
 arr.forEach(function(x, index, a){
@@ -219,7 +225,7 @@ arr.forEach(function(x, index, a){
 //1|0|true
 //2|1|true
 //3|2|true
-12, arr.map()
+14, arr.map()
 数组映射，该方法不修改原数组
 var arr = [1, 2, 3];
 var b= arr.map(function(x){
@@ -227,24 +233,18 @@ var b= arr.map(function(x){
 });
 b; //[11, 12, 13]
 arr; //[1, 2, 3]
-13, arr.filter()
+15, arr.filter()
 数组过滤，该方法不修改原数组
 var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 var b = arr.filter(function(x, index){
 	return x % 3 === 0;
 });
 b; //[3, 6, 9]
-a; //[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-14, arr.every()
+arr; //[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+16, arr.every()
 判断数组中的所有元素满足某个条件
-15，arr.some()
+17，arr.some()
 判断数组中是否存在元素满足某个条件
-16，arr.indexOf()，arr.lastIndexOf()
-查找元素在数组中的下标，如果不存在则返回-1;
-也可以指定查找的起始位置；
-17, Array.isArray()
-判断一个对象是否为数组；
-注意该方法属于Array构造器的方法，其他方法为Array.prototype的方法；
 
 >>函数的创建
 1，函数声明
