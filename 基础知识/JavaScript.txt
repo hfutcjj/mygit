@@ -159,7 +159,7 @@ person.salary; //12000
 2, JSON.parse(str)
 将json字符串解析为对象
 2, 可以通过toJSON来定制序列化的过程
-var ojb = {
+var obj = {
 	x: 1,
 	y: 2,
 	o: {
@@ -214,7 +214,7 @@ arr.concat([10, 11], 13); //[1, 2, 3, 10, 11, 13]
 12，arr.splice()
 数组拼接，返回被删除的元素组成的数组，该方法为本地方法，会修改原数组
 var arr = [1, 2, 3, 4];
-var b= arr.splice(1, 2, 'a', 'b'); //[1, 4, 'a', 'b']
+var b= arr.splice(1, 2, 'a', 'b'); //[1, 'a', 'b', 4]
 b; //[2, 3]
 13, arr.forEach()
 遍历数组
@@ -313,7 +313,7 @@ f2(1); //1101
 function outer(){
 	var localVar = 30;
 	return function(){
-		return localVal;
+		return localVar;
 	}
 }
 var func = outer();
