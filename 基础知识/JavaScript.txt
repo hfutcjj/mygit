@@ -177,6 +177,61 @@ JSON.stringify(obj); //'{"x":1,"y":2,"o":3}'
 则继续查找toString()方法，如果toString()方法也不存在或者返回对象，
 则报错；
 
+>>String对象
+1, 常用方法
+1)charAt()
+指定位置的字符
+2)indexOf()/lastIndexOf()
+指定的字符第一次出现的位置
+var s = 'hello,world';
+s.indexOf('o'); //4
+s.indexOf('o', 5); //7
+s.lastIndexOf('o'); //7
+3)substring()
+提取指定起止的子字符串
+4)substr()
+提取指定数目的子字符串
+var s = 'hello,world';
+s.substring(2, 6); //'llo,'
+s.substr(2, 6); //'llo,wo'
+5)split()
+字符串分割
+var s = 'hello,world';
+s.split(','); //['hello', 'world']
+s.split(''); //['h', 'e', 'l', 'l', 'o', ',', 'w', 'o', 'r', 'l', 'd']
+s.split('', 5); //['h', 'e', 'l', 'l', 'o']
+6)其他正则相关的函数
+
+>>Math对象
+1, 常用方法
+1)Math.floor(), Math.ceil(), Math.round();
+2)Math.random();
+返回介于[0, 1)之间的小数;
+注；四舍五入到指定小数点位数用 toFixed();
+var a = 3.146;
+a.toFixed(2); //3.15
+
+>>Date对象
+1, 创建Date对象
+new Date(); //当前时间
+new Date('October 13, 1975 11:13:00');
+new Date(75, 10, 13, 11, 13, 0);
+2, 获取与设置
+d.getFullYear()/d.setFullYear();
+d.getMonth()/d.setMonth(); //月份从0开始计算, 而php是从1开始
+d.getDate()/d.setDate();
+d.getHours()/d.setHours();
+d.getMinutes()/d.setMinutes();
+d.getSeconds()/d.setSeconds();
+d.getDay(); //星期只有获取，没有设置函数
+举例：
+d.setDate(d.getDate()+2);
+3, 时间戳(单位是毫秒)
+d.getTime();
+d.setTime();
+举例: 
+d.setTime(d.getTime()+24*60*60*1000); //将时间设置为一天后
+
 >>数组的创建
 1, 数组字面量
 var arr = [1, 2, 4];
@@ -419,6 +474,22 @@ Student.prototype.learn = function(){
 通过Student.prototype = Object.create(Person.prototype)继承基类的原型;
 Student的原型链如下：
 Student.prototype -> Person.prototype -> Object.prototype -> null;
+
+>>BOM
+1, window对象
+窗口的打开与关闭
+1, 打开窗口
+var win = window.open([url], [窗口名称], [参数字符串]);
+url: http://www.baidu.com 或 test.php;
+窗口名称: _blank(在新窗口打开, 默认), _self(当前窗口), _top(顶部窗口);
+参数字符串: 'width=600,height=300,top=100,left=100,menubar=yes,toolbar=no,scrollbars=yes,status=yes';
+2, 关闭窗口
+window.close(); //关闭本窗口
+win.close(); //关闭指定窗口
+2, history对象
+3, location对象
+4, navigator对象
+5, screen对象
 
 >>各种对象的尺寸
 1, 盒子的宽度与高度

@@ -1,6 +1,22 @@
+>>PHP语言的特点
+服务器端语言；脚本语言；跨平台；免费；
+
 >>转换成布尔值为false的几种情形
 0, 0.0, '0', '', false, [] -> false 
 这些值用empty()得到的结果都为true;
+
+>>常量
+1, 常量的定义
+define('PI', 3.14);
+const PI = 3.14;
+2, 判断常量是否已定义
+defined('PI'); //true or false
+3, 常量的分类
+1)系统常量
+__FILE__, __LINE__, __DIR__, __FUNCTION__, __CLASS__, __TRAIT__, 
+__METHOD__, __NAMESPACE__,
+PHP_VERSION, PHP_OS;
+2)用户自定义常量
 
 >>字符串
 1, 单引号与双引号
@@ -255,7 +271,7 @@ class Person{ //父类
 		return $this->age;
 	}
 	public function info(){
-		echo 'My name is '.$this->name.'. I am '.$this->age.' years old.';
+		echo 'My name is '.$this->name.'. I am '.$this->getAge().' years old.';
 	}
 	public static function changeNation($nation){ //静态方法
 		self::$nation = $nation;
@@ -297,6 +313,9 @@ interface ICanWork extends ICanEat{ //接口继承
 	public function work();
 }
 class Worker implements ICanWork{
+	public function eat($food){
+		echo 'Worker eating '.$food;
+	}
 	public function work(){
 		echo 'Worker working';
 	}
@@ -443,7 +462,7 @@ if($r){
 	//$conn->insert_id --本次插入的第一条数据的id
 	//$conn->affected_rows --受影响记录的条数
 }else{
-	//error --错误号, error --错误信息
+	//errno --错误号, error --错误信息
 	echo 'Error '.$conn->errno.': '.$conn->error;
 }
 5)查询数据
@@ -616,7 +635,7 @@ array_flip(['name'=>'zhao', 30]); //['zhao'=>'name', 30=>1]
 8)is_scalar(): 判断标量(整型、布尔型、浮点型、字符串型)
 9)is_null(): 判断变量是否为null
 10)is_numeric(): 判断是否数字或数字字符串
-11)gettype(): 获得数组类型
+11)gettype(): 获得数据类型
 12)settype(): 改变数据类型
 13)isset(): 变量是否存在
 14)unset(): 销毁变量
@@ -670,7 +689,7 @@ namespace { //全局空间
 	echo MyProject\Connection::start();
 }
 4, 命名空间下类/函数/常量的引用
-1)相对于命名空间
+1)相对命名空间
 new Foo(); --> currentnamespace\Foo;
 new subnamespace\Foo(); --> currentnamespace\subnamespace\Foo;
 2)全局命名空间
