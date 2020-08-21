@@ -77,7 +77,7 @@ lastIndex: 当前匹配的下一个位置索引，仅对全文搜索有效;
 1)reg.test(s)
 是否存在的匹配，返回true或false;
 /\w\d/.test('a1b2c3d4'); //true
-2)reg.test(s)
+2)reg.exec(s)
 模式匹配，如果没有匹配的文本则返回null，否则返回一个结果数组；
 非全文搜索的多次匹配结果都一样：
 var reg = /(\w)\d/, s = 'a1b2c3';

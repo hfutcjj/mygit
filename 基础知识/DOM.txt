@@ -46,6 +46,43 @@ for(var i = 0; i < 10; i++){
 }
 document.getElementById('container').appendChild(frag);
 
+>>DOM常用的属性和方法
+1, 常用属性
+1)nodeType, nodeName, nodeValue //节点类型、节点名称、节点值
+2)attributes //所有属性节点组成的数组
+3)parentNode //父节点
+4)childNodes //返回子节点的数组
+5)firstChild //第一个子节点
+6)lastChild //最后一个子节点
+7)nextSibling //下一个兄弟节点
+8)previousSibling //上一个兄弟节点
+2, 常用方法
+1)getElementById(), getElementsByName(), getElementsByTagName(), getElementsByClassName()
+获取元素节点的方法;
+2)getAttribute()/setAttribute()
+获取与设置属性的值;
+elem.setAttribute('title', 'test'); //等价于elem.title='test';
+3)createElement(), createTextNode()
+创建元素节点, 创建文本节点;
+4)createElement() 
+创建一个元素节点
+5)createTextNode()
+创建一个包含给定文本的文本节点
+6)appendChild()
+在最后一个子节点之后添加节点
+pNode.appendChild(newnode);
+7)insertBefore()
+在指定的子节点前面插入节点
+pNode.insertBefore(newnode, cNode);
+8)removeChild()
+删除一个指定子节点, 成功则返回被删除的节点，失败则返回null;
+pNode.removeChild(cNode);
+var rNode = pNode.removeChild(pNode.childNode[1]); //rNode已经脱离节点树，但还在内存中
+rNode = null; //彻底删除
+9)replaceChild()
+替换指定的子节点, 返回被替换节点的引用;
+pNode.replaceChild(newnode, cNode);
+
 >>取某个节点下的所有元素节点
 var elems = node.getElementsByTagName('*');
 
