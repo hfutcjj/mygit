@@ -352,7 +352,13 @@ class Animal extends ACanEat{
 		echo 'Animal eating '.$food;
 	}
 }
-6, 魔术方法
+6, 对象的比较
+当两个对象的所有属性都相等时, ==返回true;
+而当两个变量是同一个对象的引用时, ===才返回true;
+7, 对象的序列化
+对象的序列化一般用json_encode(), 转换为易读的json串;
+而serialize()方法将对象转换为一个难读的字符串;
+8, 魔术方法
 1)__toString()
 把对象当做字符串时自动调用;
 2)__invoke()
@@ -762,6 +768,52 @@ $c = new ArrayObject(); //报错, 当前命名空间不存在ArrayObject类
 $d = strlen('hello'); //当前命名空间不存在, 到全局空间查找strlen
 $e = __FILE__; //当前命名空间不存在, 到全局空间查找__FILE__
 
+>>站点配置
+更改配置文件，需要重启服务器才能生效;
+1, 自定义网站根目录(httpd.conf)
+目录结构:
+xampp--------------------------集成开发包
+	htdocs---------------------集成开发包的默认网站根目录
+		tp---------------------下载的tp框架放到默认网站根目录下
+			public-------------tp的公共目录
+				index.php------tp的入口文件
+				test-----------测试目录
+					test.html--测试文件
+修改服务器的配置文件，以xampp集成包为例，修改apache的配置文件httpd.conf，位于
+xampp/apache/conf/httpd.conf:
+DocumentRoot "E:/xampp/htdocs/tp/public"
+<Directory "E:/xampp/htdocs/tp/public">
+在url中输入localhost即可访问tp的默认模块;
+在url中输入localhost/test/test.html即可访问测试文件;
+注: tp框架也可以不用放到xampp/htdocs目录下，只要把DocumentRoot定位到tp框架的public目录即可;
+2, 多站点配置
+需要三个步骤:
+1)自定义网站根目录(如果无须更改根目录, 这一步可以省略)
+xampp/apache/conf/httpd.conf:
+DocumentRoot "F:/Demo"  
+<Directory "F:/Demo">
+2)定义域名
+xampp/apache/conf/extra/httpd-vhosts.conf:
+<VirtualHost *:80>
+	DocumentRoot "F:/Demo/test01"
+	ServerName test01.com
+</VirtualHost>
+<VirtualHost *:80>
+	DocumentRoot "F:/Demo/test02"
+	ServerName test02.com  
+</VirtualHost>
+3)设置域名解析
+C:/Windows/System32/drivers/etc/hosts(用管理员权限打开才能更改):
+127.0.0.1 localhost  //原文件中有
+127.0.0.1 test01.com 
+127.0.0.1 test02.com //这两行是需要添加的
+以上三步设置完成，重启服务器，在url中输入test01.com/a.php就可以访问;
+3, 修改端口号
+apache默认80端口号，可以将其修改为8080;
+xampp/apache/conf/httpd.conf:
+Listen: 8080
+ServerName localhost: 8080
+以后在url中要输入localhost:8080/test/test.php才能访问；
 
 
 

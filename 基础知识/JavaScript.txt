@@ -194,13 +194,27 @@ s.lastIndexOf('o'); //7
 var s = 'hello,world';
 s.substring(2, 6); //'llo,'
 s.substr(2, 6); //'llo,wo'
-5)split()
+5)search()
+查找指定子串的位置，不存在则返回-1
+'aaa123bbb'.search('123'); //3
+'aaa123bbb'.search(/\w\d/); //2
+6)replace()
+对指定的子串进行替换
+'a1b1c1'.replace('1', 'X'); //'aXb1c1'
+'a1b1c1'.replace(/1/g, 'X'); //'aXbXcX'
+7)split()
 字符串分割
 var s = 'hello,world';
 s.split(','); //['hello', 'world']
 s.split(''); //['h', 'e', 'l', 'l', 'o', ',', 'w', 'o', 'r', 'l', 'd']
 s.split('', 5); //['h', 'e', 'l', 'l', 'o']
-6)其他正则相关的函数
+'a1b2c3d4'.split(/\d/); //['a', 'b', 'c', 'd', '']
+8)match()
+正则匹配
+var r = 'a1b2c3d4'.match(/(\w)\d/);
+r; //['a1', 'a', index: 0]
+var r = 'a1b2c3d4'.match(/(\w)\d/g);
+r; //['a1', 'b2', 'c3', 'd4']
 
 >>Math对象
 1, 常用方法
