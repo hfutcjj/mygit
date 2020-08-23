@@ -288,10 +288,26 @@ class Student extends Person{ //子类
 			' I am majoring in '.$this->major;
 	}
 }
-2, final关键字
+注: php只支持单继承，不支持多继承;
+2, 对象的比较
+当两个对象的所有属性都相等时, ==返回true;
+而当两个变量是同一个对象的引用时, ===才返回true;
+3, 对象的序列化
+对象的序列化一般用json_encode(), 转换为易读的json串;
+而serialize()方法将对象转换为一个难读的字符串;
+4, 对象的销毁
+当没有任何引用指向对象时，对象就会销毁, 或者程序允许结束，对象自动销毁；
+注意以下两种方式的区别:
+1)$p1 = new Person('zhao', 30);
+$p2 = $p1; 
+$p1 = null; //此时对象不会销毁，因为还有$p2指向对象
+2)$p1 = new Person('zhao', 30);
+$p2 = &$p1;
+$p1 = null; //此时对象销毁，$p2是$p1的别名
+5, final关键字
 final修饰类名表示该类不能被继承, 如 final class Person{};
 final修饰方法表示该方法不能被重写，如 final public function getAge(){};
-3, 接口
+6, 接口
 接口用interface定义, 接口只包含方法的的声明，接口不能实例化对象;
 类实现接口用implements，类要实现接口中定义的方法;
 接口之间也可以用extends继承;
@@ -320,7 +336,7 @@ class Worker implements ICanWork{
 		echo 'Worker working';
 	}
 }
-4, 多态
+7, 多态
 同一接口的不同实现，就叫多态;
 可以把对不同子类的调用统一当成接口来处理;
 function toEat($obj, $food){
@@ -332,7 +348,7 @@ $boy = new Human();
 $dog = new Animal();
 toEat($boy, 'apple');
 toEat($dog, 'orange');
-5, 抽象类
+8, 抽象类
 抽象类介于接口与具体类之间，允许有一部分方法没有定义;
 抽象类用abstract class定义, 抽象类里没实现的方法前面也要加abstract关键字;
 抽象类也不能实例化对象;
@@ -352,13 +368,7 @@ class Animal extends ACanEat{
 		echo 'Animal eating '.$food;
 	}
 }
-6, 对象的比较
-当两个对象的所有属性都相等时, ==返回true;
-而当两个变量是同一个对象的引用时, ===才返回true;
-7, 对象的序列化
-对象的序列化一般用json_encode(), 转换为易读的json串;
-而serialize()方法将对象转换为一个难读的字符串;
-8, 魔术方法
+9, 魔术方法
 1)__toString()
 把对象当做字符串时自动调用;
 2)__invoke()
@@ -814,6 +824,17 @@ xampp/apache/conf/httpd.conf:
 Listen: 8080
 ServerName localhost: 8080
 以后在url中要输入localhost:8080/test/test.php才能访问；
+
+>>异常处理
+try{
+	throw new Exception('this is a error');
+}catch(Exception $e){
+	echo $e->getMessage(); //'this is a error
+	echo $e->getFile(); //发生异常的文件
+	echo $e->getLine(); //发生异常的行
+}
+
+
 
 
 
