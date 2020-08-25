@@ -337,7 +337,7 @@ class Worker implements ICanWork{
 	}
 }
 7, 多态
-同一接口的不同实现，就叫多态;
+同一接口的不同实现, 或者父类的方法在子类中的不同实现, 就叫多态;
 可以把对不同子类的调用统一当成接口来处理;
 function toEat($obj, $food){
 	if($obj instanceof ICanEat){
