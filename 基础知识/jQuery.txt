@@ -495,7 +495,7 @@ $('btn2').click(function(){
 	$.ajax({url: 'test2.php'});
 });
 8, ajaxStart(), ajaxStop()
-该方法只被附加到文档, 用于在ajax请求之前和之后调用;
+用于在ajax请求之前和之后调用;
 $(document).ajaxStart(function(){
 	$('#wait').show();
 });
@@ -503,7 +503,7 @@ $(document).ajaxStop(function(){
 	$('#wait').hide();
 });
 
->>实用的jquery工具类函数
+>>常用的jquery工具类函数
 1, each()
 1)作为对象方法, 遍历jquery合集对象
 $('li').each(function(index, element){
@@ -519,12 +519,7 @@ $.each([1, 3, 5, 7, 9], function(index, elem){
 	if(elem > 5) return false;
 	console.log(elem);
 }); //1 3 5
-2, $.inArray()
-查找某个元素在数组中的索引，不存在则返回-1;
-$.inArray(value, array, [fromIndex]);
-注: js中的indexOf()也可实现查找索引;
-类似的, php中的in_array()也可以;
-3, $.extend()
+2, $.extend()
 1)合并对象;
 $.extend([deep], target, [object1], [object2]);
 $.extend(v1, v2); //合并v2和v1，合并后的值保存到v1
@@ -549,42 +544,59 @@ v; //浅复制的合并
 2)给全局jquery添加新方法;
 如果仅接受一个参数，则意味着target被省略，此时target就是jquery本身，
 可以通过这个方法为jquery添加新的方法;
-$.extend({
-	maxNum: function(v1, v2){
-		return v1 > v2 ? v1 : v2;
-	}
-});
+(function($){
+	$.extend({
+		maxNum: function(v1, v2){
+			return v1 > v2 ? v1 : v2;
+		}
+	})
+)(jQuery);
 $.maxNum(2, 5); //5
-4, $.fn.extend()
+3, $.fn.extend()
 $.fn是jquery的原型对象, $.prototype === $.fn;
 该方法为jquery的原型添加新的属性和方法，这些方法可在jquery实例对象上调用;
-$.fn.extend({
-	fn: function(){
-		//...
-	},
-	gn: function(params){
-		//...
-	}
-});
+(function($){
+	$.fn.extend({
+		fn: function(){
+			//...
+		},
+		gn: function(params){
+			//...
+		}
+	})
+)(jQuery);
 $('div').fn();
 f('div').gn(value);
-5, $.param()
+4, $.param()
 序列化数组或对象;
 var v = {name: 'zhao', age: 30, city: 'hefei'};
 $.param(v); //name=zhao&age=30&city=hefei
-6, serialize()
+5, serialize()
 序列化表单;
 $('form').serialize(); //username=zhao&age=30
-7, serializeArray()
+注: serialize()用于表单的序列化，而param()用于对象和数组;
+6, serializeArray()
 序列化表单，结果保存为数组;
 $('form').serializeArray(); //[{name: 'username', value: 'zhao'},{name: 'age', value: 30}]
-8, $.isEmptyObject()
-检测对象是否为空;
-9, $.contains(dom_a, dom_b)
-传入两个DOM节点，判断a是否包含b;
-等同于js中的 dom_a.contains(dom_b);
-10, $.trim(s)
-删除字符串前后的空格, 等同于js中的s.trim();
+通过serializeArray()方法得到的数组需要经过处理，才能传递到后台;
+举例:
+//html
+<form id="myform">
+	用户名: <input type="text" name="username"><br>
+	密码: <input type="password" name="password"><br>
+	性别: <input type="radio" name="gender" value="1">男
+		<input type="radio" name="gender" value="2">女<br>
+</form>
+<button id="btn">格式化表单数据</button>
+//js
+$('#btn').click(function(){
+	var arr = $('#myform').serializeArray();
+	var datas = [];
+	arr.forEach(function(item){
+		datas[item.name] = item.value;
+	});
+	$.post('test.php', datas, function(data){});
+});
 
 
 

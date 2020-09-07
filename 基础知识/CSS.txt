@@ -88,34 +88,6 @@ float: left / right;
 注：absolute和fixed会使定位元素脱离文档流，而relative不会;
 一般对父元素设置相对定位，具体子元素使用绝对定位;
 
->>flex弹性盒模型
-//html
-<div class="parent">
-	<div class="child item1">1</div>
-	<div class="child item2">2</div>
-	<div class="child item3">3</div>
-</div>
-//css
-.parent{height: 600px; border: 1px solid red;
-	display: flex; //在父元素上设置弹性盒模型, 必选
-	flex-direction: row; //横向排列，可选
-	justify-content: flex-start; //横向对齐，可选
-	align-items: flex-start; //纵向对齐，可选
-}
-.child{width: 200px; height: 200px; border: 1px solid gray;}
-.item1{flex: 1;} //给子元素设置相对占比，可选
-.item2{flex: 2;}
-.item3{flex: 3;}
-注：
-1, 给父元素设置 display: flex; 可使所有子元素显示在一行；
-2, flex-direction设置排列放心，默认为row, 有如下可选值
-row / column;
-3, justify-content设置横向对齐，默认为flex-start，有如下可选值
-flex-start/flex-end/center/space-between/space-around;
-4, align-items设置纵向对齐，默认为flex-end，有如下可选值
-flex-start/flex-end/center/baseline/stretch;
-5, 给子元素设置flex值，可以设置子元素的占比，只能为整数值，设置了flex值后子元素的宽度属性会失效;
-
 >>水平居中
 1, 行内元素
 通过给父元素设置 text-align: center; 来实现;
@@ -457,9 +429,37 @@ column-rule: 2px dotted gray;
 总: columns综合设置, 如
 columns: 200px 3;
 
+>>flex弹性盒模型
+//html
+<div class="parent">
+	<div class="child item1">1</div>
+	<div class="child item2">2</div>
+	<div class="child item3">3</div>
+</div>
+//css
+.parent{height: 600px; border: 1px solid red;
+	display: flex; //在父元素上设置弹性盒模型, 必选
+	flex-direction: row; //横向排列，可选
+	justify-content: flex-start; //横向对齐，可选
+	align-items: flex-start; //纵向对齐，可选
+}
+.child{width: 200px; height: 200px; border: 1px solid gray;}
+.item1{flex: 1;} //给子元素设置相对占比，可选
+.item2{flex: 2;}
+.item3{flex: 3;}
+注：
+1, 给父元素设置 display: flex; 可使所有子元素显示在一行；
+2, flex-direction设置排列放心，默认为row, 有如下可选值
+row / column;
+3, justify-content设置横向对齐，默认为flex-start，有如下可选值
+flex-start/flex-end/center/space-between/space-around;
+4, align-items设置纵向对齐，默认为flex-end，有如下可选值
+flex-start/flex-end/center/baseline/stretch;
+5, 给子元素设置flex值，可以设置子元素的占比，只能为整数值，设置了flex值后子元素的宽度属性会失效;
+
 >>媒体查询
 1, 媒体类型
-主要是十种, 常见的有all, screen, printm, handheld, tv等;
+主要是十种, 常见的有all, screen, print, handheld, tv等;
 2, 媒体特性
 主要有13种, 常见的有
 max-width, min-width, max-device-width, min-device-width等;
