@@ -9,6 +9,7 @@
 1, 常量的定义
 define('PI', 3.14);
 const PI = 3.14;
+注: define()定义的常量是全局的，不受命名空间影响; 而const定义的常量是在当前的命名空间下;
 2, 判断常量是否已定义
 defined('PI'); //true or false
 3, 常量的分类
@@ -778,6 +779,16 @@ $c = new ArrayObject(); //报错, 当前命名空间不存在ArrayObject类
 $d = strlen('hello'); //当前命名空间不存在, 到全局空间查找strlen
 $e = __FILE__; //当前命名空间不存在, 到全局空间查找__FILE__
 
+>>异常处理
+try{
+	throw new Exception('this is a error');
+}catch(Exception $e){
+	echo $e->getMessage(); //'this is a error
+	echo $e->getFile(); //发生异常的文件
+	echo $e->getLine(); //发生异常的行
+}
+
+
 >>站点配置
 更改配置文件，需要重启服务器才能生效;
 1, 自定义网站根目录(httpd.conf)
@@ -825,14 +836,7 @@ Listen: 8080
 ServerName localhost: 8080
 以后在url中要输入localhost:8080/test/test.php才能访问；
 
->>异常处理
-try{
-	throw new Exception('this is a error');
-}catch(Exception $e){
-	echo $e->getMessage(); //'this is a error
-	echo $e->getFile(); //发生异常的文件
-	echo $e->getLine(); //发生异常的行
-}
+
 
 
 

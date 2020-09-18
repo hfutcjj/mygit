@@ -575,6 +575,8 @@ $.param(v); //name=zhao&age=30&city=hefei
 序列化表单;
 $('form').serialize(); //username=zhao&age=30
 注: serialize()用于表单的序列化，而param()用于对象和数组;
+serialize()可将表单序列化为字符串传递到后台处理：
+$.post('test.php', $(this).serialize(), function(data){});
 6, serializeArray()
 序列化表单，结果保存为数组;
 $('form').serializeArray(); //[{name: 'username', value: 'zhao'},{name: 'age', value: 30}]
@@ -597,6 +599,8 @@ $('#btn').click(function(){
 	});
 	$.post('test.php', datas, function(data){});
 });
+注: 上面的处理大可不必，可直接采用如下形式:
+$.post('test.php', $(this).serialize(), function(data){});
 
 
 
