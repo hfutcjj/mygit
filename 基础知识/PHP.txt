@@ -337,6 +337,10 @@ class Worker implements ICanWork{
 		echo 'Worker working';
 	}
 }
+注: php不支持类的多继承，但支持接口的多继承，即一个接口可以继承多个接口，如
+interface C extends A, B{
+	//...
+}
 7, 多态
 同一接口的不同实现, 或者父类的方法在子类中的不同实现, 就叫多态;
 可以把对不同子类的调用统一当成接口来处理;
@@ -437,6 +441,65 @@ echo $obj->name; //$obj.__get('name')
 echo isset($obj->name); //$obj.__isset('name')
 unset($obj->name); //$obj.__unset('name');
 $obj2 = clone $obj; //$obj.__clone()
+10, 类的自动加载
+最新版本的php通过spl_autoload_register()函数来实现类的自动加载;
+spl_autoload_register(function($className){
+	require $className.'.php';
+});
+$p = new Person();
+当遇到没有定义的类，会自动加载与类名称一致的文件;
+老版的php通过实现系统函数__autoload来实现类的自动加载;
+function __autoload($className){
+	require $className.'.php';
+}
+$p = new Person();
+11, 后期静态绑定
+在类中访问静态属性和静态方法可以用self或static, self与static的区别在于static可以后期静态绑定;
+class Person{
+	public static function eat(){
+		echo 'Person eat';
+	}
+	public static function test1(){
+		self::eat();
+	}
+	public static function test2(){
+		static::eat();
+	}
+}
+class Student extends Person{
+	public static function eat(){
+		echo 'Student eat';
+	}
+}
+Student::test1(); // 'Person eat'
+Student::test2(); // 'Student eat'
+12, trait特性
+PHP7引入trait关键字是为了解决以前只能单继承的问题;
+//trait的定义跟类是一样的
+trait A{ 
+	public $name = 'zhao';
+	public function f1(){
+		echo 'Name: ';
+	}
+}
+trait B{
+	public $age = 30;
+	public function f2(){
+		echo 'Age: ';
+	}
+}
+class Test{
+	//引入trait，使用use导入
+	use A, B;
+	public function f(){
+		$this->f1();
+		echo $this->name;
+		$this->f2();
+		echo $this->age;
+	}
+}
+$obj = new Test();
+$obj->f(); //'Name: zhaoAge: 30'
 
 >>php操作mysql
 1, mysqli扩展
@@ -788,6 +851,73 @@ try{
 	echo $e->getLine(); //发生异常的行
 }
 
+>>设计模式
+1, 单例模式
+将构造函数和__clone方法都设置为private，不允许在外部创建与复制对象，只能通过定义的静态方法返回一个对象;
+class Test{
+	private static $obj = null;
+	private function __construct(){
+	
+	}
+	private function __clone(){
+	
+	}
+	public static function getInstance(){
+		if(empty(self::$obj)){
+			self::$obj = new Test();
+		}
+		return self::$obj;
+	}
+}
+$o = Test::getInstance();
+2, 工厂模式
+//具体类
+class Apple{
+
+}
+//工厂类，具体实例统一从工厂类里定义的方法返回
+class Fruit{
+	public static function factory(){
+		return new Apple();
+	}
+}
+$o = Fruit::factory();
+
+>>文件上传与下载
+1, 文件上传的前后端实现
+//test.html
+<form method="post" action="test.php" enctype="multipart/form-data">
+	请选择要上传的文件: <input type="file" name="myfile" accept="image/jpeg,image/png">
+	<input type="submit" value="上传文件">
+</form>
+//test.php
+$filename = $_FILES['myfile']['name']; //文件名
+$type = $_FILES['myfile']['type']; //文件的MIME类型
+$tmp_name = $_FILES['myfile']['tmp_name']; //文件上传到服务器的临时位置
+$size = $_FILES['myfile']['size']; //文件大小
+$error = $_FILES['myfile']['error']; //错误号
+if($error == 0){
+	if(move_uploaded_file($tmp_name, 'uploads/'.$filename)){ //同 copy($tmp_name, 'uploads/'.$filename); 
+		echo '上传成功';
+	}else{
+		echo '上传失败';
+	}
+}else{
+	//...匹配其他错误号
+}
+注: 前端表单method必须为post, 并且要设置表单属性为enctype="multipart/form-data";
+文件域的accept属性可选，由于限定上传文件的类型;
+文件上传到服务器后存放在临时文件夹，要通过move_uploaded_file()或copy()函数将文件移动到指定文件夹;
+2, 与文件上传相关的php.ini中的配置项
+file_uploads=On //开启文件上传功能
+upload_tmp_dir="E:\xampp\tmp" //文件上传到服务器的临时路径
+upload_max_filesize=40M //文件上传的大小限制
+max_file_uploads=20 //单次文件上传的最大个数
+post_max_size=40M //post请求的大小限制
+注: 文件大小不能大于upload_max_filesize和post_max_size;
+3, 
+
+>>
 
 >>站点配置
 更改配置文件，需要重启服务器才能生效;
