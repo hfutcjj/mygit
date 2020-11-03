@@ -212,6 +212,9 @@ mysql不支持全连接，可合并左外连接与右外连接的结果得到:
 select * from student t1 left [outer] join dept t2 on t1.Dno = t2.Dno
 union 
 select * from student t1 right [outer] join dept t2 on t1.Dno = t2.Dno;
+5)交叉连接(笛卡尔积)
+select * from student t1 cross join dept t2; 等价于
+select * from student t1, dept t2;
 
 >>mysql系统函数
 1, 字符串函数

@@ -436,6 +436,30 @@ var person = {};
 		return age;
 	};
 })();
+或者
+var person = function(){
+	var name = 'zhao';
+	var age = 30;
+	return {
+		getName: function(){
+			return name;
+		},
+		getAge: function(){
+			return age;
+		}
+	};
+}();
+或者
+var person = new function(){
+	var name = 'zhao';
+	var age = 30;
+	this.getName = function(){
+		return name;
+	};
+	this.getAge = function(){
+		return age;
+	}
+};
 4, 闭包的缺点
 1)空间浪费
 2)内存泄漏
