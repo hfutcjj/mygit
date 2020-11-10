@@ -73,6 +73,17 @@ git remote add origin git@github.com:hfutcjj/mygit.git
 注: 在本地的mygit库下运行这条命令;
 添加后origin就是远程库的名字，这是默认叫法，也可以改成别的;
 
+>>删除指定的远程库
+git remote rm origin
+
+>>同时关联github与gitee远程库
+git remote add github git@github.com:hfutcjj/mygit.git
+git remote add gitee git@gitee.com:hfutcjj/mygit.git
+注: 现在的远程库的名字不叫origin，而是分别定义为github和gitee;
+用git remote -v查看远程库信息，可以看到有两个远程库;
+如果要推送到Github，使用命令 git push github master;
+如果要推送到Gitee，使用命令 git push gitee master;
+
 >>查看远程库的信息
 git remote //远程仓库
 git remote -v //远程库的详细信息
