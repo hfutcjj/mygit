@@ -4,8 +4,7 @@
 3, ID选择器
 4, 后代选择器 #container span
 5, 子选择器 #container>span
-6, 兄弟选择器 #container+div 
-//紧跟#container之后的一个div
+6, 相邻兄弟选择器 #container+div //紧跟#container之后的一个div
 7, 通用选择器 *
 8, 伪类选择器 a:hover
 9, 分组选择器 div, p
@@ -109,7 +108,7 @@ div.parent{height: 800px; border: 1px solid gray;
 	position: relative;}
 div.child{width: 200px; height: 200px; 
 	position: absolute; left: 50%; top: 50%;
-	margin-left: -100px; top: -100px;}
+	margin-left: -100px; margin-top: -100px;}
 3, 块状元素(宽高未知): 定位 + translate
 <div class="parent">
 	<div class="child">
@@ -178,6 +177,7 @@ linear-gradient(90deg, red, blue, green);
 也可以为英文，如to right，后面的参数表示两个或多个颜色值；
 3, 径向渐变
 radial-gradient()
+注: 渐变可用于background-image的属性值;
 
 >>CSS3字体和文本
 1, text-shadow //文本阴影
@@ -301,7 +301,7 @@ input[type="text"]:enabled
 input[type="text"]:disabled
 3):checked
 //选中的单选或复选按钮
-input[type="checked"]:checked
+input[type="checkbox"]:checked
 4):read-only
 //设置了"readonly='readonly'"的元素
 input[type="text"]:read-only

@@ -36,7 +36,7 @@ $.ajax({
 	success: function(result, status, xhr){
 		//...
 	},
-	error(xhr, status, error){
+	error: function(xhr, status, error){
 		//...
 	}
 });
