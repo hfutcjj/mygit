@@ -62,24 +62,22 @@ document.getElementById('container').appendChild(frag);
 2)getAttribute()/setAttribute()
 获取与设置属性的值;
 elem.setAttribute('title', 'test'); //等价于elem.title='test';
-3)createElement(), createTextNode()
-创建元素节点, 创建文本节点;
-4)createElement() 
+3)createElement() 
 创建一个元素节点
-5)createTextNode()
+4)createTextNode()
 创建一个包含给定文本的文本节点
-6)appendChild()
+5)appendChild()
 在最后一个子节点之后添加节点
 pNode.appendChild(newnode);
-7)insertBefore()
+6)insertBefore()
 在指定的子节点前面插入节点
 pNode.insertBefore(newnode, cNode);
-8)removeChild()
+7)removeChild()
 删除一个指定子节点, 成功则返回被删除的节点，失败则返回null;
 pNode.removeChild(cNode);
 var rNode = pNode.removeChild(pNode.childNode[1]); //rNode已经脱离节点树，但还在内存中
 rNode = null; //彻底删除
-9)replaceChild()
+8)replaceChild()
 替换指定的子节点, 返回被替换节点的引用;
 pNode.replaceChild(newnode, cNode);
 
@@ -137,7 +135,7 @@ function isXMLElement(elem){
 
 >>节点间的包含关系
 node1.contains(node2):
-var div = document.createElementById('container');
+var div = document.getElementById('container');
 document.contains(div); //true
 document.body.contains(div.childNodes[0]); //true
 document.doctype.contains(div); //false
