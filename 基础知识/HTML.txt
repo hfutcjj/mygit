@@ -23,7 +23,9 @@
 		</tr>
 	</tbody>
 	<tfoot>
-		<td>总分</td><td>220</td>
+		<tr>
+			<td>总分</td><td>220</td>
+		</tr>
 	</tfoot>
 </table>
 注：<tbody>包含的内容会优先显示，当表格很长，可以用多个<tbody>进行分段显示;
