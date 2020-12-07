@@ -272,7 +272,7 @@ class Person{ //父类
 		return $this->age;
 	}
 	public function info(){
-		echo 'My name is '.$this->name.'. I am '.$this->getAge().' years old.';
+		echo 'My name is '.$this->name.'. I am '.$this->age.' years old.';
 	}
 	public static function changeNation($nation){ //静态方法
 		self::$nation = $nation;
@@ -285,7 +285,7 @@ class Student extends Person{ //子类
 		$this->major = $major;
 	}
 	public function info(){
-		echo 'My name is '.$this->name.'. I am '.$this->age.' years old.'.
+		echo 'My name is '.$this->name.'. I am '.$this->getAge().' years old.'.
 			' I am majoring in '.$this->major;
 	}
 }
@@ -297,7 +297,7 @@ class Student extends Person{ //子类
 对象的序列化一般用json_encode(), 转换为易读的json串;
 而serialize()方法将对象转换为一个难读的字符串;
 4, 对象的销毁
-当没有任何引用指向对象时，对象就会销毁, 或者程序允许结束，对象自动销毁；
+当没有任何引用指向对象时，对象就会销毁, 或者程序运行结束，对象自动销毁；
 注意以下两种方式的区别:
 1)$p1 = new Person('zhao', 30);
 $p2 = $p1; 
