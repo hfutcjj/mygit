@@ -268,7 +268,7 @@ $('input').change(function(e){
 4, submit
 //提交事件 
 可以在表单提交之前进行一些验证，可通过 e.preventDefault() 或 return false 
-来组织浏览器的默认提交行为;
+来阻止浏览器的默认提交行为;
 
 >>键盘事件
 1, keydown 与 keyup
@@ -297,7 +297,7 @@ $('div').on('click', {name: 'zhao'}, function(e){
 $('div').off('click'); //删除click事件
 $('div').off(); //删除所有事件
 3, 事件委托
-把时间绑定到祖先元素上，对下面的子元素进行事件委托;
+把事件绑定到祖先元素上，对下面的子元素进行事件委托;
 <div>
 	<button>btn</button>
 </div>
