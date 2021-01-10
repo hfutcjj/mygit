@@ -173,9 +173,78 @@ T1+T2+T3+Tw+T4，一般T1阶段传送地址，后几个阶段传送数据；
 1)硬件初始化；
 2)将权力移交给操作系统；
 
+>>CISC与RISC
+1，每种CPU在设计时就规定好了一套指令集，分为CISC和RISC；
+2，CISC(复杂指令集计算机)
+Intel公司生产的大部分处理器属于x86架构，属于CISC处理器，主要用于桌面应用；
+RISC(精简指令集计算机)
+嵌入式移动应用的ARM处理器采用的是RISC；
 
+>>寻址方式
+就是以什么方式找到操作数，分为以下几种：
+1，立即数寻址
+操作数在指令中提供，立即数可以是8位，也可以是16位，主要用来给寄存器赋值；
+MOV AH, 4CH
+MOV CX, 'ab'
+2，寄存器寻址
+操作数在CPU寄存器中；
+MOV AL, BL 
+MOV SP, BP 
+注: 前两种寻址在CPU内部完成，不需要执行总线周期；
+3，直接寻址
+数据在存储器中，有效地址由指令给出；
+MOV AX, [1680H]* //把DS中1680H和1681H两单元的字内容复制到AX
+MOV AX, DATA //把DS中存储单元中DATA的字内容复制到AX
+4，存储器间接寻址
+数据在存储器中，有效地址由寄存器给出；
+MOV AL, [BH] //存储器地址 DS*10H+[BH]
+MOV [BP], CL //存储器地址 SS*10H+[BP]
+注: 系统中BP寻址的数据默认在堆栈段，其他间接寻址默认在数据段；
+5，基址加变址寻址
+有效地址由基址寄存器与变址寄存器之和给出；
+MOV CL, [BX+SI] //存储器地址 DS*10H+[BX+SI]
+MOV [BP+SI], CH //存储器地址 SS*10H+[BP+SI]
+6，寄存器相对寻址
+有效地址由寄存器与位移量之和给出；
+MOV CL, [SI+200H] //存储器地址 DS*10H+SI+200H
+MOV LIST[DI], AX //存储器地址 DS*10H+LIST+DI
+7，相对基址加变址寻址
+有效地址由基址寄存器、变址寄存器与位移量之和给出；
+MOV BL, [BX+SI+100H] //存储器地址 DS*10H+BX+SI+100H
+MOV LIST[BP+DI], BX //存储器地址 SS*10H+LIST+BP+DI
 
-
+>>数据传送指令
+1，通用数据传送指令
+1)MOV 数据传送
+MOV DS, AX
+注：不能在两个内存之间传送数据，如 MOV [SI], [BX] 不对，可改为两步
+MOV AX, [BX] 和 MOV [SI], AX；
+2)PUSH, POP 堆栈操作
+PUSH AX //将AX中数据压入栈顶
+POP AX //将栈顶元素弹出到AX
+3)XCHG 交换数据
+XCHG AL, BL
+XCHG [2530], CX //寄存器与内存的字交换
+2，取地址指令
+1)LEA 取偏移地址
+LEA AX, [2782] //AX的值为2782
+LEA BX, [BP+SI] //BX的值为BP+SI
+3，标志位传送指令
+1)LAHF 
+读标志位，将FLAGs的值读入AH
+2)SAHF
+设置标志位，将AH的值写入
+3)PUSHF
+将FLAGs的值入栈
+4)POPF
+将栈顶的值出栈到FLAGs
+4，IO端口传送指令
+1)IN 从IO端口输入
+IN AL, 50H //将50H端口的字节读入AL
+IN AX, DX //将DX和DX+1所指的两个端口的数据读入AX
+2)OUT 输出到IO端口
+OUT 50H, AL 
+OUT DX, AX
 
 
 
