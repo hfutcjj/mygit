@@ -246,6 +246,95 @@ IN AX, DX //将DX和DX+1所指的两个端口的数据读入AX
 OUT 50H, AL 
 OUT DX, AX
 
+>>算术运算指令
+所有算术运算结果都影响FLAGs标志位；
+1，ADD 不带进位的加法
+ADD AL, 50H //AL+50H->AL
+ADD [BX+DI], AX //(BX+DI, BX+DI+1)+AX->(BX+DI, BX+DI+1)
+2，ADC 带进位的加法
+ADC AX, SI //AX+SI+CF->AX
+3，INC 自增
+INC AL //++AL
+4, SUB 不带借位的减法
+SUB BX, CX
+5, SBB 带借位的减法
+SBB BX, CX //BX-CX-CF->BX
+6, DEC 自减
+DEC AX
+7, NEG 取相反数
+NEG AL //0-AL
+8, CMP 比较
+CMP AX, 2000H //比较的结果放FF中
+9，MUL 无符号数的乘法
+MUL BL //AL*BL->AX
+MUL CX //AX*CX->(DX, AX)
+10, IMUL 有符号数的乘法
+11，DIV 无符号数的除法
+DIV CL //AX/CL->AL...AH
+DIV CX //(DX, AX)/CX->AX...DX
+12, IDIV 有符号数的除法
+
+>>逻辑运算指令
+1，AND 逻辑与
+AND AL, 06H
+2，OR 逻辑或
+OR AX, 0068H
+3，NOT 逻辑非
+NOT AX
+4, XOR 逻辑异或
+XOR AH, AL
+5, TEST 测试逻辑与
+TEST AX, 8000H //AX与8000H逻辑与，结果不放入AX, 只改变标志位ZF
+
+>>移位指令
+分为8种不同的移位操作；
+1，SAL 非循环算术左移
+2，SHL 非循环逻辑左移
+3，SAR 非循环算术右移
+4，SHR 非循环逻辑右移
+5，ROL 循环左移
+6，ROR 循环右移
+7, RCL 带进位的循环左移
+8，RCR 带进位的循环右移
+注：算术移位保持符号位不变，而逻辑移位操作无符号数，用0填补空出的位；
+循环移位是将操作数首位相接；
+SAL AX, 1
+MOV CL, 6
+ROR BX, CL
+
+>>控制转移指令
+1，JMP 无条件转移
+JMP 1000H //段内转移
+JMP 2000H:1000H //段间转移
+2，条件转移
+条件转移有很多种，列举几个：
+JZ ZF=0则转移
+JO OF=0则转移
+JG 大于则转移
+JLE 小于或等于则转移
+3，LOOP 循环控制
+每次将CX减一，直到CX=0则退出循环；
+MOV CX, 0100H
+KKK: ....
+LOOP KKK
+4，CALL 调用
+RET 返回
+CALL的使用方式与JMP类似；
+CALL通常与RET成对使用；
+
+>>处理器控制指令
+1，标志位控制
+CLC, STC, CMC
+分别将CF标志位清零、置1和取反；
+CLD, STD
+分别将DF标志位清零、置1；
+CLI, STI
+分别将IF标志位清零、置1；
+2，同步控制
+ESC CPU交权，由协处理器接手；
+WAIT CPU等待，直到TEST引脚出现有效信号；
+HLT CPU暂停工作；
+NOP 让CPU空转3个时钟周期，常用于延时；
 
 
 
