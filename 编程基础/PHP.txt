@@ -35,7 +35,6 @@ $name; //'z*ao'
 1)隐式转换
 echo输出任何类型，都会转换成字符串;
 true->1, false->''; 
-0->'';
 null->'';
 resource->Resource id#数字;
 数组->'Array', 同时报警告;
