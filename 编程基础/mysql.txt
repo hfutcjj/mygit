@@ -96,9 +96,8 @@ create table t1(
 ) select age page, name pname from t;
 create...select结构，要复制的列名一定要相同，顺序可以不同;
 3)直接复制表结构到新表
-方式一: create table tnewname like toldname;
-方式二: create table tnewname select cnames from toldname where 1=2;
-方式一可复制字段类型以及约束条件，方式二只能复制字段类型，约束条件丢失;
+create table tnewname like toldname;
+可复制字段类型以及约束条件;
 4)复制表结构以及数据到新表
 create table tnewname select cnames from toldname where condition;
 3, 查看创建的数据表结构信息
