@@ -818,10 +818,10 @@ use const My\Full\CONSTNAME; //导入常量，要用use const
 2)use可以在一行中导入多个
 use My\Full\Classname as Another, My\Full\NSname;
 3)导入和动态名称
-use My\Full\Classname as Anthoer;
+use My\Full\Classname as Another;
 $obj = new Another(); //My\Full\Classname
 $s = 'Another';
-$obj = new $a; //Another, 因为字符串是完全限定的
+$obj = new $s(); //new \Another(), 因为字符串是完全限定的
 8, 全局空间
 如果没有定义命名空间，则是全局空间;
 namespace A\B\C;
