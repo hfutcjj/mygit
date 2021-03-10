@@ -217,32 +217,27 @@ select * from student t1, dept t2;
 
 >>mysql系统函数
 1, 字符串函数
-1)concat() //连接
-concat('a', 'b', 'c'); //'abc'
-2)concat_ws() //用指定的分隔符连接
-concat('|', 'a', 'b', 'c'); //'a|b|c'
-3)format() //格式化数字，返回字符串格式
-format(1234.567); //'1,234.57'
-4)lower() //转换为小写
-lower('Hello'); //'hello'
-5)upper() //转换为大写
-upper('Hello'); //'HELLO'
-6)left() //从左边截取
-left('hello,world', 4); //'hell'
-7)right() //从右边截取
-right('hello,world', 4); //'orld'
-8)length() //获取字符串的长度
+1)length() //获取字符串的长度
 length('hello'); //5
-9)ltrim() //删除字符串前面的空格
-10)rtrim() //删除字符后面的空格
-11)trim() //删除字符串前后的空格
-12)substring() //字符串截取
+2)substring() //字符串截取
 substring('hello,world', 2, 3); //'ell', 索引从1开始
 substring('hello,world',2); //'ello,world'
 substring('hello,world', -2); //'ld'
-13)replace() //字符串替换
+3)left() //从左边截取
+left('hello,world', 4); //'hell'
+4)right() //从右边截取
+right('hello,world', 4); //'orld'
+5)replace() //字符串替换
 replace('hello,world', 'o', '*'); //'hell*,w*rld'
-14)[not] like //模式匹配
+6)upper() //转换为大写
+upper('Hello'); //'HELLO'
+7)lower() //转换为小写
+lower('Hello'); //'hello'
+8)ltrim()/rtrim()/trim() //删除字符串前或后的空格
+9)concat()/concat_ws() //连接
+concat('a', 'b', 'c'); //'abc'
+concat_ws('|', 'a', 'b', 'c'); //'a|b|c'
+10)[not] like //模式匹配
 select 'hello' like 'h%'; //1
 2, 数学函数
 1)abs() //取绝对值
