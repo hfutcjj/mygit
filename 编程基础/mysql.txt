@@ -223,21 +223,19 @@ length('hello'); //5
 substring('hello,world', 2, 3); //'ell', 索引从1开始
 substring('hello,world',2); //'ello,world'
 substring('hello,world', -2); //'ld'
-3)left() //从左边截取
+3)left()/right() //从左或右边截取
 left('hello,world', 4); //'hell'
-4)right() //从右边截取
 right('hello,world', 4); //'orld'
-5)replace() //字符串替换
+4)replace() //字符串替换
 replace('hello,world', 'o', '*'); //'hell*,w*rld'
-6)upper() //转换为大写
+5)upper()/lower() //转换为大小写
 upper('Hello'); //'HELLO'
-7)lower() //转换为小写
 lower('Hello'); //'hello'
-8)ltrim()/rtrim()/trim() //删除字符串前或后的空格
-9)concat()/concat_ws() //连接
+6)trim()/ltrim()/rtrim() //删除字符串前或后的空格
+7)concat()/concat_ws() //连接
 concat('a', 'b', 'c'); //'abc'
 concat_ws('|', 'a', 'b', 'c'); //'a|b|c'
-10)[not] like //模式匹配
+8)[not] like //模式匹配
 select 'hello' like 'h%'; //1
 2, 数学函数
 1)abs() //取绝对值
