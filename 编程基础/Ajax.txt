@@ -28,7 +28,7 @@ xhr.onreadystatechange = function(){
 >>jquery实现ajax
 1, ajax()
 $.ajax({
-	method: 'POST',
+	type: 'POST',
 	url: 'test.php',
 	data: {
 		name: 'zhao',
