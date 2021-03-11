@@ -2,10 +2,12 @@
 var xhr = new XMLHttpRequest();
 //GET请求
 xhr.open('GET', 'test.php?username=zhao', true); //第三个参数默认为true表示异步请求
+xhr.send();
 //POST请求
 xhr.open('POST', 'test.php');
 xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 xhr.send('name=zhao&age=30');
+//处理响应
 xhr.onreadystatechange = function(){
 	if(xhr.readyState == 4 && xhr.status == 200){
 		//xhr.getResponseHeader(); 取得某个响应头信息
