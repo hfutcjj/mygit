@@ -36,17 +36,10 @@ git log
 git log --pretty=oneline
 以更精简的版本id显示提交历史:
 git log --pretty=oneline --abbrev-commit
+注: 在客户端查看历史记录，当一屏显示不下时，按翻页键PageDn可以查看更多，按q键退出当前命令；
 
 >>查看历史命令
 git reflog
-
->>版本回退(已经提交到版本库)
-git reset --hard HEAD^
-git reset --hard HEAD~1
-git reset --hard 1094a
-注: HEAD是指向当前版本的指针;
-HEAD表示当前版本(即最新的提交), 上一个版本就是HEAD^(同HEAD~1)，上上一个就是HEAD^^(同HEAD~2)，依次类推;
-也可以用版本号的id来表示，只用写前面几位，只要系统能区分是哪个版本id就可以;
 
 >>工作区、版本库(=暂存区stage+分支)
 我们工作的目录，就是工作区;
@@ -59,6 +52,14 @@ git restore <file>
 
 >>退回提交给暂存区的文件(已经提交到暂存区)
 git restore --staged <file>
+
+>>版本回退(已经提交到版本库)
+git reset --hard HEAD^
+git reset --hard HEAD~1
+git reset --hard 1094a
+注: HEAD是指向当前版本的指针;
+HEAD表示当前版本(即最新的提交), 上一个版本就是HEAD^(同HEAD~1)，上上一个就是HEAD^^(同HEAD~2)，依次类推;
+也可以用版本号的id来表示，只用写前面几位，只要系统能区分是哪个版本id就可以;
 
 >>删除文件
 git rm test.txt
