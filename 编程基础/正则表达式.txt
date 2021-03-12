@@ -87,20 +87,11 @@ var r = reg.exec(s);
 r; //['a1', 'a', index: 0]
 全文搜索每次匹配后reg的lastIndex都会变化，会导致结果不一样：
 var reg = /(\w)\d/g, s = 'a1b2c3';
-var r1 = reg.exec(s);
-r1; //['a1', 'a', index: 0]
-reg.lastIndex; //2
-var r2 = reg.exec(s);
-r2; //['b2', 'b', index: 2]
-reg.lastIndex; //4
-var r3 = reg.exec(s);
-r3; //['c3', 'c', index: 4]
-reg.lastIndex; //6
-var r4 = reg.exec(s);
-r4; //null
-reg.lastIndex; //0
-var r5 = reg.exec(s);
-r5; //同r1
+var r1 = reg.exec(s); //['a1', 'a', index: 0]
+var r2 = reg.exec(s); //['b2', 'b', index: 2]
+var r3 = reg.exec(s); //['c3', 'c', index: 4]
+var r4 = reg.exec(s); //null
+var r5 = reg.exec(s); //同r1
 reg.lastIndex; //2
 注：lastIndex同样会影响修饰符为g的全文搜索的test()结果：
 var reg = /\w\d/g, s = 'a1b2';
