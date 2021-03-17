@@ -1,3 +1,42 @@
+>>tp5目录结构
+tp5
+	application	//....................应用目录app，我们在这个目录中编程
+		index  //.....................一个模块
+			controller //.............控制层
+			model //..................模型层
+			view //...................视图层
+		admin //......................另一个模块
+		config.php //.................应用的配置文件
+		database.php //...............数据库配置
+		route.php //..................路由文件
+		common.php //.................公共文件，可以将项目的通用函数放到这
+		command.php //................用命令行运行php时读取的配置文件
+		tags.php //...................应用行为扩展
+	public //.........................网站的根目录，对外开放的接口
+		index.php //..................入口文件
+		static //.....................放置网站的静态文件
+			css //....................css文件
+			js //.....................js文件
+			imgs //...................图片
+		favicon.ico //................网站的默认图标
+		router.php //.................用于快速启动的配置
+		robots.txt //.................给搜索引擎爬取
+	thinkphp //.......................tp5的框架
+		base.php //...................定义一些常量
+		composer.json //..............定义composer的配置文件
+		console.php //................控制台的入口文件
+		convention.php //.............框架默认的配置文件
+		helper.php //.................助手函数
+		start.php //..................框架启动文件
+		lang //.......................语言包
+		library //....................框架的核心
+			think //..................核心文件
+			traits //.................类库的扩展
+		tpl //........................框架默认的一些模板
+	extend //.........................第三方类库可以放到这
+	runtime //........................运行中的缓存文件
+	vendor //.........................安装过程中生成的类库放在这个文件夹
+
 >>设置域名绑定
 打开apache的配置文件httpd.conf, 添加
 <VirtualHost *:80>
@@ -6,6 +45,28 @@
 </VirtualHost>
 打开系统文件C:/Windows/System32/drivers/etc/hosts文件, 修改
 127.0.0.1 tp5.com
+
+>>绑定入口文件
+在public/index.php中添加
+define('BIND_MODULE', 'admin'); //url: localhost/user/validate
+define('BIND_MODULE', 'admin/user'); //url: localhost/validate
+define('BIND_MODULE', 'admin/user/validate'); //url: localhost
+
+>>路由
+1, tp采用单一入口模式访问应用，所有的请求都定位到入口文件, 系统从url参数解析当前请求的
+模块、控制器和操作，标准的url访问格式：http://localhost/index.php/模块/控制器/操作;
+入口文件默认可隐藏，隐藏后的url格式：http://localhost/模块/控制器/操作;
+2, 命名规范: 模块名和操作名必须小写，控制器名和文件名保持一致，首字母大写;
+控制器名如果采用驼峰命名，如HelloWorld，默认必须采用hello_world的形式访问，可以修改
+配置文件的'url_convert'=>true来支持驼峰访问;
+3, 带参数的url
+http://localhost/index/index/index/name/zhao/age/30
+http://localhost/index/index/index?name=zhao&age=30
+url会自动寻找同名的参数，参数的先后顺序可以随意;
+还可以精简url的参数形式省略参数名，修改配置 'url_param_type'=>1就可以，此时url变成
+http://localhost/index/index/index/zhao/30
+4, 自定义路由
+修改application/route.app文件；
 
 >>配置
 修改public/index.php文件, 添加
@@ -78,28 +139,6 @@ return [
 	'app_now_status' => 'prod'
 ];
 当不同环境之间切换时，只用修改.env文件;
-
->>绑定入口文件
-在public/index.php中添加
-define('BIND_MODULE', 'admin'); //url: localhost/user/validate
-define('BIND_MODULE', 'admin/user'); //url: localhost/validate
-define('BIND_MODULE', 'admin/user/validate'); //url: localhost
-
->>路由
-1, tp采用单一入口模式访问应用，所有的请求都定位到入口文件, 系统从url参数解析当前请求的
-模块、控制器和操作，标准的url访问格式：http://localhost/index.php/模块/控制器/操作;
-入口文件默认可隐藏，隐藏后的url格式：http://localhost/模块/控制器/操作;
-2, 命名规范: 模块名和操作名必须小写，控制器名和文件名保持一致，首字母大写;
-控制器名如果采用驼峰命名，如HelloWorld，默认必须采用hello_world的形式访问，可以修改
-配置文件的'url_convert'=>true来支持驼峰访问;
-3, 带参数的url
-http://localhost/index/index/index/name/zhao/age/30
-http://localhost/index/index/index?name=zhao&age=30
-url会自动寻找同名的参数，参数的先后顺序可以随意;
-还可以精简url的参数形式省略参数名，修改配置 'url_param_type'=>1就可以，此时url变成
-http://localhost/index/index/index/zhao/30
-4, 自定义路由
-修改application/route.app文件；
 
 >>请求对象Request
 Request对象处理客户端的数据以及服务器端的环境变量; 需要引入use think\Request;
