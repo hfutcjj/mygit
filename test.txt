@@ -1,5 +1,0 @@
-//test.txt
-this is added;
-this is to add;
-
-I am git2/test.txt;

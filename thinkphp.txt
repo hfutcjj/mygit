@@ -46,6 +46,10 @@ tp5
 打开系统文件C:/Windows/System32/drivers/etc/hosts文件, 修改
 127.0.0.1 tp5.com
 
+>>隐藏入口文件
+localhost/index.php/index/Index/index 简化为 localhost/index/Index/index；
+现在的tp版本默认隐藏入口文件，如果没有默认隐藏，可自行百度进行隐藏设置；
+
 >>绑定入口文件
 在public/index.php中添加
 define('BIND_MODULE', 'admin'); //url: localhost/user/validate
@@ -60,36 +64,42 @@ define('BIND_MODULE', 'admin/user/validate'); //url: localhost
 控制器名如果采用驼峰命名，如HelloWorld，默认必须采用hello_world的形式访问，可以修改
 配置文件的'url_convert'=>true来支持驼峰访问;
 3, 带参数的url
-http://localhost/index/index/index/name/zhao/age/30
-http://localhost/index/index/index?name=zhao&age=30
+http://localhost/index/Index/index/name/zhao/age/30
+http://localhost/index/Index/index?name=zhao&age=30
 url会自动寻找同名的参数，参数的先后顺序可以随意;
 还可以精简url的参数形式省略参数名，修改配置 'url_param_type'=>1就可以，此时url变成
-http://localhost/index/index/index/zhao/30
+http://localhost/index/Index/index/zhao/30
 4, 自定义路由
 修改application/route.app文件；
 
 >>配置
+1，只修改框架自带的配置文件
+1)惯例配置 
+位于thinkphp/convention.php，包含所有的配置选项，一般不修改该文件；
+2)项目配置
+位于application/config.php，可以修改该配置文件，修改结果会覆盖惯例配置；
+3)数据库配置
+位于application/database.php，可以在这修改数据库配置，修改结果会覆盖惯例配置；
+2，自定义配置文件
 修改public/index.php文件, 添加
 //定义配置文件目录
 define('CONF_PATH', __DIR__.'/../config/');
 新建与application同级的文件夹config, 在里面添加配置文件;
 配置文件都是以数组的形式返回;
 能通过助手函数config()输出所有配置;
-1, 惯例配置
-位于thinkphp/convention.php, 是框架自带的配置文件, 一般不修改该文件;
-2, 应用配置
+1)应用配置
 在config文件夹下新建配置文件, 如config.php, database.php, session.php, cookie.php等;
 这些配置文件会覆盖惯例配置中的配置项;
 应用配置对这个应用有效;
-3, 模块配置
+2)模块配置
 新建config/index/config.php, 设置index模块的配置项;
 新建config/admin/config.php, 设置admin模块的配置项;
 模块配置仅对特定模块有效;
-4, 场景配置
+3)场景配置
 在config/config.php中添加一项: 'app_status'=>'home'或'office';
 新建config/home.php, 设置home的配置选项;
 新建config/office.php, 设置office的配置选项;
-5, 动态配置
+3，动态配置
 在控制器的构造函数中或者某个方法中配置; 
 Config::set('key', 'value');
 config('key', 'value');
@@ -174,7 +184,7 @@ $req->file();
 $req->method(); //请求的类型
 $req->url(); //获取当前的url地址，有关url信息的有很多其他方法，具体参考文档
 $req->module(); //当前模块
-$req->control(); //当前控制器
+$req->controller(); //当前控制器
 $req->action(); //当前操作
 $req->routeInfo(); //路由信息
 $req->dispatch(); //调度信息
@@ -186,6 +196,7 @@ input('session.username');
 input('file.image');
 
 >>响应对象Response
+大多情况下，我们不需要关注Response对象本身，只需要在控制器的方法中返回数据即可；
 public function getUserInfo($type = 'json'){
 	Config::set('default-return-type', $type);
 	$res = [
