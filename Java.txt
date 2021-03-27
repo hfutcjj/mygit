@@ -1,0 +1,322 @@
+>>java最重要的两个特征
+跨平台、开源
+
+>>java发展里程碑
+JavaSE 1.0(1995) -> JavaSE 1.4(2002) ->
+J2SE 5(2006) -> J2SE 8(2014) -> J2SE 14(2020)
+
+>>java安装
+下载JDK，目前常用的是J2SE8的jdk8版本;
+下载IntelliJ IDEA, 常用的集成开发环境;
+JVM -> jre -> jdk
+JVM: java虚拟机
+jre: java运行环境
+jdk: java开发包
+
+>>安装Tomcat服务器
+1)点击tomcat/bin/startup.bat打开服务器；
+默认端口号8080，根目录tomcat/webapps;
+2)每个项目都要新建WEB-INF目录，WEB-INF是web应用的安全目录，只有服务端可以访问，
+客户端访问不了，主要包含以下子目录：
+web.xml，项目部署文件；
+classes文件夹，用以放置*.class文件；
+lib文件夹，用于存放需要的jar包；
+
+>>安装MyEclipse
+下载安装MyEclipase, 然后配置jre以及集成Tomcat服务器；
+配置jre: Window->Preferences->Java->Installed JREs->添加已安装的jdk目录；
+集成Tomcat: Window->Preferences->MyEclipse->Servers->Tomcat->选择已安装的Tomcat版本;
+
+>>java的数据类型
+1，基本数据类型
+1)数值型
+整数类型: byte、short、int、long；
+浮点类型：float、double；
+2)字符型 char
+3)布尔型 boolean
+2，引用数据类型
+1)数组 
+2)类(class)
+3)接口(interface)
+注: java中的浮点类型默认是double，如果定义成float，需在后面加f，如 float a = 3.14f;
+
+>>基础知识点
+1，标识符可以由字母、数字、下划线_、美元符号$组成，不能以数字开头；
+标识符严格区分大小写；
+2，java中的变量区分大小写；
+3，java的常量用final定义, 常量名一般用大写，如 final double PI = 3.14;
+
+>>注释
+1)单行注释 //
+2)多行注释 /* */
+3)文档注释 
+/**
+ * This is doc comment
+ * @author zhao
+ * @version 1.0
+ */
+可以通过javadoc命令从文档注释中提取内容，生成帮助文档，也可以通过IDE直接生成；
+
+>>数组
+int[] arr = new int[5]; //声明并分配空间
+int[] arr = {1, 2, 3, 4, 5}; //声明并初始化
+int[] arr = new int[]{1, 2, 3, 4, 5}; //与上面等价
+数组可以用如下结构遍历：
+for(int item: arr){
+	//...
+}
+
+>>String类
+1，声明和初始化
+String s = "hello"; //常量字符串
+String s = new String("hello");
+2, java中的字符串是不可改变的；
+3，字符串的比较
+String s1 = "hello";
+String s2 = "hello";
+String s3 = new String("hello");
+String s4 = new String("hello");
+s1 == s2; //true //常量字符串多次出现时，会被编译器优化成只创建一个
+s3 == s4; //false //比较的是内存地址
+s3.equals(s4); //true //equals()比较字符串的内容
+"hi"+s1 == "hi"+s1; //false //+运算结果是在运行时确定，所以是不同对象的比较
+4，常用方法
+s.length(); //长度
+s.indexOf(ch/s1); //查找字符或者字符串第一次出现的位置，没找到则返回-1
+s.lastIndexOf(ch/s1); //查找字符或者字符串最后一次出现的位置
+s.substring(m, n); //查找[m, n)的子串
+s.trim(); //去除前后的空格
+s1.equals(s2); //比较两个字符串的内容
+s.toLowerCase()/s.toUpperCase(); //转换大小写
+s.charAt(i); //查找指定位置的字符
+s.split(s1); //分割字符串，返回字符串数组
+s.getBytes(); //将字符串转换为byte数组
+
+>>StringBuilder/StringBuffer类
+两者相似，可以修改字符串对象，避免了String类每次创建对象浪费性能；
+StringBuilder s = new StringBuilder();
+StringBuilder s = new StringBuilder("hello");
+s.length(); //长度
+s.append(s1); //追加内容到s的末尾
+s.insert(i, s1); //在指定位置插入字符串
+s.toString(); //将StringBuilder对象转换为String对象
+
+>>基本类型的包装类型
+byte -> Byte;
+short -> Short;
+int -> Integer;
+long -> Long;
+float -> Float;
+double -> Double;
+char -> Character;
+boolean -> Boolean;
+举例：Integer i = new Integer(5);
+Integer i = new Integer("5");
+包装类型提供的方法可用于本类型与其他基本类型之间的互相转换；
+
+>>基本类型与字符串之间的转换
+1, 基本类型->字符串
+int c = 10;
+String s = Integer.toString(c);
+String s = String.valueOf(c);
+String s = c + "";
+2, 字符串->基本类型
+String s = "8";
+int d = Integer.parseInt(s);
+int d = Integer.valueOf(s);
+
+>>Date类与SimpleDateFormat类
+1, 将日期转换为字符串 format()
+Date d = new Date();
+SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+String s = sd.format(d);
+2, 将字符串转换为日期 parse()
+String s = "2021年03月25日 10:30:00";
+SimpleDateFormat sd = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+Date d = sd.parse(s);
+
+>>Calendar类
+java中Date类很少使用，一般使用Calendar类来得到日期时间；
+Calendar类是个抽象类，可以通过调用getInstance()静态方法获取一个Calendar对象；
+Calendar cd = Calendar.getInstance();
+int year = cd.get(Calendar.YEAR);
+int month = cd.get(Calendar.MONTH) + 1; //month从0开始
+int day = cd.get(Calendar.DAY_OF_MONTH);
+int hour = cd.get(Calendar.HOUR_OF_DAY);
+int minute = cd.get(Calendar.MINUTE);
+int second = cd.get(Calendar.SECOND);
+Date date = cd.getTime(); //Calendar->Date
+Long time = cd.getTimeInMillis(); //以毫秒为单位的时间戳
+
+>>Math类
+Math类中所有方法都是静态方法；
+Math.round()/Math.floor()/Math.ceil()/Math.sqrt();
+Math.random(); //[0, 1)之间的随机数
+
+>>集合
+1, 两大根接口：Collection、Map;
+Collection有三个子接口：List、Queue、Set；
+List的实现类：ArrayList, LinkedList;
+Queue的实现类：LinkedList;
+Set的实现类：HashSet;
+Map的实现类：HashMap;
+使用最多的是ArrayList、HashSet、HashMap;
+2，ArrayList类
+数组的封装, ArrayList类实现了List接口；
+List pers = new ArrayList(); 
+List<String> pers = new ArrayList<String>(); //泛型，指定数组内元素的类型
+pers.add("zhao"); pers.add("qian"); pers.add("sun"); //在数组的末尾添加元素
+pers.add(1, "li"); //在指定位置添加元素
+pers.contains("zhao"); //判断指定的元素是否存在
+pers.size(); //数组的元素个数
+pers.get(1); //取指定位置的元素
+pers.set(1, "sun"); //修改指定位置的元素
+pers.remove(1); //删除指定位置的元素
+pers.remove("qian"); //删除指定元素
+//用for结构循环遍历
+for(String item: pers){ 
+	//...
+}
+//用迭代器循环遍历
+Iterator it = pers.iterator();
+while(it.hasNext()){
+	String s = it.next();
+	//...
+}
+System.out.println(pers); //以[]形式输出数组
+注：把某个对象放入集合中，集合会统一当成Object对象处理，在用get方法取出时需要用强制类型转换
+成特定的类，而用泛型则可以避免这种转换；
+3，HashSet类
+HashSet类实现了Set接口，其内部的元素时无序的，循环迭代输出的顺序不可预知；
+Set<String> st = new HashSet<String>();
+st.add("zhao"); //添加元素，多次添加相同的元素只算作一个
+st.size(); //集合的元素个数
+st.contains("zhao"); //判断指定的元素是否存在
+st.remove("zhao"); //删除集合的指定元素
+st.clear(); //清空集合所有的元素
+st.isEmpty(); //判断集合是否为空
+注：同List不同，Set没有get()和set()方法；
+4，HashMap类
+HashMap类实现了Map接口；Map里有个内部类Entry；
+Map里有个内部类Entry, 存储键值对<Key, Value>；
+Map里的key值不可重复，而value值可以；
+Map<String, Integer> pers = new HashMap<String, Integer>();
+pers.put("zhao", 30); //key值不存在，则添加元素
+pers.put("zhao", 40); //key值存在，则修改元素
+pers.get("zhao"); //取指定键对应的值
+pers.remove("zhao"); //按指定的键删除元素
+pers.size(); //元素的个数
+pers.containsKey("zhao"); //判断是否存在指定的键
+pers.containsValue(30); //判断是否存在指定的值
+pers.keySet(); //键的集合
+pers.values(); //值的集合
+pers.entrySet(); //键值对的集合
+
+>>包 package
+1，包采用"逆域名法"进行命名；
+2，标准格式：域名后缀.组织机构名.项目名[.模块名].包的功能，如
+com.imooc.weather.ui;
+com.alibaba.taobao.customer.data;
+3, 使用同一个包下的类无需导入，使用不同包下的类需要使用import导入；
+4，包的目录结构
+com	
+	alibaba 
+		taobao	
+			admin
+				Data.java
+			page
+				Page1.java
+				Page2.java
+//Page2.java
+package com.alibaba.taobao.Page;
+import com.alibaba.taobao.admin.Data;
+public class Page2{
+	public static void main(String[] args){
+		Page1 p1 = new Page1();
+		Data d = new Data();
+	}
+}
+
+>>面向对象
+1，面向对象的三大特征
+封装、继承、多态
+2，访问修饰符
+按权限从小到大排序：
+private //本类
+default //默认，同一个包中的类
+protected //继承的子类
+public //任何地方
+3，继承用extends
+4，接口用interface定义, 接口只包含方法的的声明，接口不能实例化对象;
+类实现接口用implements，类要实现接口中定义的方法;
+5，多态
+同一接口的不同实现，调用时统一当作接口调用；
+//ICanEat.java
+public interface ICanEat{
+	public void eat(String food);
+}
+//Animal.java
+public class Animal{
+	public void eat(String food){
+		System.out.println("Animal eats " + food);
+	}
+}
+//Human.java
+public class Human{
+	public void eat(String food){
+		System.out.println("Human eats " + food);
+	}
+}
+//Test.java
+public class Test{
+	public static void main(String[] args){
+		ICanEat dog = new Animal();
+		dog.eat("meat");
+		ICanEat student = new Human();
+		student.eat("apple");
+	}
+}
+
+>>异常处理
+1，最底层的异常类 Throwable，由 Throwable 继承出两个类 Error 与 Exception；
+Error是底层致命错误，会导致程序中断；
+Exception是程序逻辑错误导致，我们平时用到的异常都是继承Exception类；
+2，抛出异常的关键字有 throw 和 throws 两个，使用如下
+public double divide(int one, int two) throws Exception{
+	if(two == 0){
+		throw new Exception("除数为0");
+	}else{
+		return one / two;
+	}
+}
+3，处理异常
+1)由 try...catch...finally来处理异常
+public void compute(){
+	try{
+		double d = divide(5, 0);
+	}catch(ArithmaticException e){
+		//...
+	}catch(Exception e){
+		//...
+	}finally{
+		//...
+	}
+}
+2)不处理，继续抛出，让上层处理
+public void compute() throws Exception{
+	double d = divide(5, 0);
+}
+注：函数内部有未处理的抛出异常，函数头必须声明throws异常；
+4, 自定义异常
+class MyException extends Exception{
+	//...
+}
+
+>>JSP
+
+
+
+
+
+
+
