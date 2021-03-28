@@ -57,6 +57,71 @@ lib文件夹，用于存放需要的jar包；
  */
 可以通过javadoc命令从文档注释中提取内容，生成帮助文档，也可以通过IDE直接生成；
 
+>>包 package
+1，包采用"逆域名法"进行命名；
+2，标准格式：域名后缀.组织机构名.项目名[.模块名].包的功能，如
+com.imooc.weather.ui;
+com.alibaba.taobao.customer.data;
+3, 使用同一个包下的类无需导入，使用不同包下的类需要使用import导入；
+4，包的目录结构
+com	
+	alibaba 
+		taobao	
+			admin
+				Data.java
+			page
+				Page1.java
+				Page2.java
+//Page2.java
+package com.alibaba.taobao.Page;
+import com.alibaba.taobao.admin.Data;
+public class Page2{
+	public static void main(String[] args){
+		Page1 p1 = new Page1();
+		Data d = new Data();
+	}
+}
+
+>>面向对象
+1，面向对象的三大特征
+封装、继承、多态
+2，访问修饰符
+按权限从小到大排序：
+private //本类
+default //默认，同一个包中的类
+protected //继承的子类
+public //任何地方
+3，继承用extends
+4，接口用interface定义, 接口只包含方法的的声明，接口不能实例化对象;
+类实现接口用implements，类要实现接口中定义的方法;
+5，多态
+同一接口的不同实现，调用时统一当作接口调用；
+//ICanEat.java
+public interface ICanEat{
+	public void eat(String food);
+}
+//Animal.java
+public class Animal implements ICanEat{
+	public void eat(String food){
+		System.out.println("Animal eats " + food);
+	}
+}
+//Human.java
+public class Human implements ICanEat{
+	public void eat(String food){
+		System.out.println("Human eats " + food);
+	}
+}
+//Test.java
+public class Test{
+	public static void main(String[] args){
+		ICanEat dog = new Animal();
+		dog.eat("meat");
+		ICanEat student = new Human();
+		student.eat("apple");
+	}
+}
+
 >>数组
 int[] arr = new int[5]; //声明并分配空间
 int[] arr = {1, 2, 3, 4, 5}; //声明并初始化
@@ -211,69 +276,57 @@ pers.containsValue(30); //判断是否存在指定的值
 pers.keySet(); //键的集合
 pers.values(); //值的集合
 pers.entrySet(); //键值对的集合
-
->>包 package
-1，包采用"逆域名法"进行命名；
-2，标准格式：域名后缀.组织机构名.项目名[.模块名].包的功能，如
-com.imooc.weather.ui;
-com.alibaba.taobao.customer.data;
-3, 使用同一个包下的类无需导入，使用不同包下的类需要使用import导入；
-4，包的目录结构
-com	
-	alibaba 
-		taobao	
-			admin
-				Data.java
-			page
-				Page1.java
-				Page2.java
-//Page2.java
-package com.alibaba.taobao.Page;
-import com.alibaba.taobao.admin.Data;
-public class Page2{
-	public static void main(String[] args){
-		Page1 p1 = new Page1();
-		Data d = new Data();
+注：Collection<Student>进行查找或判断是否包含操作时，需要Student类重写Object类的
+hashCode()和equals()方法；
+5, Comparable接口和Comparator接口
+Comparable接口定义了默认的比较规则，而Comparator接口定义临时的比较规则；
+自定义类implements Comparable接口，实现compareTo()方法；
+或定义一个临时的三方类implements Comparator接口，实现compare()方法；
+6, Collections工具类
+Collections.sort(lists); //需要lists对象实现Comparable接口
+Collections.sort(lists, ComparatorObj); //需要ComparatorObj实现Comparator接口
+7，示例，重写了Object的toString()、hashCode()、equals()方法，并实现了Comparable接口;
+public class Student implements Comparable<Student>{
+	public String name;
+	public int age;
+	//构造函数
+	public Student(String name, int age){
+		this.name = name;
+		this.age = age;
+	}
+	@Override
+	public String toString(){
+		return "Name: " + this.name + ", age: " + this.age;
+	}
+	@Override
+	public int hashCode(){
+		return this.name.hashCode(); //或者返回其他哈希值
+	}
+	@Override
+	public boolean equals(Object o){ //参数必须为Object类型
+		if(this == o) return true;
+		if(o == null || !(o instanceof Student)) return false;
+		Student st = (Student)o;
+		if(this.name.equals(st.name) && this.age==st.age) return true;
+		return false;
+	}
+	public int compareTo(Student o){ //实现comparable接口的compareTo()方法
+		return this.name.compareTo(o.name); //按姓名比较
+		//return this.age - o.age; //按年龄比较
+	}
+	public static void main(String[] args){ //测试
+		List<Student> lists = new ArrayList<Student>();
+		lists.add(new Student("zhao", 30)); 
+		lists.add(new Student("qian", 40));
+		lists.add(new Student("sun", 20));
+		lists.contains(new Student("qian", 40));
+		Collections.sort(lists); //实现Comparable接口
+		Collections.sort(lists, new StudentComparator()); //实现Comparator接口
 	}
 }
-
->>面向对象
-1，面向对象的三大特征
-封装、继承、多态
-2，访问修饰符
-按权限从小到大排序：
-private //本类
-default //默认，同一个包中的类
-protected //继承的子类
-public //任何地方
-3，继承用extends
-4，接口用interface定义, 接口只包含方法的的声明，接口不能实例化对象;
-类实现接口用implements，类要实现接口中定义的方法;
-5，多态
-同一接口的不同实现，调用时统一当作接口调用；
-//ICanEat.java
-public interface ICanEat{
-	public void eat(String food);
-}
-//Animal.java
-public class Animal{
-	public void eat(String food){
-		System.out.println("Animal eats " + food);
-	}
-}
-//Human.java
-public class Human{
-	public void eat(String food){
-		System.out.println("Human eats " + food);
-	}
-}
-//Test.java
-public class Test{
-	public static void main(String[] args){
-		ICanEat dog = new Animal();
-		dog.eat("meat");
-		ICanEat student = new Human();
-		student.eat("apple");
+public StudentComparator implements Comparator<Student>{ //定义三方类进行临时比较
+	public int compare(Student st1, Student st2){
+		return st1.age - st2.age;
 	}
 }
 
@@ -313,8 +366,22 @@ class MyException extends Exception{
 }
 
 >>JSP
-
-
+0, 九大内置对象
+out, request, response, session, application,
+page, pageContext, exception, config;
+1, out
+JspaWriter类的实例，向客户端输出内容；
+out.println(); //向客户端打印字符串
+out.getBufferSize(); //返回缓冲区大小，单位字节
+out.getRemaining(); //返回剩余缓冲区的大小
+out.flush(); //将缓冲区的内容输出到客户端
+out.clear(); //清除缓冲区
+out.close(); //关闭缓冲区
+2, request
+HttpServletRequest类的实例，客户端的请求对象；
+request.getParameter("username"); //指定name的值
+request.getParameterValues("likes"); //指定name的数组，比如爱好
+request.setCharacterEncoding("utf-8"); //解决客户端显示的中文乱码问题
 
 
 
