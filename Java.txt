@@ -370,7 +370,7 @@ class MyException extends Exception{
 out, request, response, session, application,
 page, pageContext, exception, config;
 1, out
-JspaWriter类的实例，向客户端输出内容；
+JspWriter类的实例，向客户端输出内容；
 out.println(); //向客户端打印字符串
 out.getBufferSize(); //返回缓冲区大小，单位字节
 out.getRemaining(); //返回剩余缓冲区的大小
@@ -379,9 +379,40 @@ out.clear(); //清除缓冲区
 out.close(); //关闭缓冲区
 2, request
 HttpServletRequest类的实例，客户端的请求对象；
+通过调用request的相关方法得到请求的属性；
 request.getParameter("username"); //指定name的值
 request.getParameterValues("likes"); //指定name的数组，比如爱好
 request.setCharacterEncoding("utf-8"); //解决客户端显示的中文乱码问题
+注: 解决客户端向服务器通过get方式传递中文参数的乱码问题：
+修改tomcat的配置文件server.xml, 在<Connector>里面加URIEncoding="utf-8"；
+3，response
+HttpServletResponse类的实例，但JSP中很少直接用；
+response.setContentType("html/text;charset=utf-8"); //设置响应的contentType
+response.sendRedirect("page2.jsp"); //请求重定向
+注：请求重定向与请求转发的区别
+请求重定向：response.redirect("page2.jsp");
+客户端行为，本质上属于两次请求，前一次的请求对象不会保存，参数会丢失，地址栏的URL也会改变；
+请求转发：request.getRequestDispatcher("page2.jsp").forward(request, response);
+服务器行为，是一次请求，转发后请求对象会保存，地址栏的URL不会改变；
+4，session
+HttpSession类的实例，session保存在服务器的内存中，表示客户端与服务器的一次会话，
+从进入网站到浏览器关闭的时间；
+session.getId(); //返回创建session的Id号
+session.getCreationTime(); //session创建的时间，返回毫秒的时间戳
+session.setAttribute("username", "zhao"); //创建session的属性变量
+session.getAttribute("username"); //返回session的指定属性
+session.getValueNames(); //返回此session所有的属性组成的数组
+session.getMaxInactiveInterval(); //返回多少秒后此session会失效
+session.setMaxInactiveInterval(); //设置多少秒后此session会失效
+销毁session的三种方式：
+1)session.invalidate()
+2)session过期(超时)
+3)服务器重启
+注：tomcat默认的session超时时间是30分钟，设置session超时时间有两种方法：
+1)session.setMaxInactiveInterval();
+2)修改web.xml配置，<session-timeout>30</session-timeout>
+
+
 
 
 
