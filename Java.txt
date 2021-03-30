@@ -81,6 +81,7 @@ public class Page2{
 		Data d = new Data();
 	}
 }
+5，一个类文件中只能有一个与文件名相同的public类，除此以外还可以定义其他非public类；
 
 >>面向对象
 1，面向对象的三大特征
@@ -91,10 +92,18 @@ private //本类
 default //默认，同一个包中的类
 protected //继承的子类
 public //任何地方
-3，继承用extends
-4，接口用interface定义, 接口只包含方法的的声明，接口不能实例化对象;
-类实现接口用implements，类要实现接口中定义的方法;
-5，多态
+3，继承用extends关键字，java不允许多继承，但可以实现多个接口；
+调用父类中的数据和方法，使用super关键字；
+4, final类不允许被继承，或方法不允许被重写;
+5，抽象类
+抽象类用abstract关键字，抽象类里的抽象方法也用abstract关键字，抽象类不能实例化；
+继承抽象类时，需要实现抽象类里的抽象方法；
+6，接口用interface定义, 接口只包含方法的的声明，接口不能实例化对象;
+类实现接口用implements，类要实现接口中定义的方法；
+接口是完全的抽象类，或者说抽象类介于具体类与接口之间；
+接口的属性默认修饰是：public static final;
+接口的方法默认修饰是：public abstract;
+7，多态
 同一接口的不同实现，调用时统一当作接口调用；
 //ICanEat.java
 public interface ICanEat{
@@ -121,6 +130,12 @@ public class Test{
 		student.eat("apple");
 	}
 }
+
+>>方法重载与方法重写
+1，方法重载
+同一个类中，方法名相同，但接收的参数数量或类型不同；
+2, 方法重写
+子类对父类的方法的重写；
 
 >>数组
 int[] arr = new int[5]; //声明并分配空间
@@ -366,10 +381,10 @@ class MyException extends Exception{
 }
 
 >>JSP
-0, 九大内置对象
+1, 九大内置对象
 out, request, response, session, application,
 page, pageContext, exception, config;
-1, out
+1), out
 JspWriter类的实例，向客户端输出内容；
 out.println(); //向客户端打印字符串
 out.getBufferSize(); //返回缓冲区大小，单位字节
@@ -377,7 +392,7 @@ out.getRemaining(); //返回剩余缓冲区的大小
 out.flush(); //将缓冲区的内容输出到客户端
 out.clear(); //清除缓冲区
 out.close(); //关闭缓冲区
-2, request
+2), request
 HttpServletRequest类的实例，客户端的请求对象；
 通过调用request的相关方法得到请求的属性；
 request.getParameter("username"); //指定name的值
@@ -385,7 +400,7 @@ request.getParameterValues("likes"); //指定name的数组，比如爱好
 request.setCharacterEncoding("utf-8"); //解决客户端显示的中文乱码问题
 注: 解决客户端向服务器通过get方式传递中文参数的乱码问题：
 修改tomcat的配置文件server.xml, 在<Connector>里面加URIEncoding="utf-8"；
-3，response
+3)，response
 HttpServletResponse类的实例，但JSP中很少直接用；
 response.setContentType("html/text;charset=utf-8"); //设置响应的contentType
 response.sendRedirect("page2.jsp"); //请求重定向
@@ -394,7 +409,7 @@ response.sendRedirect("page2.jsp"); //请求重定向
 客户端行为，本质上属于两次请求，前一次的请求对象不会保存，参数会丢失，地址栏的URL也会改变；
 请求转发：request.getRequestDispatcher("page2.jsp").forward(request, response);
 服务器行为，是一次请求，转发后请求对象会保存，地址栏的URL不会改变；
-4，session
+4)，session
 HttpSession类的实例，session保存在服务器的内存中，表示客户端与服务器的一次会话，
 从进入网站到浏览器关闭的时间；
 session.getId(); //返回创建session的Id号
@@ -405,13 +420,40 @@ session.getValueNames(); //返回此session所有的属性组成的数组
 session.getMaxInactiveInterval(); //返回多少秒后此session会失效
 session.setMaxInactiveInterval(); //设置多少秒后此session会失效
 销毁session的三种方式：
-1)session.invalidate()
-2)session过期(超时)
-3)服务器重启
-注：tomcat默认的session超时时间是30分钟，设置session超时时间有两种方法：
-1)session.setMaxInactiveInterval();
-2)修改web.xml配置，<session-timeout>30</session-timeout>
-
+a)session.invalidate()
+b)session过期(超时)
+c)服务器重启
+tomcat默认的session超时时间是30分钟，设置session超时时间有两种方法：
+a)session.setMaxInactiveInterval();
+b)修改web.xml配置，<session-timeout>30</session-timeout>
+5), application
+ServletContext类的实例，由服务器管理的全局对象，可在多个客户端用户之间共享，
+在服务器启动时创建，服务器关闭时销毁；
+application.setAttribute("counter", 1); //绑定对象到指定属性
+application.getAttribute("counter"); //返回指定属性的对象值，注意返回值是Object类型
+application.getServerInfo(); //返回JSP(Server)引擎名及版本号
+6), page
+page对象就是指向当前JSP页面本身，类似于this，是java.lang.Object的实例；
+7)，pageContext
+pageContext类的实例，提供了对JSP页面内所有对象的访问；
+pageContext.getSession() == session; //true
+pageContext.outOut() == out; //true
+pageContext.forward("page1.jsp"); //页面跳转
+pageContext.include("page1.jsp"); //包含另一个页面
+8), config
+config对象是在一个Servlet初始化时，JSP引擎向它传递信息用的；
+9)，exception
+java.lang.Throwable类的实例；
+//page1.jsp
+要先在jsp指令中添加 errorPage="page2.jsp";
+out.println(5/0);
+//page2.jsp
+要先在jsp指令中添加 isErrorPage="true";
+exception.getMessage();
+exception.toString();
+2, Javabean
+1)Javabean的设计原则
+公有类、属性私有、无参的公有构造函数、getter和setter方法；
 
 
 
