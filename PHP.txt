@@ -882,42 +882,6 @@ class Fruit{
 }
 $o = Fruit::factory();
 
->>文件上传与下载
-1, 文件上传的前后端实现
-//test.html
-<form method="post" action="test.php" enctype="multipart/form-data">
-	请选择要上传的文件: <input type="file" name="myfile" accept="image/jpeg,image/png">
-	<input type="submit" value="上传文件">
-</form>
-//test.php
-$filename = $_FILES['myfile']['name']; //文件名
-$type = $_FILES['myfile']['type']; //文件的MIME类型
-$tmp_name = $_FILES['myfile']['tmp_name']; //文件上传到服务器的临时位置
-$size = $_FILES['myfile']['size']; //文件大小
-$error = $_FILES['myfile']['error']; //错误号
-if($error == 0){
-	if(move_uploaded_file($tmp_name, 'uploads/'.$filename)){ //同 copy($tmp_name, 'uploads/'.$filename); 
-		echo '上传成功';
-	}else{
-		echo '上传失败';
-	}
-}else{
-	//...匹配其他错误号
-}
-注: 前端表单method必须为post, 并且要设置表单属性为enctype="multipart/form-data";
-文件域的accept属性可选，由于限定上传文件的类型;
-文件上传到服务器后存放在临时文件夹，要通过move_uploaded_file()或copy()函数将文件移动到指定文件夹;
-2, 与文件上传相关的php.ini中的配置项
-file_uploads=On //开启文件上传功能
-upload_tmp_dir="E:\xampp\tmp" //文件上传到服务器的临时路径
-upload_max_filesize=40M //文件上传的大小限制
-max_file_uploads=20 //单次文件上传的最大个数
-post_max_size=40M //post请求的大小限制
-注: 文件大小不能大于upload_max_filesize和post_max_size;
-3, 
-
->>
-
 >>站点配置
 更改配置文件，需要重启服务器才能生效;
 1, 自定义网站根目录(httpd.conf)
@@ -964,6 +928,64 @@ xampp/apache/conf/httpd.conf:
 Listen: 8080
 ServerName localhost: 8080
 以后在url中要输入localhost:8080/test/test.php才能访问；
+
+>>无限级分类
+1，递归实现，以pid表示
+建一个字段pid表示父级id;
+递归操作中如何保存结果:
+1)$GLOBALS['result'];
+2)使用引用参数；
+//从指定pid一直递归查到最底层
+function getList($pid=0, &$result=array(), $depth=0){
+	$depth += 2;
+	$sql = "select * from t where pid = $pid";
+	$r = $conn->query($sql);
+	if($r && $r->num_rows > 0){
+		while($row = $r->fetch_assoc()){
+			$row['name'] = str_repeat('&nbsp;', $depth).'|--'.$row['name'];
+			$result[] = $row;
+			getList($row['id'], $result, $depth);
+		}
+	}
+	return $result;
+}
+3)static $result = array();
+//从指定id一直查到最顶层
+function getList($id){
+	static $result = array();
+	$sql = "select * from t where id = $id";
+	$r = $conn->query($sql);
+	if($r && $r->num_rows > 0){
+		$row = $r->fetch_assoc();
+		getList($row['pid']);
+		$result[] = $row;
+	}
+	return $result;
+}
+2，以全路径实现
+建一个字段path，把所有祖先的id按序排列，如path: '1,2,4'(不包括父级id);
+//从指定path一直递归查到最底层
+function getList2($path=''){
+	$result = array();
+	$sql = "select id, name, path, concat(path, ',', id) fullpath from area 
+	  where path like "."'$path%'"." order by fullpath";
+	$r = $conn->query($sql);
+	if($r && $r->num_rows > 0){
+		while($row = $r->fetch_assoc()){
+			$depth = count(explode(',', trim($row['fullpath'], ',')));
+			$row['name'] = str_repeat('&nbsp;&nbsp;', $depth).'|--'.$row['name'];
+			$result[] = $row;
+		}
+	}
+	return $result;
+}
+//从指定id一定查到最顶层
+id->fullpath;
+$sql = "select * from t where id in (fullpath) order by id";
+
+
+
+
 
 
 

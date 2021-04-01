@@ -17,6 +17,12 @@
 2, 退出
 exit / quit / \q;
 
+>>SQL语句的类型：
+DDL 数据定义语言: create;
+DCL 数据控制语言: grant, revoke;
+DML 数据操作语言: select, insert, update, delete;
+TPL 事务处理语言；commit, rollback;
+
 >>操作数据库
 1, 创建数据库
 create database test;
@@ -209,11 +215,18 @@ select * from student t1 right [outer] join dept t2 on t1.Dno = t2.Dno;
 4)全连接
 mysql不支持全连接，可合并左外连接与右外连接的结果得到:
 select * from student t1 left [outer] join dept t2 on t1.Dno = t2.Dno
-union 
+union (all)
 select * from student t1 right [outer] join dept t2 on t1.Dno = t2.Dno;
 5)交叉连接(笛卡尔积)
 select * from student t1 cross join dept t2; 等价于
 select * from student t1, dept t2;
+举例：
+选择同时在t1表中和t2表中的人:
+select * from t1 join t2 on t1.name = t2.name;
+选择在t1表中但不在t2表中的人的记录：
+select t1.* from t1 left join t2 on t1.name = t2.name where t2.name is null;
+选择在t2表中但不在t1表中的人的记录：
+select t2.* from t1 right join t1 on t1.name = t2.name where t1.name is null;
 
 >>mysql系统函数
 1, 字符串函数
@@ -417,6 +430,18 @@ from 订单表 a
 join 用户表 b on a.用户ID = b.用户ID 
 join 订单商品表 c on c.订单ID = b.订单ID
 group by b.用户表, b.电话, b.地址, a.订单ID;
+4, 查询每个人打怪数量最多的日期
+打怪表: kills(id, name, datestr, times);
+方法一(不推荐):
+select t1.name, t1.datestr, t1.times from kills t1 join 
+	(select name, max(times) mtimes from times group by name) t2 
+	on t1.name = t2.name where t1.times = t2.mtimes;
+方法二(最优):
+select t1.name, t1.datestr, t1.times from kills t1 join kills t2 on t1.sid = t2.sid 
+	group by t1.name, t1.datestr, t1.times having t1.times = max(t2.times);
+注: 聚合函数只能出现在having中，不能出现在where中;
+5, 如何查询每个人打怪数量排名前三的日期
+？
 	
 >>数据库设计
 1, 数据库设计的目标
