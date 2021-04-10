@@ -27,6 +27,34 @@ lib文件夹，用于存放需要的jar包；
 配置jre: Window->Preferences->Java->Installed JREs->添加已安装的jdk目录；
 集成Tomcat: Window->Preferences->MyEclipse->Servers->Tomcat->选择已安装的Tomcat版本;
 
+>>java中的进制
+1, 声明
+int bin = 0b1010; //0b表示二进制
+int oct = 014; //0表示八进制
+int dec = 98; //默认十进制
+int hex = 0x6a; //0x表示十六进制
+2, jdk自带的进制转换
+1)十进制转换为其他进制
+Integer.toBinaryString(i);
+Integer.toOctalString(i);
+Integer.toHexString(i);
+Integer.toString(int i, int rad); //第二个参数是要转换的进制
+2)其他进制的字符串转换为十进制整数
+Integer.parseInt(String s, int rad); //返回int
+Integer.valueOf(String s, int rad); //返回Integer
+3, 位运算
+&(按位与), |(按位或), ^(按位异或), ~(按位取反), 
+<<(左移), >>(右移), >>>(无符号右移)
+4, 大小端模式
+大小端模式指的是多字节数据在计算机中存储与传输的顺序;
+大端: 高位字节放在低地址，低位字节放在高地址；
+小端: 相反；
+java中默认使用的是大端模式，符合人类的习惯；
+5，BigInteger 大数
+BigInteger(String val);
+BigInteger(String val, int radix);
+BigInteger.valueOf(long val);
+
 >>java的数据类型
 1，基本数据类型
 1)数值型
@@ -267,7 +295,7 @@ System.out.println(pers); //以[]形式输出数组
 注：把某个对象放入集合中，集合会统一当成Object对象处理，在用get方法取出时需要用强制类型转换
 成特定的类，而用泛型则可以避免这种转换；
 3，HashSet类
-HashSet类实现了Set接口，其内部的元素时无序的，循环迭代输出的顺序不可预知；
+HashSet类实现了Set接口，其内部的元素是无序的，循环迭代输出的顺序不可预知；
 Set<String> st = new HashSet<String>();
 st.add("zhao"); //添加元素，多次添加相同的元素只算作一个
 st.size(); //集合的元素个数
@@ -295,16 +323,17 @@ pers.entrySet(); //键值对的集合
 hashCode()和equals()方法；
 5, Comparable接口和Comparator接口
 Comparable接口定义了默认的比较规则，而Comparator接口定义临时的比较规则；
-自定义类implements Comparable接口，实现compareTo()方法；
-或定义一个临时的三方类implements Comparator接口，实现compare()方法；
+自定义类实现 Comparable接口，实现compareTo()方法；
+或定义一个临时的三方类实现 Comparator接口，实现compare()方法；
 6, Collections工具类
 Collections.sort(lists); //需要lists对象实现Comparable接口
 Collections.sort(lists, ComparatorObj); //需要ComparatorObj实现Comparator接口
 7，示例，重写了Object的toString()、hashCode()、equals()方法，并实现了Comparable接口;
-public class Student implements Comparable<Student>{
+class Student implements Comparable<Student>{
 	public String name;
 	public int age;
 	//构造函数
+	public Student(){}
 	public Student(String name, int age){
 		this.name = name;
 		this.age = age;
@@ -339,9 +368,9 @@ public class Student implements Comparable<Student>{
 		Collections.sort(lists, new StudentComparator()); //实现Comparator接口
 	}
 }
-public StudentComparator implements Comparator<Student>{ //定义三方类进行临时比较
+class StudentComparator implements Comparator<Student>{ //定义三方类进行临时比较
 	public int compare(Student st1, Student st2){
-		return st1.age - st2.age;
+		return st1.getAge() - st2.getAge();
 	}
 }
 
