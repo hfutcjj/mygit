@@ -1,6 +1,3 @@
->>java最重要的两个特征
-跨平台、开源
-
 >>java发展里程碑
 JavaSE 1.0(1995) -> JavaSE 1.4(2002) ->
 J2SE 5(2006) -> J2SE 8(2014) -> J2SE 14(2020)
@@ -21,11 +18,6 @@ jdk: java开发包
 web.xml，项目部署文件；
 classes文件夹，用以放置*.class文件；
 lib文件夹，用于存放需要的jar包；
-
->>安装MyEclipse
-下载安装MyEclipase, 然后配置jre以及集成Tomcat服务器；
-配置jre: Window->Preferences->Java->Installed JREs->添加已安装的jdk目录；
-集成Tomcat: Window->Preferences->MyEclipse->Servers->Tomcat->选择已安装的Tomcat版本;
 
 >>java中的进制
 1, 声明
@@ -53,14 +45,45 @@ java中默认使用的是大端模式，符合人类的习惯；
 5，BigInteger 大数
 BigInteger(String val);
 BigInteger(String val, int radix);
-BigInteger.valueOf(long val);
+BigInteger.valueOf(long val); //静态方法
+//BigInteger b1, b2; 四则运算
+b1.add(b2); b1.subtract(b2); b1.multiply(b2); b1.divide(b2);
+//位运算
+b1.and(b2); b1.or(b2); b1.xor(b2); b1.not(); b1.shiftLeft(n); b1.shiftRight(n);
+6, 定点数与浮点数
+1)定点数: 小数点放在某一固定位置上；
+2)浮点数：小数点位置不固定，用指数规则来表示；
+(符号位)尾数*基数^阶码，如 (12.5625)10 = (1100.1001)2 = 1.1001001 * 2^3;
+float(4byte): 符号位(1bit)+阶码(8bit)+尾数(23bit);
+double(8byte): 符号位(1bit)+阶码(11bit)+尾数(52bit);
+规定: 浮点数=小数部分*基数^阶码，小数部分的整数部分为1，尾数只存储小数点后面的部分，如
+(0.5625)10 = (0.1001)2 = 1.001*2^(-1), 尾数只存储001, 即尾数M满足0<=M<1, 小数部分=1+M;
+阶码用移码表示，即
+float(32bit): (-1)^s * (1+M) * 2^(E-127); //E为阶码存储的值(移码)，要减127才是实际值
+double(64bit): (-1)^s * (1+M) * 2^(E-1023);
+3)精度
+float尾数是23位二进制数，转换成十进制，有效数字6~7位；
+double尾数是52位二进制数，转换成十进制，有效数字15~16位；
+7, BigDecimal 高精度小数
+BigDecimal(String val);
+BigDecimal.valueOf(double d);
+BigDecimal的四则运算与BigInteger相似；
+8, ascii与Unicode
+ascii码：用7位二进制数表示128种字符信息；
+Unicode码：用多位字节来存储各种文字与符号，分为UTF-4, UTF-8, UTF-16, UTF-32;
+java中的char(2byte)使用unicode字符集，UTF-16，只能表示unicode编号在65535以内的字符；
+char类型的加减运算就是按其unicode编号进行运算；
+注：gbk编码中文占用2个字节，英文占用1个字节；
+utf-8编码中文占用3个字节，英文占用1个字节；
+utf-16be编码中文占用2个字节，英文占用2个字节；
+java是双字节编码，采用utf-16be编码；
 
 >>java的数据类型
 1，基本数据类型
 1)数值型
-整数类型: byte、short、int、long；
-浮点类型：float、double；
-2)字符型 char
+整数类型: byte(1)、short(2)、int(4)、long(8)；
+浮点类型：float(4)、double(8)；
+2)字符型 char(2)
 3)布尔型 boolean
 2，引用数据类型
 1)数组 
@@ -73,6 +96,7 @@ BigInteger.valueOf(long val);
 标识符严格区分大小写；
 2，java中的变量区分大小写；
 3，java的常量用final定义, 常量名一般用大写，如 final double PI = 3.14;
+4, java的变量分为三种：类变量、实例变量、局部变量；
 
 >>注释
 1)单行注释 //
@@ -110,6 +134,16 @@ public class Page2{
 	}
 }
 5，一个类文件中只能有一个与文件名相同的public类，除此以外还可以定义其他非public类；
+6, 引用其他包中类的三种方式
+1)java.util.Arrays.sort(a); //使用全名，不推荐
+2)import java.util.Arrays;
+3)import java.util.*;
+
+>>java修饰符
+1)访问控制修饰符
+private, default, protected, public;
+2)非访问控制修饰符
+final, abstract, static, synchronized;
 
 >>面向对象
 1，面向对象的三大特征
@@ -120,7 +154,7 @@ private //本类
 default //默认，同一个包中的类
 protected //继承的子类
 public //任何地方
-3，继承用extends关键字，java不允许多继承，但可以实现多个接口；
+3，继承用extends关键字，java不支持类的多继承，但支持接口的多继承，并且一个类可以实现多个接口；
 调用父类中的数据和方法，使用super关键字；
 4, final类不允许被继承，或方法不允许被重写;
 5，抽象类
@@ -132,6 +166,7 @@ public //任何地方
 接口的属性默认修饰是：public static final;
 接口的方法默认修饰是：public abstract;
 7，多态
+定义: 同一行为(方法)具有不同的表现形式；
 同一接口的不同实现，调用时统一当作接口调用；
 //ICanEat.java
 public interface ICanEat{
@@ -158,6 +193,29 @@ public class Test{
 		student.eat("apple");
 	}
 }
+8，内部类
+静态内部类和非静态内部类；
+静态内部类不能访问外部类的成员变量；
+9，默认构造函数的自动继承
+如果在子类的构造函数中没有显示调用父类的构造函数，则继承父类的默认构造函数；
+SupClass: 
+public SupClass(){}
+public SupClass(String name, int age){ //... }
+SubClass:
+public SubClass(String name, int age, double salary){
+	//SupClass()  //会自动先调用父类的默认构造函数
+	//todo...
+}
+10，标记接口
+不包含任何方法和属性的接口，仅仅是给实现该接口的类做个标记，如
+public interface EventListener{}
+11, 重写Override
+子类的方法b重写父类的方法a：
+b的参数列表必须与a完全相同；
+b的返回值与a相同或者是a的子类，b的访问修饰符不能小于a，b抛出的异常范围不能大于a；
+12，static方法不能声明为抽象方法；
+13，接口中的方法默认为 public abstract;
+接口中的变量默认为 public static final;
 
 >>方法重载与方法重写
 1，方法重载
@@ -173,6 +231,15 @@ int[] arr = new int[]{1, 2, 3, 4, 5}; //与上面等价
 for(int item: arr){
 	//...
 }
+
+>>Arrays类
+java.util.Arrays, 操作数组的工具类;
+int[] a = {5, 2, 9, 6, 1};
+Arrays.toString(a); //打印数组
+Arrays.sort(a); //对a排序
+Arrays.binarySearch(a, value); //在已排序好的数组a中查找value值
+Arrays.equals(a, b); //判断两个数组a和b是否相同
+Arrays.fill(a, value); //用value值来填充数组a
 
 >>String类
 1，声明和初始化
@@ -233,28 +300,41 @@ String s = "8";
 int d = Integer.parseInt(s);
 int d = Integer.valueOf(s);
 
->>Date类与SimpleDateFormat类
-1, 将日期转换为字符串 format()
+>>日期时间类
+1，Date类  (java.util.Date)
+Date d1 = new Date(); //当前时间
+Date d2 = new Date(timestamp); //指定毫秒时间戳的时间
+d1.before(d2); //d1是否在d2之前，类似有 d1.after(d2)
+d1.equals(d2); //是否相等
+d1.compareTo(d2); //比较两个日期，返回-1，0， 1
+d1.getTime(); //返回时间戳
+d1.setTime(timestamp); //用指定时间戳设置日期
+2, SimpleDateFormat类  (java.text.SimpleDateFormat)
+用来格式化显示日期时间
+//将日期转换为字符串 format()
 Date d = new Date();
 SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 String s = sd.format(d);
-2, 将字符串转换为日期 parse()
+//将字符串转换为日期 parse()
 String s = "2021年03月25日 10:30:00";
 SimpleDateFormat sd = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
 Date d = sd.parse(s);
-
->>Calendar类
+3, Calendar类
 java中Date类很少使用，一般使用Calendar类来得到日期时间；
 Calendar类是个抽象类，可以通过调用getInstance()静态方法获取一个Calendar对象；
 Calendar cd = Calendar.getInstance();
+cd.set(1987, 7, 1, 12, 30); //设置日期时间的各部分
+cd.set(Calendar.YEAR, 1987); //设置日期时间的某个字段
 int year = cd.get(Calendar.YEAR);
 int month = cd.get(Calendar.MONTH) + 1; //month从0开始
-int day = cd.get(Calendar.DAY_OF_MONTH);
+int day = cd.get(Calendar.DAY_OF_MONTH); //同 Calendar.DATE
 int hour = cd.get(Calendar.HOUR_OF_DAY);
 int minute = cd.get(Calendar.MINUTE);
 int second = cd.get(Calendar.SECOND);
+int week = cd.get(Calendar.DAY_OF_WEEK); //星期几
 Date date = cd.getTime(); //Calendar->Date
 Long time = cd.getTimeInMillis(); //以毫秒为单位的时间戳
+cd.add(Calendar.DATE, 10); //当前日期加10天
 
 >>Math类
 Math类中所有方法都是静态方法；
@@ -409,80 +489,31 @@ class MyException extends Exception{
 	//...
 }
 
->>JSP
-1, 九大内置对象
-out, request, response, session, application,
-page, pageContext, exception, config;
-1), out
-JspWriter类的实例，向客户端输出内容；
-out.println(); //向客户端打印字符串
-out.getBufferSize(); //返回缓冲区大小，单位字节
-out.getRemaining(); //返回剩余缓冲区的大小
-out.flush(); //将缓冲区的内容输出到客户端
-out.clear(); //清除缓冲区
-out.close(); //关闭缓冲区
-2), request
-HttpServletRequest类的实例，客户端的请求对象；
-通过调用request的相关方法得到请求的属性；
-request.getParameter("username"); //指定name的值
-request.getParameterValues("likes"); //指定name的数组，比如爱好
-request.setCharacterEncoding("utf-8"); //解决客户端显示的中文乱码问题
-注: 解决客户端向服务器通过get方式传递中文参数的乱码问题：
-修改tomcat的配置文件server.xml, 在<Connector>里面加URIEncoding="utf-8"；
-3)，response
-HttpServletResponse类的实例，但JSP中很少直接用；
-response.setContentType("html/text;charset=utf-8"); //设置响应的contentType
-response.sendRedirect("page2.jsp"); //请求重定向
-注：请求重定向与请求转发的区别
-请求重定向：response.redirect("page2.jsp");
-客户端行为，本质上属于两次请求，前一次的请求对象不会保存，参数会丢失，地址栏的URL也会改变；
-请求转发：request.getRequestDispatcher("page2.jsp").forward(request, response);
-服务器行为，是一次请求，转发后请求对象会保存，地址栏的URL不会改变；
-4)，session
-HttpSession类的实例，session保存在服务器的内存中，表示客户端与服务器的一次会话，
-从进入网站到浏览器关闭的时间；
-session.getId(); //返回创建session的Id号
-session.getCreationTime(); //session创建的时间，返回毫秒的时间戳
-session.setAttribute("username", "zhao"); //创建session的属性变量
-session.getAttribute("username"); //返回session的指定属性
-session.getValueNames(); //返回此session所有的属性组成的数组
-session.getMaxInactiveInterval(); //返回多少秒后此session会失效
-session.setMaxInactiveInterval(); //设置多少秒后此session会失效
-销毁session的三种方式：
-a)session.invalidate()
-b)session过期(超时)
-c)服务器重启
-tomcat默认的session超时时间是30分钟，设置session超时时间有两种方法：
-a)session.setMaxInactiveInterval();
-b)修改web.xml配置，<session-timeout>30</session-timeout>
-5), application
-ServletContext类的实例，由服务器管理的全局对象，可在多个客户端用户之间共享，
-在服务器启动时创建，服务器关闭时销毁；
-application.setAttribute("counter", 1); //绑定对象到指定属性
-application.getAttribute("counter"); //返回指定属性的对象值，注意返回值是Object类型
-application.getServerInfo(); //返回JSP(Server)引擎名及版本号
-6), page
-page对象就是指向当前JSP页面本身，类似于this，是java.lang.Object的实例；
-7)，pageContext
-pageContext类的实例，提供了对JSP页面内所有对象的访问；
-pageContext.getSession() == session; //true
-pageContext.outOut() == out; //true
-pageContext.forward("page1.jsp"); //页面跳转
-pageContext.include("page1.jsp"); //包含另一个页面
-8), config
-config对象是在一个Servlet初始化时，JSP引擎向它传递信息用的；
-9)，exception
-java.lang.Throwable类的实例；
-//page1.jsp
-要先在jsp指令中添加 errorPage="page2.jsp";
-out.println(5/0);
-//page2.jsp
-要先在jsp指令中添加 isErrorPage="true";
-exception.getMessage();
-exception.toString();
-2, Javabean
-1)Javabean的设计原则
-公有类、属性私有、无参的公有构造函数、getter和setter方法；
+>>正则表达式
+主要用到两个类: Pattern 和 Matcher;
+1, 判断是否完全匹配
+String subject = "a520";
+String pattern = "a(\\d+)";
+boolean isMatch = Pattern.matches(pattern, subject); //true
+2, 获取匹配结果
+Pattern r = Pattern.compile(pattern);
+Matcher m = r.matcher(subject);
+//通过Matcher提供的方法进行操作
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
