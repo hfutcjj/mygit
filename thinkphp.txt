@@ -432,6 +432,9 @@ $conn = Db::connect();
 3)$conn = Db::connect('my_database');
 4)$conn = Db::connecct('mysql://root:root@127.0.0.1:3306/test#utf8');
 参数格式为: tpye://username:password@hostname:port/database#charset;
+注：Db::connect()是惰性加载，只在执行query()或execute()方法时才真正连接数据库；
+每次调用Db::query()/execute()方法时，都是默认连接database.php里配置的数据库，除非用
+$db = Db::connect('db1'); $db->query();
 3, 原生操作
 //查询
 $rs = Db::query('select * from tname where id = $id'); //不安全
@@ -461,7 +464,7 @@ $rs2 = $db2->query('...');
 4, 链式操作(查询构造器)
 查询构造器的优点是基于PDO实现，对不同的数据库驱动都是统一的语法;
 //查询
-$db= Db::table('tname'); //等价于$Db::name('tname'), 等价于db('tname')
+$db= Db::table('tname'); //等价于Db::name('tname'), 等价于db('tname')
 $rs = $db->where(['id'=>3])->select(); //所有记录, 二维数组
 $rs = $db->where('id', 3)->find(); //仅第一条记录，一维数组
 $rs = $db->where(’id', 3)->value('name'); //一条记录的name字段的值，一个值
@@ -476,6 +479,7 @@ $rs = $db->where('age', '>', 20)
 注: table()里的表名含前缀, 而name()不含前缀;
 Db::table('tname') 与 db('tname') 等价，后者是助手函数;
 注: 如果查询结果为空，select()返回空数组，find()返回null;
+注：链式查询可以用buildSql()来得到原生sql语句；
 //插入
 $db = Db::table('tname');
 $rs = $db->insert(['name'=>'zhao', 'age'=>30]); //返回被影响的行数
@@ -490,6 +494,8 @@ $rs = $db->where('name', 'zhao')->setDec('age', 10); //set age = age - 10
 //删除
 $rs = $db->where(['name'=>'zhao'])->delete(); //返回被影响的行数
 注: 更新和删除操作必须传where条件，否则报错;
+//分组查询
+$rs = $db->field('sid, avg(score) avgScore')->group('sid')->select();
 5, 条件构造器
 $db->where('name', 'null'); //id=3 或 name is null 的形式
 $db->where('id', '>', 3); //=(eq), <>(neq), >(gt), >=(egt), <(lt), <=(elt)
@@ -517,15 +523,55 @@ try{
 }catch(\Exception $e){
 	Db::rollback(); //执行失败则回滚事务
 }
+7, 分块查询
+当数据量非常大时，一次性取数据会导致内存开销非常大，可以采用分块查询，如每次取100条数据进行处理：
+Db::name('student')->where('status', '>', 0)
+	->chunk(100, function($list){
+		foreach($list as $val){
+			//处理每一条数据
+		}
+	});
+8, tp5对时间查询的支持
+在数据表中新增一个表示时间的字段，比如birthday，类型可以是int/datetime/timestamp/string等都可以;
+Db::name('student')->whereTime('birthday', '>', '2000-1-1')->select();
+Db::name('student')->whereTime('birthday', '>', 'this week')->select();
+Db::name('student')->whereTime('birthday', '>', '-2 months')->select();
+Db::name('student')->whereTime('birthday', 'between', ['2000-1-1', '2010-1-1'])->select();
+Db::name('student')->whereTime('birthday', 'today')->select();
+Db::name('student')->whereTime('birthday', 'last week')->select();
+9, 多表联合查询
+$r = Db::name('student')->alias('s')
+	->join('sc', 's.id = sc.sid')
+	->join('course c', 'c.id = sc.cid')
+	->field('s.name sname, c.name cname, sc.score')
+	->select();
 
 >>模型
-1, 模型命名
+0, tp5的模型
+tp5的模型是ORM(对象-关系映射)的封装；
+关系表->模型，记录->模型对象实例，字段->对象属性;
+模型是一种对象化操作，不是简单的CURD操作，简单的CURD操作用Db类即可；
+Db类的查询默认返回数组，而模型类返回的是当前的模型对象实例；
+1, 模型定义
+1)模型命名
 模型名与数据表的名称一致，遵循驼峰命名法, user->User.php, user_info->UserInfo.php;
 namespace app\index\model;
 use think\Model;
 class User extends Model{
 	//...
 }
+2)模型类的实现
+大多数情况下，无须为模型定义任何的属性和方法即可完成基本的操作；
+模型会自动对应一个数据表，数据库表前缀+模型类名->数据表名;
+模型的命名是驼峰法，转换为表名会自动转换为小写+下划线的表名；
+也可以在模型中定义单独的数据表，有两种方式:
+a)protected $table = 'think_user'; //包含前缀
+b)protected $name = 'user'; //不包含前缀
+如果当前的模型类需要使用不同的数据库连接，可以定义模型的connection属性，
+protected $connection = [
+	//数据库的配置
+];
+注：一般来说，一个应用的模型都是公用的，不区分模块，所以不必在每个模块下面定义模型；
 2, 引入模型的几种方式
 1)use app\index\model\User; //推荐
 User::get(1)->toArray();
@@ -535,24 +581,49 @@ $userModel = new User(); //实例化
 $userModel = Loader::model('User'); //通过Laoder类，当模型很多时，无须引入模型
 4)$userModel = model('User'); //model()助手函数
 3, 查询
-$userModel = new User();
+1)$userModel = new User();
 $rs = $userModel->where('age', '>', 30)->select();
 foreach($rs as $v){
 	print_r($v->toArray());
 }
-//或
-$rs = $userModel->get(1);
-echo $rs->name;
+2)$id = 2;
+$rs = $userModel->get($id); //传入主键作为参数
+$rs = $userModel->get(['email'=>'1234567@qq.com']); //传入数组作为非主键
+$rs = $userModel->getByEmail('1234567@qq.com'); //同上
+echo "name: {$rs->name}, age: {$rs->age}";
+3)查询所有数据
+$list = UserModel::all();
+foreach($list as $value){
+	echo "name:{$value['name']}, age:{$value['age']}<br>";
+}
 4, 插入
 //插入单条数据
-$userModel->insert(['name'=>'zhao', 'age'=>30]); 
+1)$userModel->insert(['name'=>'zhao', 'age'=>30]); 
+2)$userModel = new User();
+$userModel->name = 'zhao';
+$userModel->age = 30;
+if($userModel->save()){
+	return '用户['.$user->name.']添加成功';
+}else{
+	return $userModel->getError();
+}
 //插入多条数据
-$userModel->insertAll([[...], [...]]); //接收二维数组
+1)$userModel->insertAll([[...], [...]]); //接收二维数组
+2)$list = [[...], [...]];
+$userModel->saveAll($list); 
 5, 更新
-$userModel->where('id', '5')->update(['age'=>32]);
-注: insert和update操作都可以用save()替换;
+1)$userModel->where('id', '5')->update(['age'=>32]);
+2)$user = UserModel::get($id);
+$user->age += 1;
+$user->save();
+注：实例化模型后第一次执行save()，默认执行插入操作;
+而对查询返回的实例执行save()，默认执行的是更新操作；
 6, 删除
-$userModel->where('name', 'exp', 'is null')->delete();
+1)$userModel->where('name', 'exp', 'is null')->delete();
+2)$user = userModel::get($id);
+if($user){
+	$user->delete();
+}
 7, 聚合操作
 $userModel->count(); //计数
 $userModel->where('age', '>', 30)->count(); //带条件

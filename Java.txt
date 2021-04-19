@@ -145,6 +145,11 @@ private, default, protected, public;
 2)非访问控制修饰符
 final, abstract, static, synchronized;
 
+>>可变参数
+public static void printMax(int... a){
+	//传入的参数组成数组a
+}
+
 >>面向对象
 1，面向对象的三大特征
 封装、继承、多态
