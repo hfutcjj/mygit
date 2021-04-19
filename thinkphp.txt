@@ -576,59 +576,59 @@ protected $connection = [
 1)use app\index\model\User; //推荐
 User::get(1)->toArray();
 2)use app\index\model\User;
-$userModel = new User(); //实例化
+$user = new User(); //实例化
 3)use think\Loader;
-$userModel = Loader::model('User'); //通过Laoder类，当模型很多时，无须引入模型
-4)$userModel = model('User'); //model()助手函数
+$user = Loader::model('User'); //通过Laoder类，当模型很多时，无须引入模型
+4)$user = model('User'); //model()助手函数
 3, 查询
-1)$userModel = new User();
-$rs = $userModel->where('age', '>', 30)->select();
+1)$user = new User();
+$rs = $user->where('age', '>', 30)->select();
 foreach($rs as $v){
 	print_r($v->toArray());
 }
 2)$id = 2;
-$rs = $userModel->get($id); //传入主键作为参数
-$rs = $userModel->get(['email'=>'1234567@qq.com']); //传入数组作为非主键
-$rs = $userModel->getByEmail('1234567@qq.com'); //同上
+$rs = $user->get($id); //传入主键作为参数
+$rs = $user->get(['email'=>'1234567@qq.com']); //传入数组作为非主键
+$rs = $user->getByEmail('1234567@qq.com'); //同上
 echo "name: {$rs->name}, age: {$rs->age}";
 3)查询所有数据
-$list = UserModel::all();
+$list = User::all();
 foreach($list as $value){
 	echo "name:{$value['name']}, age:{$value['age']}<br>";
 }
 4, 插入
 //插入单条数据
-1)$userModel->insert(['name'=>'zhao', 'age'=>30]); 
-2)$userModel = new User();
-$userModel->name = 'zhao';
-$userModel->age = 30;
-if($userModel->save()){
+1)$user->insert(['name'=>'zhao', 'age'=>30]); 
+2)$user = new User();
+$user->name = 'zhao';
+$user->age = 30;
+if($user->save()){
 	return '用户['.$user->name.']添加成功';
 }else{
-	return $userModel->getError();
+	return $user->getError();
 }
 //插入多条数据
-1)$userModel->insertAll([[...], [...]]); //接收二维数组
+1)$user->insertAll([[...], [...]]); //接收二维数组
 2)$list = [[...], [...]];
-$userModel->saveAll($list); 
+$user->saveAll($list); 
 5, 更新
-1)$userModel->where('id', '5')->update(['age'=>32]);
-2)$user = UserModel::get($id);
+1)$user->where('id', '5')->update(['age'=>32]);
+2)$user = User::get($id);
 $user->age += 1;
 $user->save();
 注：实例化模型后第一次执行save()，默认执行插入操作;
 而对查询返回的实例执行save()，默认执行的是更新操作；
 6, 删除
-1)$userModel->where('name', 'exp', 'is null')->delete();
-2)$user = userModel::get($id);
+1)$user->where('name', 'exp', 'is null')->delete();
+2)$user = User::get($id);
 if($user){
 	$user->delete();
 }
 7, 聚合操作
-$userModel->count(); //计数
-$userModel->where('age', '>', 30)->count(); //带条件
-$userModel->avg('age'); 
-$userModel->where('age', '>', 30)->avg('age'); 
+$user->count(); //计数
+$user->where('age', '>', 30)->count(); //带条件
+$user->avg('age'); 
+$user->where('age', '>', 30)->avg('age'); 
 常用的聚合函数有: count(), max(), min(), sum(), avg()等;
 8, 模型读取器(自动转换字段值)
 数据库中User表的字段sex存储的值为0,1,2, 页面输出时自动显示'未知','男','女';
@@ -654,7 +654,7 @@ class User extends Model{
 //控制器文件 app\index\controller\Index.php
 class Index extends Controller{
 	public function index(){
-		$user = new UserModel();
+		$user = new User();
 		$user->name = 'zhao';
 		$user->age = 30;
 		$user->birthday = '1989-07-01';
