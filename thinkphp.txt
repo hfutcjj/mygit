@@ -591,10 +591,15 @@ $rs = $user->get($id); //传入主键作为参数
 $rs = $user->get(['email'=>'1234567@qq.com']); //传入数组作为非主键
 $rs = $user->getByEmail('1234567@qq.com'); //同上
 echo "name: {$rs->name}, age: {$rs->age}";
-3)查询所有数据
-$list = User::all();
-foreach($list as $value){
-	echo "name:{$value['name']}, age:{$value['age']}<br>";
+3)查询多条数据
+$list = User::where('id', '<', 5)->select(); 
+$list = User::all(); //所有数据
+$list = User::all('1,2,3,4,5'); //主键等于1,2,3,4,5其中一个的数据
+$list = User::all(function($query){ //通过闭包函数来查询
+	$query->where('id', '<', 5)->select();
+});
+foreach($list as $v){
+	print_r($v->toArray());
 }
 4, 插入
 //插入单条数据
@@ -630,30 +635,29 @@ $user->where('age', '>', 30)->count(); //带条件
 $user->avg('age'); 
 $user->where('age', '>', 30)->avg('age'); 
 常用的聚合函数有: count(), max(), min(), sum(), avg()等;
-8, 模型读取器(自动转换字段值)
+8, 模型读取器和修改器
 数据库中User表的字段sex存储的值为0,1,2, 页面输出时自动显示'未知','男','女';
 //模型文件 app/index/model/User.php
 class User extends Model{
-	public function getSexAttr($val){ //函数名必须为getSexAttr
+	protected function getSexAttr($val){ //函数名必须为getSexAttr
 		return $val==0 ? '未知' : ($val==1 ? '男' : '女');
+	}
+	protected function getBirthdayAttr($val){ //对读取birthday字段进行格式化
+		return date('Y-m-d', $val);
+	}
+	protected function setBirthdayAttr($val){ //$user->birthday = '1987-07-01'，自动存为时间戳
+		return strtotime($val); 
+	}
+	protected function setPasswordAttr($val, $data){ //第二个参数为包含所有字段值的数组
+		return md5($data['email'].$val);
 	}
 }
 //控制器文件 app/index/controller/Index.php
 class Index extends Controller{
-	public function index(){
+	public function test1(){
 		return User::get(1)->sex; //直接输出'男', '女' 或 '未知'
 	}
-}
-9, 模型修改器
-//模型文件 app\index\model\User.php
-class User extends Model{
-	public function setBirthdayAttr($val){
-		return strtotime($val);
-	}
-}
-//控制器文件 app\index\controller\Index.php
-class Index extends Controller{
-	public function index(){
+	public function test2(){
 		$user = new User();
 		$user->name = 'zhao';
 		$user->age = 30;
@@ -665,6 +669,9 @@ class Index extends Controller{
 		}
 	}
 }
+9, 自动完成
+给数据表添加create_time、insert_time、update_time、delete_time等字段，通过修改配置文件或者在
+模型中添加方法，就可以对这些字段自动修改，具体参考文档；
 10, 软删除
 不真正删除数据库中的数据，而是将某个字段置为null或0，表示该条记录不存在;
 

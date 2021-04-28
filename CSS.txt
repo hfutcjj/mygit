@@ -4,10 +4,33 @@
 3, ID选择器
 4, 后代选择器 #container span
 5, 子选择器 #container>span
-6, 相邻兄弟选择器 #container+div //紧跟#container之后的一个div
+6, 相邻兄弟选择器 #container+div 
+7, 后面所有兄弟选择器 #container~div 
 7, 通用选择器 *
 8, 伪类选择器 a:hover
 9, 分组选择器 div, p
+
+>>伪类选择器
+1, 状态伪类
+a:link; //未选择时
+a:visited; //已点击
+a:hover; //鼠标悬停
+a:active; //放开鼠标的一瞬间
+:focus; //获得输入焦点
+2, 结构伪类
+:first-child;
+:last-child;
+:nth-child(n);
+:first-of-type;
+可以通过结构伪类来对<table>中的<tr>和<td>来进行精确的样式设置, 如
+tr:nth-child(2) td:nth-child(3){background-color: red;}
+
+>>伪元素选择器
+::selection; //用户选中的内容
+::before; //内容之前
+::after; //内容之后
+::first-line; //首行
+::first-letter; //首字符
 
 >>样式的优先级
 用户设置的样式 > 网页制作者的样式 > 浏览器默认样式;
@@ -40,6 +63,12 @@ font-size与line-height中间要加入'/'斜杠;
 4, word-spacing: 10px; //单词间距
 5, letter-spacing: 10px; //字母间距
 6, text-align: center / left / right / justify; //对齐方式
+
+>>列表样式
+list-style:
+1)list-style-type: disc/circle/decimal;
+2)list-style-position: outside/inside;
+3)list-style-image: url("...");
 
 >>em 和 %
 1, em

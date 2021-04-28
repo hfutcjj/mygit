@@ -9,6 +9,9 @@ JVM -> jre -> jdk
 JVM: java虚拟机
 jre: java运行环境
 jdk: java开发包
+注：配置环境变量：
+添加JAVA_HOME变量，设置为jdk的安装目录；
+编辑PATH变量，添加%JAVA_HOME%\bin;
 
 >>安装Tomcat服务器
 1)点击tomcat/bin/startup.bat打开服务器；
@@ -18,6 +21,19 @@ jdk: java开发包
 web.xml，项目部署文件；
 classes文件夹，用以放置*.class文件；
 lib文件夹，用于存放需要的jar包；
+
+>>主方法带命令行参数
+1,命令行运行
+javac Demo.java
+java Demo "hello" "world"
+2,eclipse中运行
+Run Configuration, 在Arguments选项卡输入命令行参数;
+
+>>eclipse调试
+F6-单步调试
+F8-运行完成
+F5-进入方法
+F7-跳出方法
 
 >>java中的进制
 1, 声明
@@ -91,6 +107,10 @@ java是双字节编码，采用utf-16be编码；
 3)接口(interface)
 注: java中的浮点类型默认是double，如果定义成float，需在后面加f，如 float a = 3.14f;
 
+>>兼容类型的数据可以相等
+10 == 10.0; //true
+97 == 'a'; //true
+
 >>基础知识点
 1，标识符可以由字母、数字、下划线_、美元符号$组成，不能以数字开头；
 标识符严格区分大小写；
@@ -114,6 +134,7 @@ java是双字节编码，采用utf-16be编码；
 2，标准格式：域名后缀.组织机构名.项目名[.模块名].包的功能，如
 com.imooc.weather.ui;
 com.alibaba.taobao.customer.data;
+实际开发中包名采用: 域名倒序.模块.功能, 如com.imooc.animal, com.imooc.mechanics等;
 3, 使用同一个包下的类无需导入，使用不同包下的类需要使用import导入；
 4，包的目录结构
 com	
@@ -138,6 +159,19 @@ public class Page2{
 1)java.util.Arrays.sort(a); //使用全名，不推荐
 2)import java.util.Arrays;
 3)import java.util.*;
+7, import 包名.*
+导入指定包名下所有直接允许访问的类，无法导入其子包中的类;
+8, 当两个包里存在同名的类，优先使用导入最具体的类，如
+import com.imooc.pet.Cat;
+import com.imooc.mechanics.*;
+会优先使用com.imooc.pet.Cat类;
+9, 常用包
+1)java.lang 
+包含java语言基础的类，默认导入，如System, String, Math等;
+2)java.util
+包含java语言中常用工具, 如Scanner, Random等;
+3)java.io
+包含输入、输出相关功能的类，如File, InputStream等;
 
 >>java修饰符
 1)访问控制修饰符
@@ -168,8 +202,6 @@ public //任何地方
 6，接口用interface定义, 接口只包含方法的的声明，接口不能实例化对象;
 类实现接口用implements，类要实现接口中定义的方法；
 接口是完全的抽象类，或者说抽象类介于具体类与接口之间；
-接口的属性默认修饰是：public static final;
-接口的方法默认修饰是：public abstract;
 7，多态
 定义: 同一行为(方法)具有不同的表现形式；
 同一接口的不同实现，调用时统一当作接口调用；
@@ -198,10 +230,7 @@ public class Test{
 		student.eat("apple");
 	}
 }
-8，内部类
-静态内部类和非静态内部类；
-静态内部类不能访问外部类的成员变量；
-9，默认构造函数的自动继承
+8，默认构造函数的自动继承
 如果在子类的构造函数中没有显示调用父类的构造函数，则继承父类的默认构造函数；
 SupClass: 
 public SupClass(){}
@@ -211,22 +240,286 @@ public SubClass(String name, int age, double salary){
 	//SupClass()  //会自动先调用父类的默认构造函数
 	//todo...
 }
-10，标记接口
+注: 构造方法调用时，this()和super()不能同时出现，会导致编译错误;
+9，标记接口
 不包含任何方法和属性的接口，仅仅是给实现该接口的类做个标记，如
 public interface EventListener{}
-11, 重写Override
+10, 重写Override
 子类的方法b重写父类的方法a：
 b的参数列表必须与a完全相同；
 b的返回值与a相同或者是a的子类，b的访问修饰符不能小于a，b抛出的异常范围不能大于a；
-12，static方法不能声明为抽象方法；
-13，接口中的方法默认为 public abstract;
+11，static方法不能声明为抽象方法；
+12，接口中的方法默认为 public abstract;
 接口中的变量默认为 public static final;
+
+>>封装
+1,封装的三个步骤
+1)把属性设置为private；
+2)给属性添加getter和setter方法;
+3)在getter和setter方法里添加属性控制;
+
+>>抽象类与接口
+抽象类是对类的抽象，是一种模板设计；
+接口是对行为的抽象，是一种行为规范；
+
+>>向上转型与向下转型
+class Pet{}
+class Dog extends Pet{}
+Pet dog = new Dog(); //向上转型，自动转换
+(Dog)dog; //向下转型，必须通过强制类型转换
+
+>>继承的同时实现接口
+class MyClass extends SupClass implements MyInterface{
+	//...
+}
+
+>>接口
+接口的属性默认修饰是：public static final;
+接口的方法默认修饰是：public abstract;
+接口中可以包含：抽象方法、默认方法、静态常量、静态方法；
+interface Person{
+	String NATION = "China"; //静态常量，必须在定义时初始化
+	void study(); //抽象方法，需要实现类来具体实现
+	default void walk(){ //默认方法，包含方法体，可以被实现类重写
+		System.out.println("Person can walk");
+	}
+	static void run(){ //静态方法，包含方法体，不能被实现类重写
+		System.out.println("Person can run");
+	}
+}
+class Student implements Person{
+	public void study(){ //实现接口的方法
+		System.out.println("Student is studying");
+	}
+	public void walk(){ //重写接口的默认方法，不用加default
+		Person.super.walk(); //调用接口的默认方法
+		System.out.println("Person can walk");
+	}
+	public static void main(String[] args){
+		Student st = new Student();
+		System.out.println(Person.NATION); //调用接口的静态常量
+		Person.run(); //调用接口的静态方法
+		st.walk();
+		st.study();
+	}
+}
+
+>>匿名内部类
+匿名内部类，常用来实现一个抽象类或接口;
+abstract class Person{ //父类: 抽象类
+	abstract void read();
+}
+public class Test{ //测试类
+	public void getRead(Person person){
+		person.read();
+	}
+	public static void main(String[] args){
+		Test test = new Test();
+		test.getRead(new Person(){ //实现一个男人对象
+			@Override
+			public void read(){
+				System.out.println("男人喜欢看科幻动作类书籍");
+			}
+		});
+		test.getRead(new Person(){ //实现一个女人对象
+			@Override
+			public void read(){
+				System.out.println("女人喜欢看都市言情类书籍");
+			}
+		});
+	}
+}
+注: 匿名内部类编译后的文件名为 Test$1.class, Test$2.class 等;
+
+>>内部类
+1, 分类
+1)成员内部类 //outer.class, outer$inner.class
+2)静态内部类 //同上
+3)方法内部类 //outer.class, outer$1inner.class
+4)匿名内部类 //outer.class, outer$1.class
+2, 内部类的作用
+1)封装性
+2)实现多继承
+3)解决继承或实现接口时的方法同名问题
+内部类可以直接访问外部类的字段和方法，即使使用private修饰的;
+当内部类定义为private后，只有外部类可以访问;
+内部类中可以使用 外部类.this.成员 的方式，访问外部类中同名的信息;
+
+>>接口中的内部类
+//定义接口
+package com.imooc.inter;
+public interface IOuterInterface{
+	int TEMP = 100; //常量
+	void abMethod(); //抽象方法
+	public default void deMethod(){
+		System.out.println("接口中默认方法");
+	}
+	public static void stMethod(){
+		System.out.println("接口中静态方法");
+	}
+	//普通成员内部类
+	public class InnerClass{
+		public void show(){
+			System.out.println("接口中可定义普通成员内部类");
+		}
+	}
+	//抽象成员内部类
+	public abstract class AbInnerClass{
+		public abstract void abInfo();
+		public void info(){
+			System.out.println("接口中可定义抽象成员内部类");
+		}
+	}
+}
+//定义实现类
+package com.imooc.inter;
+public class ClassDemo implements IOuterInterface{
+	@Override
+	public void abMethod(){
+		System.out.println("实现类");
+	}
+	//获取接口中内部类方法
+	public InnerClass getInner(){
+		return new InnerClass();
+	}
+	//继承抽象类AbInnerClass
+	public class AbDemo extends AbInnerClass{
+		@Override
+		public void abInfo(){
+			System.out.println("重写接口中抽象类中的抽象方法");
+		}
+	}
+}
+//测试类
+package com.imooc.test;
+import com.imooc.inter.ClassDemo;
+import com.imooc.inter.IOuterInterface;
+import com.imooc.inter.IOuterInterface.InnerClass;
+public class Test{
+	//获取成员内部类
+	//方式一: 通过接口名.类名进行实例化
+	IOuterInterface.InnerClass inner1 = new IOuterInterface.InnerClass();
+	inner1.show();
+	//方式二: 通过在实现类中创建接口中内部类的获取方法来调用
+	ClassDemo demo = new ClassDemo();
+	demo.getInner().show();
+	//方式三: 通过import导入内部类，直接实例化
+	InnerClass inner2 = new InnerClass();
+	inner2.show();
+	//获取抽象成员内部类
+	//方式一: 通过接口名.类名，采用匿名内部类的方式进行实例化
+	IOuterInterface.AbInnerClass abInner1 = new IOuterInterface.AbInnerClass(){
+		@Override
+		public void abInfo(){
+			System.out.println("重写抽象类中的抽象方法");
+		}
+	};
+	abInner1.abInfo();
+	//方式二: 在实现类中定义内部类继承接口中的抽象内部类
+	IOuterInterface.AbInnerClass abInner2 = new ClassDemo().new AbDemo();
+	abInner2.abInfo();
+}
+
+>>对象实例化的过程
+User user = new User(), 分为两步：
+1)声明对象，在内存的栈空间执行，User user;
+2)实例化对象，在内存的堆空间执行，new User();
+
+>>变量的默认值
+数组元素和类的实例变量如果没有赋初值，那么系统会给一个默认值，如
+String[] list = new String[3]; //默认值 {null, null, null}
 
 >>方法重载与方法重写
 1，方法重载
 同一个类中，方法名相同，但接收的参数数量或类型不同；
 2, 方法重写
 子类对父类的方法的重写；
+子类的方法名、参数个数和类型要与父类一致；
+子类的返回类型，如果是基本类型则必须与父类相同，如果是引用类型则与父类相同或是父类的子类；
+子类方法的访问修饰符不能小于父类方法；
+子类方法如果抛出异常，异常范围不能比父类方法的异常更广；
+注: 不能被重写的两类方法:
+1)final方法
+2)static方法
+
+>>static方法不能被重写举例
+static方法不能被重写，如果子类有与父类同名的static方法，不叫重写，而是覆盖;
+class Animal{
+	public void eat() { 
+		System.out.println("动物在吃东西");
+	}
+	public static void run() {
+		System.out.println("动物在跑");
+	}
+}
+class Cat{
+	public void eat() {
+		System.out.println("小猫在吃东西");
+	}
+	public static void run() {
+		System.out.println("小猫在跑");
+	}
+}
+//测试方法
+Animal cat = new Cat();
+cat.eat(); //多态，调用的是子类重写的方法
+cat.run(); //调用的是父类的方法
+
+>>private、static、final这三个修饰符不能与abstract并存;
+因为abastract的目的就是重写，这三个关键词修饰的方法都是不能重写的;
+
+>>{}  代码块
+1, 普通代码块
+{}加载方法里面，为普通代码块，按书写的顺序正常执行;
+2, 构造代码块
+写在类的里面方法的外面，在构造函数调用之前执行;
+3, 静态代码块
+static{}
+静态代码块最先执行;
+执行顺序: 静态代码块 > 构造代码块 > 构造函数;
+注: 静态代码块里只能操作静态属性;
+无论实例化多少个对象，静态代码块只执行一次，而构造代码块可以执行多次;
+
+>>final修饰的实例变量三个赋初值的地方
+1, 声明时直接赋值
+private final String NATION = "CHINA";
+2, 在构造代码块中赋初值
+3, 在构造函数中赋初值
+注: 实例常量一定要赋初值，否则会报错;
+
+>>执行顺序
+class Animal{
+	public static int sValue1 = 10; //1
+	public int cValue1 = 20; //5
+	static{ //2
+		System.out.println("父类的静态代码块"); 
+	}
+	{ //6
+		System.out.println("父类的构造代码块");
+	}
+	public Animal(){ //7
+		System.out.println("父类的构造函数");
+	}
+}
+class Dog extends Animal{
+	static{ //3
+		System.out.println("子类的静态代码块");
+	}
+	{ //8
+		System.out.println("子类的构造代码块");
+	}
+	public static int sValue2 = 30; //4
+	public int cValue2 = 40; //9
+	public Animal(){ //10
+		System.out.println("子类的构造函数");
+	}
+}
+Dog dog = new Dog(); 
+执行顺序为:
+父类静态变量和静态代码块(按代码的顺序)->
+子类静态变量和静态代码块->
+父类实例变量和构造代码块->父类构造函数->
+子类实例变量和构造代码块->子类构造函数;
 
 >>数组
 int[] arr = new int[5]; //声明并分配空间
@@ -235,6 +528,17 @@ int[] arr = new int[]{1, 2, 3, 4, 5}; //与上面等价
 数组可以用如下结构遍历：
 for(int item: arr){
 	//...
+}
+//二维数组
+int[][] arr = new int[3][]; //必须指明第一维的长度
+int[0] = new int[]{1, 2, 3};
+int[1] = new int[]{4, 5};
+int[2] = new int[]{6, 7, 8, 9};
+for(int[] v1: arr){
+	for(int v2: v1){
+		System.out.print(v2 + "\t");
+	}
+	System.out.println();
 }
 
 >>Arrays类
@@ -279,7 +583,10 @@ StringBuilder s = new StringBuilder("hello");
 s.length(); //长度
 s.append(s1); //追加内容到s的末尾
 s.insert(i, s1); //在指定位置插入字符串
+s.delete(m, n); //删除[m, n)之间的字符
+s.replace(m, n, str); //替换[m, n)之间的字符为str
 s.toString(); //将StringBuilder对象转换为String对象
+s.reverse(); //反转，本地操作
 
 >>基本类型的包装类型
 byte -> Byte;
@@ -346,6 +653,15 @@ Math类中所有方法都是静态方法；
 Math.round()/Math.floor()/Math.ceil()/Math.sqrt();
 Math.random(); //[0, 1)之间的随机数
 
+>>Scanner类
+文本扫描器，获取控制台用户的输入；
+Scanner scanner = new Scanner(System.in);
+scanner.next(); //获取输入的字符串，遇到空格结束
+scanner.nextLine(); //获取输入的字符串，遇到换行结束
+scanner.nextInt(); //获取输入的整数
+scanner.nextFloat()/nextDouble(); //获取输入的浮点数
+scanner.hasNext()/hasNextLine()/hasNextInt()/hasNextFloat(); //是否有对应的输入，返回布尔值
+
 >>集合
 1, 两大根接口：Collection、Map;
 Collection有三个子接口：List、Queue、Set；
@@ -371,7 +687,7 @@ for(String item: pers){
 	//...
 }
 //用迭代器循环遍历
-Iterator it = pers.iterator();
+Iterator<String> it = pers.iterator();
 while(it.hasNext()){
 	String s = it.next();
 	//...
@@ -388,7 +704,7 @@ st.contains("zhao"); //判断指定的元素是否存在
 st.remove("zhao"); //删除集合的指定元素
 st.clear(); //清空集合所有的元素
 st.isEmpty(); //判断集合是否为空
-注：同List不同，Set没有get()和set()方法；
+注：同List不同，Set没有get()和set()方法;
 4，HashMap类
 HashMap类实现了Map接口；Map里有个内部类Entry；
 Map里有个内部类Entry, 存储键值对<Key, Value>；
@@ -505,14 +821,195 @@ Pattern r = Pattern.compile(pattern);
 Matcher m = r.matcher(subject);
 //通过Matcher提供的方法进行操作
 
+>>输入输出流
+1, File类
+File file = new File("../cao/test.txt");
+file.getPath(); //..\cao\cao.txt
+file.getAbsolutePath(); //E:\Java\test\..\cao\cao.txt
+file.getCanonicalPath(); //E:\Java\cao\cao.txt
+file.exists(); //文件或目录是否存在
+file.isFile(); //是否是文件
+file.isDirectory(); //是否是目录
+file.mkdir(); //创建目录
+file.mkdirs(); //递归创建多层目录
+file.createNewFile(); //创建文件
+file.delete(); //删除目录或文件
+file.length(); //文件的长度(单位为字节)
 
+>>反射(reflect)
+1，概念
+反射是指JVM动态获取程序信息以及动态调用对象的功能，
+JVM每加载一个.class文件，就会创建一个Class类型的实例与之对应；
+反射相关的包是 java.lang.reflect.*;
+2，获取Class对象的三种方式
+1)类名.class
+Class cls = Student.class;
+2)对象.getClass()
+Student st = new Student();
+Class cls = st.getClass();
+3)Class.forName("包名.类名")
+Class cls = Class.forName("java.util.ArrayList");
+3, 利用反射调用类的构造方法、字段、方法
+1)获取构造函数
+getConstructor(Class...)/getDeclaredConstructor(Class...); //获取某个构造函数
+getConstructors()/getDeclaredConstructors(); //获取所有构造函数
+constructor.newInstance(...); //实例化对象
+2)字段
+getField(name)/getDeclaredField(name); //根据属性名获取某个字段
+getFields()/getDeclaredFields(); //获取所有字段
+field.getType(); //字段类型
+field.getName(); //字段名
+field.get(obj); //获取obj对象的字段的值
+field.set(obj, value); //给obj对象的字段赋值
+3)方法
+getMethod(name, Class...)/getDeclaredMethod(name, Class...); //获取某个方法
+getMethods()/getDeclaredMethods(); //获取所有方法
+method.invoke(...); //调用方法
+class User{
+	public String name;
+	private int age;
+	public User(){}
+	public User(String nm){name = nm;}
+	public User(String nm, int a){name = nm; age = a;}
+	public String toString(){return "name: " + name + ", age: " + age;}
+	public void eat(String food){System.out.println(name + " eats " + food);}
+	public static void main(String[] args){
+		Class cls = User.class; //同 Class.forName("com.company.User");
+		Constructor constructor = cls.getConstructor(String.class); //User(String)
+		Constructor constructor1 = cls.getConstructor(String.class, int.class); //User(String, int)
+		Object obj = constructor.newInstance("zhao"); //实例化对象
+		Object obj1 = constructor1.newInstance("zhao", 30);
+		Field name = cls.getField("name");
+		Field age = cls.getField("age");
+		name.getType(); //字段的类型
+		name.getName(); //字段的名字
+		name.get(obj1); //获取某个对象的字段的值
+		age.setAccessible(true); //私有类型的字段要先设置
+		age.getType(); age.getName(); age.get(obj1); 
+		Field[] fields = cls.getFields(); //获取所有字段
+		name.set(obj, "饼饼");
+		age.set(obj, 5); //给obj对象的字段赋值
+		Method method = cls.getMethod("eat", String.class);
+		method.invoke(obj, "苹果"); //调用方法
+	}
+}
 
+>>注解(Annotation)
+是一种用于标注的元数据，用来标记包、类、方法、变量、参数等;
+按照运行机制分类:
+1)源码注解
+只存在于源码中，给编译器看的，编译后丢弃，如@Override;
+2)编译时注解
+在编译时保留，当JVM加载.class时丢弃，如@NotNull;
+3)运行时注解;
+在运行时仍然起作用，甚至会影响程序的运行逻辑，可以通过反射获取到该注解;
+按照来源分类:
+1)来自JDK的注解;
+2)来自第三方的注解;
+3)我们自定义的注解;
+1, 内置注解
+java提供了10个内置注解，5个在java.lang包，5个在java.lang.annotation包;
+用在代码的注解：
+@Override
+@Deprecated
+@SuppressWarnings
+@SafeVarargs
+@FunctionalInterface
+用在其他注解的注解(元注解)
+@Retention
+@Documented
+@Target
+@Inherited
+@Repeatable
+2, 定义注解
+1)创建注解，用@interface；
+2)定义参数和默认值;
+3)用元注解配置注解;
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.FIELD, ElementType.LOCAL_VARIABLE})
+public @interface Length{
+	int min() default 0;
+	int max() default Integer.MAX_VALUE;
+	String message() default "长度不合法";
+}
+注：如果注解只有一个参数且是最常用的参数，那么应将此参数命名为value, 如
+@Inherited
+@Target(ElementType.TYPE)
+public @interface TestAnnotation{
+	String value() default "test";
+}
+使用:
+@TestAnnotation("测试注解")
+public class Pet{
+	//...
+}
+3, 处理注解
+1)使用注解
+2)通过反射读取注解
+User.class.getDeclaredField("name").isAnnoTationPresent(Length.class); //判断注解是否存在
+User.class.getDeclaredField("name").getAnnoTation(Length.class); //获取注解
+3)编写校验方法
+public class User{
+	@Length(min=2, max=5, message="名字长度必须在2~5之间")
+	public String name;
+	public void CheckNameLength() throws Exception{ //校验方法
+		Field field = User.class.getDeclaredField("name");
+		Length annotation = field.getAnnoTation(Length.class);
+		if(annotation != null){
+			String nameField = (String)field.get(this);
+			if(nameField.length() < annotation.min() || nameField.length() > annotation.max()){
+				throw Exception(field.getName() + ":" + annotation.message());
+			}
+		}
+	}
+}
 
+>>单例模式
+1, 实现要点
+1)只提供私有的构造方法;
+2)含有一个该类的静态私有对象;
+3)提供一个静态的公有方法，用于创建、获取静态私有对象;
+2, 两种实现方法
+1)饿汉式: 加载类时就实例化;
+特点: 在类加载的时候就实例化静态私有对象，不管你用不用得到;
+class Singleton{
+	private Singleton(){}
+	private static Singleton obj = new Singleton();
+	public static Singleton getInstance(){
+		return obj;
+	}
+}
+2)懒汉式: 静态公有方法中实例化;
+特点: 只在调用静态公有方法时才实例化静态对象;
+class Singleton{
+	private Singleton(){}
+	private static Singleton obj = null;
+	public static Singleton getInstance(){
+		if(obj == null){
+			obj = new Singleton();
+		}
+		return obj;
+	}
+}
+3, 饿汉式是线程安全的, 懒汉式存在线程风险;
 
+>>枚举
+1，枚举可以定义在类的外部，也可以定义在类的内部，但不可以定义在方法中;
+2, 如果枚举定义在当前类的内部或外部，可以直接访问，如 Gender.MALE;
+如果枚举定义在其他类中，需加类名访问，如 Outer.Gender.MALE;
+3, 用于if结构和switch结构
+Gender gender = MALE;
+if(gender == Gender.MALE){
 
-
-
-
+}
+switch(gender){
+	case MALE:
+		break;
+	case FEMALE:
+		break;
+	default:
+		break;
+}
 
 
 

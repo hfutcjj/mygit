@@ -109,6 +109,10 @@ strip_tags($s, '<a>'); //'hello <a href="#">baidu'
 strip_tags($s, '<span><a>'); //'<span>hello</span> <a href="#">baidu</a>'
 15)随机打乱一个字符串
 str_shuffle('hello'); //'leolh'
+15)按指定的长度分割字符串，默认为1
+str_split('hello'); //['h', 'e', 'l', 'l', 'o']
+str_split('hello', 3); //['hel', 'lo']
+str_split('我是中国人', 3); //['我', '是', '中', '国', '人']
 
 >>日期与时间
 1，获取与设置时区
@@ -988,10 +992,67 @@ function getList2($path=''){
 id->fullpath;
 $sql = "select * from t where id in (fullpath) order by id";
 
-
-
-
-
+>>简单验证码制作
+1，captch.php  //生成数字字母验证码
+session.start();
+//生成底图
+$image = imagecreatetruecolor(100, 30); //生成底图，默认黑色背景
+$bgcolor = imagecolorallocate($image, 255, 255, 255); //白色背景
+imagefill($image, 0, 0, $bgcolor); //用白色背景填充
+$captch_code = ''; //用来保存验证码
+//生成验证码字符序列
+for($i = 0; $i < 4; $i++){
+	$fontsize = 6; //字体大小
+	$fontcolor = imagecolorallocate($image, rand(0,100), rand(0,100), rand(0,100)); 
+	$data = 'abcdefghijkmnpqrstuvwxy3456789'; 
+	$fontcontent = substr($data, rand(0, strlen($data)-1), 1);
+	$captch_code .= $fontcontent; 
+	$x = ($i*100/4) + rand(5,10);
+	$y = rand(5,10);
+	imagestring($image, $fontsize, $x, $y, $fontcontent, $fontcolor); //绘制字符串
+}
+$_SESSION['authcode'] = $captch_code;
+//生成点干扰元素
+for($i = 0; $i < 200; $i++){
+	$pointcolor = imagecolorallocate($image, rand(50,200), rand(50,200), rand(50,200));
+	imagesetpixel($image, rand(1,99), rand(1,29), $pointcolor); //绘制点
+}
+//生成线干扰元素
+for($i = 0; $i < 3; $i++){
+	$linecolor = imagecolorallocate($image, rand(80,200), rand(80,200), rand(80,200));
+	imageline($image, rand(1,99), rand(1,29), rand(1,99), rand(1,29), $linecolor); //绘制线
+}
+//输出
+header('Content-Type:image/png'); //必须设置header信息
+imagepng($image); //输出验证码图片
+2，test.php //前端页面
+//校验部分
+<?php
+if(isset($_REQUEST['authcode'])){
+	session_start();
+	if(strtolower($_REQUEST['authcode']) == $_SESSION['authcode']){
+		echo '输入正确';
+	}else{
+		echo '输入错误';
+	}
+	exit();
+}
+?>
+//前端表单页面，点击验证码图片可自动刷新
+<form method="post" action="test.php">
+	<div>验证码图片: <img border="1" src="captch.php" width="100" height="30" onclick="this.src='captch.php'"></div>
+	<div>请输入图片中的内容: <input type="text" name="authcode" value=""></div>
+	<div><input type="submit" value="提交"></div>
+</form>
+3, captch_image.php //生成图片验证码
+session_start();
+$table = ['pic01'=>'人', 'pic02'=>'天', 'pic03'=>'狗', 'pic04'=>'猫']; //素材库: 图片->值
+$index = rand(1, 4);
+$_SESSION['authcode'] = $table['pic0'.$index];
+$filename = __DIR__.'\\image\\pic0'.$index.'.jpg';
+$content = file_get_contents($filename);
+header('Content-Type:image/jpg');
+echo $content;
 
 
 

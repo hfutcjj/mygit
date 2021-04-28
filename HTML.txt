@@ -60,6 +60,12 @@
 	<input type="reset" value="重置">
 </form>
 
+>>锚点的两种实现
+1, <a href="test.html#target1">target1</a>
+<a name="target1"><div>....</div></a>
+2, <a href="test.html#target1">target1</a>
+<div id="target1">....</div>
+
 >>几种易错的嵌套规则
 1, 内联元素不能包含块元素
 <span><div></div></span> //错
