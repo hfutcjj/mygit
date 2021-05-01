@@ -6,9 +6,9 @@
 5, 子选择器 #container>span
 6, 相邻兄弟选择器 #container+div 
 7, 后面所有兄弟选择器 #container~div 
-7, 通用选择器 *
-8, 伪类选择器 a:hover
-9, 分组选择器 div, p
+8, 通用选择器 *
+9, 伪类选择器 a:hover
+10, 分组选择器 div, p
 
 >>伪类选择器
 1, 状态伪类
@@ -93,6 +93,16 @@ border-top, border-right, border-bottom, border-left;
 padding: 20px 10px 15px 30px;
 4, margin
 margin: 20px 10px 15px 30px;
+5, outline
+覆盖在border外层，使用同border;
+
+>>overflow属性
+内容超出盒子时的显示设置:
+visible(默认)、hidden、scroll、auto;
+
+>>将input输入框显示为一条横线输入
+input输入框当点击时默认会显示outline，所以要设置outline为none, 如下
+input{border: none; outline: none; border-bottom: 2px solid #000;}
 
 >>CSS3盒模型
 box-sizing: content-box(默认值) / border-box;
@@ -115,6 +125,17 @@ float: left / right;
 相对于浏览器窗口进行定位;
 注：absolute和fixed会使定位元素脱离文档流，而relative不会;
 一般对父元素设置相对定位，具体子元素使用绝对定位;
+
+>>浮动的注意事项
+1, 容器内元素浮动会导致容器高度塌陷，可通过设置容器的 overflow: hidden; 来阻止容器高度塌陷;
+2, 清除元素周围的浮动可用 clear: left/right/both; 来设置;
+
+>>绝对定位与浮动的区别
+绝对定位与浮动都会脱离文档流，但在布局时会有区别;
+绝对定位直接覆盖在正常文档流中元素的上面，而浮动会挤开行内元素而排列;
+
+>>定位与浮动可以结合起来使用
+如果元素只是浮动，那么设置left/right/top/bottom这些值是无效的，如果再加上相对定位，那么这些值就有效了;
 
 >>水平居中
 1, 行内元素

@@ -18,10 +18,18 @@
 exit / quit / \q;
 
 >>SQL语句的类型：
-DDL 数据定义语言: create;
-DCL 数据控制语言: grant, revoke;
-DML 数据操作语言: select, insert, update, delete;
-TPL 事务处理语言；commit, rollback;
+1)DDL 数据定义语言
+数据库、数据表、视图、索引;
+create;
+2)DCL 数据控制语言
+用户、权限;
+grant, revoke;
+3)DML 数据操作语言
+表的数据;
+select, insert, update, delete;
+4)TPL 事务处理语言；
+事务;
+commit, rollback;
 
 >>操作数据库
 1, 创建数据库
@@ -60,6 +68,8 @@ set names utf8 / gbk;
 2, 浮点型
 1)float(m, d): 单精度浮点, m是数字总位数，d是小数点后面的位数;
 2)double(m, d): 双精度浮点;
+3)decimal(m, n); 
+注: float和double是不精确的小数, 而decimal是用字符串的形式来表示小数, 是精确的小数表示法;
 3, 字符型
 1)char(m): 定长, m个字节 <= 255字节
 2)varchar(m): 不定长 <= 65535字节
@@ -69,6 +79,7 @@ set names utf8 / gbk;
 5)longtext: <= 2^32字节
 6)enum('value1', 'value2', ...): 枚举
 7)set('value1', 'value2', ...): 集合
+注: mysql中字符串一般用varchar(m)就足够了，如果需要保存更长的，建议用NoSQL数据库来保存;
 4, 日期时间类型
 1)year: 1字节
 2)date: 3字节
@@ -193,7 +204,78 @@ limit 10; //返回查询结果的前10条
 limit 3, 10; //返回从第4条结果开始的10条记录
 注: limit可用于后端实现查询分页显示;
 
+>>按多个字段分组
+查询每个部门里，每种职位的人员数量与平均底薪:
+select deptno, job, count(*), avg(salary) from t_emp group by deptno, job order by deptno;
+
+>>with rollup //汇总
+select deptno, job, count(*), sum(salray), avg(salary), max(salary), min(salary) 
+	from t_emp group by deptno, job with rollup;
+对分组的结果进行汇总;
+如果按一个字段分组，则汇总成一条最终的结果;
+如果按两个字段分组，则按第一个分组字段的每个值进行汇总;
+
+>>group_concat()
+把非分组字段的所有值拼接成一个字符串，让它可以出现在select中;
+查询每个部门内底薪超过2000元的人数和员工姓名:
+select deptno, group_concat(ename), count(*) from t_emp where sal >= 2000 
+	group by deptno;
+	
+>>having
+having是group by的条件，having里只能放分组字段或者聚合函数，
+不过建议把分组字段的条件放到where中，where是在分组之前执行，提高效率;
+
+>>索引
+1, 建表时创建索引
+create table student(
+	id int unsigned primary key auto_increment,
+	name varchar(20) not null,
+	age tinyint unsigned,
+	index id_name (name) //在name字段上创建索引
+);
+2, 表已存在时添加索引
+alter table student add index [id_name] (name);
+create index [id_name] on student(name);
+3, 查看索引
+show index from student;
+4, 删除索引
+drop index id_name on student;
+5, 索引的使用原则
+数据量很大，而且经常被查询的数据表可以设置索引;
+索引只添加在经常被用作检索条件的字段上;
+不要在大字段上创建索引;
+注: 索引默认采用btree来组织;
+索引对数据的查询很重要，但增加写数据的效率，所以对于写操作比较多的场合，索引不能太多;
+
+>>比较运算符
+1, 基本比较运算符
+>, >=, <, <=, =, !=;
+2, in
+where dept in ('maths', 'computer', 'english');
+3, is [not] null 
+where score is null;
+4, between and
+where score between 60 and 80;
+5, like
+where name like 'a%';
+6, regexp
+where name regexp '^[a-zA-Z]{4}$';
+where name regexp '^[\\u4e00-\\u9fa5]{2,4}$'; //查询汉字人名
+
+>>逻辑运算符
+1, and //且
+2, or //或
+3, not //非
+where not expression;
+4, xor //异或
+
+>>where的注意事项
+当检索大数据量时，优化where子句也能加快检索速度;
+1, 索引字段的条件应写在前面;
+2, 筛选掉记录最多的条件写在前面;
+
 >>子查询
+子查询可以写在select、from、where子句中，分别称为select子查询、from子查询、where子查询;
 1)出现在其他sql语句内的select子句, 叫子查询;
 用于where中的比较时，子查询返回一条结果可以用于比较运算符，返回多条结果则必须用[not] in;
 select * from teacher where Salary > (select avg(Salary) from teacher);
@@ -202,10 +284,29 @@ select * from course where Cno in (select Cno from SC where Sno = '1001');
 create table tname(cnames ctypes) select ...;
 insert into tname(cnames) select ...;
 3)出现在from后，这样的子查询的结果作为临时表，必须起一个别名;
+注: 推荐使用from子查询，特别不推荐使用select子查询和where子查询;
+select子查询和where子查询都是相关子查询，效率非常低，而from子查询不是相关子查询，只执行一次，效率高;
+
+>>in, all, any, exists
+这些都是where子查询的语法，实际工作中应该改为连接来实现;
+1, all, any
+用来处理多行结果集的条件判断;
+查询比FORD和MARTIN底薪都高的员工信息:
+select ename from t_emp where sal > all(
+	select sal from t_emp where ename in ('FORD', 'MARTIN')
+	);
+2, exists
+where子句是exists查询;
+查询工资等级是3级或4级的员工信息:
+select eno, ename, sal from t_emp where exists(
+	select grade from t_salgrade where sal between losal and hisal and grade in (3, 4)
+	);
 
 >>连接
 1)内连接
 select * from student t1 [inner] join dept t2 on t1.Dno = t2.Dno;
+等价于
+select * from student t1 join dept t2 where t1.Dno = t2.Dno;
 等价于
 select * from student t1, dept t2 where t1.Dno = t2.Dno;
 2)左外连接
@@ -227,6 +328,37 @@ select * from t1 join t2 on t1.name = t2.name;
 select t1.* from t1 left join t2 on t1.name = t2.name where t2.name is null;
 选择在t2表中但不在t1表中的人的记录：
 select t2.* from t1 right join t1 on t1.name = t2.name where t1.name is null;
+
+>>外连接的注意事项
+1, 内连接中，查询条件写在on子句与where子句里的效果相同，但在外连接中，条件写在where子句里，
+不符合条件的记录会被过滤掉，而不是保留下来;
+
+>>连接举例
+1, 连接条件不一定是关联字段的相等关系，也可以是其他关系，如
+查询每个员工的工号、姓名、部门名称、底薪、职位、工资等级:
+select e.eno, e.ename, d.dname, e.salary, e.job, s.grade from t_emp e 
+	joint t_dept d on e.dno = d.dno 
+	join t_salary s on s.salary between s.losal and s.hisal;
+2, 查询底薪超过公司平均底薪的员工信息:
+1)用连接实现, from子句里的子查询
+select e1.eno, e1.ename, e1.job, e1.salary from t_emp e1 
+	join (select avg(salary) avgsal from t_emp) e2 on e1.salary > e2.avgsal;
+2)用子查询实现(不推荐), where子句里的子查询
+select e.eno, e.ename, e.job, e.salary from t_emp e where e.salary >= 
+	(select avg(salary) from t_emp);
+注: 方式2的子查询效率特别低，因为t_emp表有多少条记录，就要重复执行多少次子查询;
+而方式1的连接，子查询只执行了一次，然后就用连接来实现，效率很高;
+3, 查询每种职业的最高工资、最低工资、最高工资等级和最低工资等级:
+select e.job, max(e.salary + ifnull(e.comm, 0)), min(e.salary + ifnull(e.comm, 0)), 
+	max(s.grade), min(s.grade) from t_emp e 
+	join t_salgrade s on (e.salary + ifnull(e.comm, 0)) between s.losal and s.hisal
+	group by e.job;
+注: (e.salary + ifnull(e.comm, 0)) 为基本工资加绩效，绩效可能为null, 所以要用ifnull()函数判断;
+4, 查询每个底薪超过部门平均底薪的员工信息:
+select e1.ename, e1.dno, e1.salary from t_emp e1 
+	join (select dno, avg(salary) avgsal from t_emp group by dno) e2 on e1.dno = e2.dno 
+	where e1.salary > e2.avgsal;
+注: 这个查询的条件可以写在on里面，如 on e1.dno = e2.dno and e1.salary > e2.avgsal;
 
 >>mysql系统函数
 1, 字符串函数
@@ -288,10 +420,16 @@ user(); //root@localhost
 3)max() //最大值
 4)min() //最小值
 5)avg() //平均值
-注: 聚合函数只能用于数据表的查询字段;
+注: 聚合函数只能用于数据表的查询字段, 只能出现在select或者having中, 不能出现在where中;
+count(*)与count(score)的区别:
+前者统计表中所有数据条数，而count(score)不包括了score为null的数据;
 6, 加密函数
 1)md5() //md5加密
 2)sha() //sha加密
+
+>>ifnull(score, 0) 
+如果score字段为null，则返回0;
+常用于字段的算术运算上, 避免字段与null值进行算术运算后的结果为null;
 
 >>修改mysql默认分隔符
 delimiter //
