@@ -2,6 +2,9 @@
 原始类型: boolean, number, string, undefined, null;
 对象: object;
 
+>>isNaN()
+判断一个变量是否是数字类型;
+
 >>javascript没有块级作用域；
 for(var i = 0; i < 10; i++){
 	//...

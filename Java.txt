@@ -777,8 +777,13 @@ class StudentComparator implements Comparator<Student>{ //定义三方类进行�
 
 >>异常处理
 1，最底层的异常类 Throwable，由 Throwable 继承出两个类 Error 与 Exception；
-Error是底层致命错误，会导致程序中断；
-Exception是程序逻辑错误导致，我们平时用到的异常都是继承Exception类；
+Error是底层致命错误，会导致程序中断; 
+Error常用的有: 虚拟机错误(VirtualMachineError)、内存溢出(OutofMemoryError)、线程死锁(ThreadDeath)等;
+Exception是程序逻辑错误导致，我们平时用到的异常都是继承Exception类;
+Exception包括检查异常(Checked Exception)和非检查异常(Unchecked Exception);
+检查异常是由编译器处理的异常, 这种异常必须处理;
+非检查异常指不需要编译器处理的异常，如RuntimeException, 这种异常可以不处理, 常用的有:
+NullPointerException, ArrayIndexOutOfBoundsException, ArithmeticException, ClassCastException等;
 2，抛出异常的关键字有 throw 和 throws 两个，使用如下
 public double divide(int one, int two) throws Exception{
 	if(two == 0){

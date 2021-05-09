@@ -174,23 +174,62 @@ insert into t1(pname) select name from t where condition;
 insert into t1 select null, name from t where condition;
 与create...select不同，create...select要求复制的列名要相同，
 而insert into...select不要求列名相同，只要求能一一对应;
+3)插入的字段使用子查询
+insert into student(name, age, deptno) values 
+	('zhao', 30, select dno from dept where dname = '计算机系');
+注: 这种子查询只能返回一条数据才是有效的;
+4)mysql方言(只在mysql中支持)
+insert into 表名 set 字段1=值1, 字段2=值2, ...;
+5)ignore关键字
+忽略有冲突的数据，只插入数据库中不存在的数据;
+如果没有ignore关键字，只要一条数据出错，其他所有数据都插不进去;
+insert ignore into 表名 ...;
 7, 更新数据
 1)单表更新
 update tname set cname = value where condition;
 update tname set cname1 = value1, cname2 = value2 where condition;
+//根据其他条件修改
+update student set age = age + 1 order by age desc limit 3;
+将月收入前三名的员工底薪减100元:
+update t_emp set salary = salary - 100 order by salary + ifnull(comm, 0) desc limit 3;
+举例: 比如要给主键加1, 就必须先降序排列再修改，否则会引发主键冲突, 如
+update student set sno = sno + 1 order by sno desc;
 2)多表更新
+update 表1 [left/right] join 表2 on 条件 set 字段1 = 值1, 字段2 = 值2, ...;
+等价于
+update 表1, 表2 set 字段1 = 值1, 字段2 = 值2, ... where 连接条件;
 比较灵活，可单独修改连接的左表或右表，也可同时修改两张表;
-update t1 inner join t2 on t1.c1 = t2.c2 set t1.c = value where condition;
-update t1 inner join t2 on t1.c1 = t2.c2 set t2.c = value where condition;
-update t1 inner join t2 on t1.c1 = t2.c2 set t1.c = value, t2.c = value where condition;
+update t1 join t2 on t1.c1 = t2.c2 set t1.c = value where condition;
+update t1 join t2 on t1.c1 = t2.c2 set t2.c = value where condition;
+update t1 join t2 on t1.c1 = t2.c2 set t1.c = value, t2.c = value where condition;
+举例: 
+把ALLEN调往RESEARCH部门, 职务调整为ANALYST, 并把部门地点修改为北京: 
+update t_emp e join t_dept d 
+	set e.dno = d.dno, e.job = 'ANALYST', d.location = '北京'
+	where e.ename = 'ALLEN' and d.dname = 'RESEARCH';
+注: 此例不能写连接条件，否则修改不了任何数据，因为查不到结果;
+把底薪低于公司平均底薪的员工，底薪增加150元:
+update t_emp e1 join (select avg(salary) avgsal from t_emp) e2 on e1.salary < e2.avgsal 
+	set e1.salary = e1.salary + 150;
+把没有部门的员工，或者SALES部门低于2000元底薪的员工，都调往20部门: 
+update t_emp e left join t_dept d on e.dno = d.dno 
+	set e.dno = 20
+	where e.dno is null or (d.dname = 'SALES' and e.salary < 2000);
 8, 删除数据
 1)单表删除
 delete from tname where condition;
 2)多表删除
-delete t1 from t1 inner join t2 on t1.c1 = t2.c2 where condition;
-delete t2 from t1 inner join t2 on t1.c1 = t2.c2 where condition;
-delete t1, t2 from t1 inner join t2 on t1.c1 = t2.c2 where condition;
+delete t1 from t1 join t2 on t1.c1 = t2.c2 where condition;
+delete t2 from t1 join t2 on t1.c1 = t2.c2 where condition;
+delete t1, t2 from t1 join t2 on t1.c1 = t2.c2 where condition;
 注: 把要删除记录的表放在 delete 和 from 之间;
+举例:
+删除SALES部门的员工，以及没有部门的员工:
+delete e from t_emp e left join t_dept d on e.dno = d.dno 
+	where d.dname = 'SALES' or e.dno is null;
+3)delete与truncate
+delete是在事务机制下删除数据，删除之前要先保存日志，而truncate是直接删除，速度更快;
+truncate [table] 表名;
 9, 查询数据
 select [distinct] [tname.]cnames [as cnewnames]
 	from tname where condition
@@ -380,7 +419,19 @@ lower('Hello'); //'hello'
 7)concat()/concat_ws() //连接
 concat('a', 'b', 'c'); //'abc'
 concat_ws('|', 'a', 'b', 'c'); //'a|b|c'
-8)[not] like //模式匹配
+8)instr() //查找子串出现的位置，没找到则返回0
+instr('hello world', 'o'); //5
+instr('hello world', 'x'); //0
+instr('hello world', 'll'); //3
+9)insert() //插入/替换
+insert('hello world', 1, 0, '**'); //'**hello world'
+insert('hello world', 1, 1, '**'); //'**ello world'
+insert('hello world', 1, 2, '**'); //'**llo world'
+insert('hello world', 1, 2, ''); //'llo world'
+10)lpad()/rpad() //填充字符
+lpad('hello', 10, '*'); //'*****hello'
+rpad('hello', 10, '*'); //'hello*****'
+11)[not] like //模式匹配
 select 'hello' like 'h%'; //1
 2, 数学函数
 1)abs() //取绝对值
@@ -391,8 +442,6 @@ round(3.14159); //3
 round(3.14159, 2); //3.14
 5)power() //幂运算
 power(2, 3); //8
-6)trancate() //数字截断
-trancate(5.6789, 2); //5.67
 3, 日期时间函数
 1)now() //当前日期和时间
 now(); //'2020-05-07 10:56:00'
@@ -403,7 +452,7 @@ curtime(); //'10:56:00'
 4)date_format() //对日期时间进行格式化
 date_format('2020-5-1', '%m/%d/%Y'); //'05/01/2020'
 5)date_add() //对日期时间进行增减
-date_add('2020-5-1', interval 2 year/month/week/day);
+date_add('2020-5-1', interval 2 year/month/week/day/hour/minute/second);
 6)datediff() //计算两个日期相差的天数
 datediff('2020-6-1', '2020-5-1'); //31
 4, 信息函数
@@ -426,10 +475,46 @@ count(*)与count(score)的区别:
 6, 加密函数
 1)md5() //md5加密
 2)sha() //sha加密
-
->>ifnull(score, 0) 
-如果score字段为null，则返回0;
-常用于字段的算术运算上, 避免字段与null值进行算术运算后的结果为null;
+7, 条件函数
+1)ifnull(表达式, 值)
+如果表达式的为null, 则用第二个参数的值来替代;
+2)if(表达式, 值1, 值2)
+如果表达式的值为true, 则使用值1, 否则使用值2;
+举例:
+中秋节公司发放礼品，SALES部门发放礼品A，其余部门发放礼品B，打印每名员工获得的礼品:
+select e.ename, d.dname, if(d.dname='SALES', 'A', 'B') gift 
+	from t_emp e left join t_dept d on e.dno = d.dno;
+	
+>>条件语句
+case 	
+	when 表达式 then 值1
+	when 表达式 then 值2
+	....
+	else 值n
+end
+这个条件语句可以写在select子句里，也可以写在where子句里;
+举例:
+公司组织旅游，SALES部门去P1地点，ACCOUNTING部门去P2地点，RESEARCH部门去P3地点；
+select e.ename, d.dname, 
+	case 
+		when d.dname = 'SALES' then 'P1'
+		when d.dname = 'ACCOUNTING' then 'P2'
+		when d.dname = 'RESEARCH' then 'P3'
+	end as place
+from t_emp e join t_dept d on e.dno = d.dno;
+举例:(根据不同的条件调整工资)
+update t_emp e left join t_dept d on e.dno = d.dno 
+	left join (select dno, avg(salary) avgsal from t_emp group by dno) t on e.dno = t.dno
+	set e.salary = (
+		case 
+			when d.dname='SALES' and datediff(now(), hiredate)/365>=20 then e.salary*1.1
+			when d.dname='SALES' and datediff(now(), hiredate)/365<20 then e.salary*1.05
+			when d.dname='ACCOUNTING' then e.salary+300
+			when d.dname='RESEARCH' and e.salary < t.avgsal then e.salary+200
+			when d.dno is null then e.salary+100
+			else e.salary
+		end
+	);
 
 >>修改mysql默认分隔符
 delimiter //
@@ -519,9 +604,7 @@ mysql用不同的技术将数据保存在内存中，就是存储引擎;
 解决: 引入锁机制;
 锁分为共享锁(读锁)与排他锁(写锁);
 锁的粒度分为表锁与行锁;
-2)事务处理
-事务用于保证数据库的完整性;
-事务的特性(ACID): 原子性，一致性，隔离性，持久性;
+2)事务机制
 3)外键
 保证数据一致性的策略;
 4)索引
@@ -538,6 +621,57 @@ cnames ctypes
 )engine=InnoDB default charset=utf8;
 3)修改数据表的存储引擎
 alter table tname engine = InnoDB;
+
+>>事务机制
+1, RDBMS = SQL语句 + 事务(ACID)
+2, mysql有5种日志文件，其中undo日志和redo日志是与事务有关的,
+执行SQL之前，先将数据文件拷贝到undo日志, 然后执行update/delete操作，将结果保存到redo日志,
+如果提交事务，则将redo日志与数据文件同步，负责就将undo日志与数据文件同步;
+3, 执行单条SQL语句时, mysql自动执行 开启事务->执行SQL->提交事务 的过程，而如果多条SQL作为一个整体，
+则需要手动管理事务, 格式如下:
+start transaction;
+SQL语句
+commit / rollback;
+4, 事务的特性(ACID): 原子性，一致性，隔离性，持久性;
+原子性: 一个事务种的所有操作要么全部完成，要么全部失败，事务执行后，不允许停留在中间某个状态;
+一致性: 不管在任何给定的时间，并发事务有多少，事务必须保证运行结果的一致性;
+隔离性: 事务不受其他并发事务的影响，在给定的时间内，该事务是数据库唯一运行的事务;
+持久性；事务一旦提交，结果便是永久性的，即使发生宕机，依然可以依靠事务日志完成数据的持久化;
+5, 事务的隔离级别
+1)四种隔离级别
+read uncommitted //读取未提交数据
+read committed //读取已提交数据
+repeatable read //重复读取(mysql默认的隔离级别)
+serializable //序列化
+2)修改事务的隔离级别
+案例: 买票业务，修改隔离级别为可以读取其他事务未提交的数据
+set session transaction isolation level read uncommitted;
+案例: 银行转账业务, 隔离级别必须为只能读取其他事务已提交的数据
+set session transaction isolation level read committed;
+案例: 购买商品过程中商家涨价, 隔离级别设置为可重复读;
+底层实现很简单，只读取自己的undo日志文件;
+set session transaction isolation level repeatable read;
+案例: 序列化是让事务逐一执行，可以避免读错数据的情况，但牺牲了数据库的并发性，一般很少使用;
+set session transaction isolation level serializable;
+
+>>数据的导入、导出与备份
+1, 导出与备份的区别
+数据导出，导出的纯粹是业务数据;
+数据备份，备份的是数据文件、日志文件、索引文件等等;
+2, 导出
+可导出为sql文件或者文本文档;
+如果数据量很大，建议先导出表结构，然后将数据导出为文本文档, 速度非常快;
+命令行导出:(cmd)
+mysqldump -uroot -p [no-data] 数据库名 > 路径
+图形界面导出:
+右键数据库，转储SQL文件;
+3, 导入
+命令行导入:(sql)与命令行导出不同，命令行导入必须先登录进入sql数据库
+mysql > use demo;
+mysql > source D:/backup.sql;
+4, 备份
+全量备份(第一次)->增量备份1->增量备份2->....
+数据的备份需要在linux环境，并且没有图形用户界面，具体操作另行百度;
 
 >>sql查询案例
 1, 删除重复记录
