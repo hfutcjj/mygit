@@ -554,6 +554,10 @@ Arrays.fill(a, value); //用value值来填充数组a
 1，声明和初始化
 String s = "hello"; //常量字符串
 String s = new String("hello");
+从字符数组生成字符串
+byte[] bs = {65, 78, 57, 89, 90};
+String s = new String(bs);
+String s = new String(bs, "utf-8"); //要处理异常
 2, java中的字符串是不可改变的；
 3，字符串的比较
 String s1 = "hello";
@@ -564,6 +568,7 @@ s1 == s2; //true //常量字符串多次出现时，会被编译器优化成只�
 s3 == s4; //false //比较的是内存地址
 s3.equals(s4); //true //equals()比较字符串的内容
 "hi"+s1 == "hi"+s1; //false //+运算结果是在运行时确定，所以是不同对象的比较
+注: equals()比较的是当类型和内容都相等时返回true，注意类型一定要相同;
 4，常用方法
 s.length(); //长度
 s.indexOf(ch/s1); //查找字符或者字符串第一次出现的位置，没找到则返回-1
@@ -574,10 +579,11 @@ s1.equals(s2); //比较两个字符串的内容
 s.toLowerCase()/s.toUpperCase(); //转换大小写
 s.charAt(i); //查找指定位置的字符
 s.split(s1); //分割字符串，返回字符串数组
-s.getBytes(); //将字符串转换为byte数组
+s.getBytes()/s.getBytes("gbk"); //将字符串转换为byte数组
 
 >>StringBuilder/StringBuffer类
-两者相似，可以修改字符串对象，避免了String类每次创建对象浪费性能；
+两者相似，可以修改字符串对象，避免了String类每次创建对象浪费性能;
+StringBuffer是线程安全的，而StringBuilder则没有，所以性能更高，用得更多;
 StringBuilder s = new StringBuilder();
 StringBuilder s = new StringBuilder("hello");
 s.length(); //长度
@@ -589,6 +595,7 @@ s.toString(); //将StringBuilder对象转换为String对象
 s.reverse(); //反转，本地操作
 
 >>基本类型的包装类型
+1, 对应关系
 byte -> Byte;
 short -> Short;
 int -> Integer;
@@ -600,17 +607,27 @@ boolean -> Boolean;
 举例：Integer i = new Integer(5);
 Integer i = new Integer("5");
 包装类型提供的方法可用于本类型与其他基本类型之间的互相转换；
+2, 装箱与拆箱
+1)装箱
+int t1 = 2;
+Integer o1 = t1; //自动装箱
+Integer o2 = new Integer(t1); //手动装箱(废弃)
+Integer o3 = Integer.valueOf(t1); //手动装箱
+2)拆箱
+int t2 = o1; //自动拆箱
+int t3 = o1.intValue(); 
+double t4 = o1.doubleValue(); //手动拆箱
 
 >>基本类型与字符串之间的转换
 1, 基本类型->字符串
 int c = 10;
 String s = Integer.toString(c);
-String s = String.valueOf(c);
+String s = String.valueOf(c); //String的手动装箱
 String s = c + "";
 2, 字符串->基本类型
 String s = "8";
 int d = Integer.parseInt(s);
-int d = Integer.valueOf(s);
+int d = Integer.valueOf(s); //Integer的手动装箱
 
 >>日期时间类
 1，Date类  (java.util.Date)
@@ -662,6 +679,9 @@ scanner.nextInt(); //获取输入的整数
 scanner.nextFloat()/nextDouble(); //获取输入的浮点数
 scanner.hasNext()/hasNextLine()/hasNextInt()/hasNextFloat(); //是否有对应的输入，返回布尔值
 
+>>System.exit(1)
+退出程序, 参数是状态码，非零状态码表示异常终止;
+
 >>集合
 1, 两大根接口：Collection、Map;
 Collection有三个子接口：List、Queue、Set；
@@ -682,6 +702,7 @@ pers.get(1); //取指定位置的元素
 pers.set(1, "sun"); //修改指定位置的元素
 pers.remove(1); //删除指定位置的元素
 pers.remove("qian"); //删除指定元素
+st.indexOf("zhao"); //查找元素在列表中的位置，没有则返回-1
 //用for结构循环遍历
 for(String item: pers){ 
 	//...
@@ -702,9 +723,11 @@ st.add("zhao"); //添加元素，多次添加相同的元素只算作一个
 st.size(); //集合的元素个数
 st.contains("zhao"); //判断指定的元素是否存在
 st.remove("zhao"); //删除集合的指定元素
+st.removeAll(set); //删除集合set中的所有元素，set为一个子集
 st.clear(); //清空集合所有的元素
 st.isEmpty(); //判断集合是否为空
 注：同List不同，Set没有get()和set()方法;
+HashSet的底层是HashMap;
 4，HashMap类
 HashMap类实现了Map接口；Map里有个内部类Entry；
 Map里有个内部类Entry, 存储键值对<Key, Value>；
@@ -722,13 +745,28 @@ pers.values(); //值的集合
 pers.entrySet(); //键值对的集合
 注：Collection<Student>进行查找或判断是否包含操作时，需要Student类重写Object类的
 hashCode()和equals()方法；
+遍历HashMap的几种方式:
+1)Iterator it = pers.values().iterator();
+while(it.hasNext()){
+	//it.next();
+}
+2)Set<String> kset = pers.keySet();
+for(String v: kset){
+	//v
+	//pers.get(v)
+}
+3)Set<Entry<String, Integer>> entrySet = pers.entrySet();
+for(Entry<String, Integer> v: entrySet){
+	//v.getKey()
+	//v.getValue()
+}
 5, Comparable接口和Comparator接口
 Comparable接口定义了默认的比较规则，而Comparator接口定义临时的比较规则；
 自定义类实现 Comparable接口，实现compareTo()方法；
 或定义一个临时的三方类实现 Comparator接口，实现compare()方法；
 6, Collections工具类
-Collections.sort(lists); //需要lists对象实现Comparable接口
-Collections.sort(lists, ComparatorObj); //需要ComparatorObj实现Comparator接口
+Collections.sort(list); //需要list对象实现Comparable接口
+Collections.sort(list, ComparatorObj); //需要ComparatorObj实现Comparator接口
 7，示例，重写了Object的toString()、hashCode()、equals()方法，并实现了Comparable接口;
 class Student implements Comparable<Student>{
 	public String name;
@@ -774,6 +812,10 @@ class StudentComparator implements Comparator<Student>{ //定义三方类进行�
 		return st1.getAge() - st2.getAge();
 	}
 }
+注: 判断两个对象是否相等，需要首先判断hashCode值相等，如果相等再使用equals()进行判断，
+如果没有重写hashCode()方法，默认每个对象的hashCode值都不相等;
+注: 对List对象进行排序，使用Collections.sort();
+对数组进行排序，使用Arrays.sort();
 
 >>异常处理
 1，最底层的异常类 Throwable，由 Throwable 继承出两个类 Error 与 Exception；
@@ -783,7 +825,8 @@ Exception是程序逻辑错误导致，我们平时用到的异常都是继承Ex
 Exception包括检查异常(Checked Exception)和非检查异常(Unchecked Exception);
 检查异常是由编译器处理的异常, 这种异常必须处理;
 非检查异常指不需要编译器处理的异常，如RuntimeException, 这种异常可以不处理, 常用的有:
-NullPointerException, ArrayIndexOutOfBoundsException, ArithmeticException, ClassCastException等;
+NullPointerException, ArrayIndexOutOfBoundsException, ArithmeticException, ClassCastException,
+NumberFormatException, ArrayStoreException, InputMismatchException, FileNotFoundException等;
 2，抛出异常的关键字有 throw 和 throws 两个，使用如下
 public double divide(int one, int two) throws Exception{
 	if(two == 0){
@@ -809,11 +852,21 @@ public void compute(){
 public void compute() throws Exception{
 	double d = divide(5, 0);
 }
-注：函数内部有未处理的抛出异常，函数头必须声明throws异常；
+注：函数内部有未处理的抛出异常，函数头必须声明throws异常;
+注：如果抛出的是非检查异常，则调用时可以不处理，编译器不会报错;
 4, 自定义异常
 class MyException extends Exception{
-	//...
+	public MyException(){
+		super("This is customized exception");
+	}
 }
+5, 异常链
+throw new MyException("this is my exception", e1); 
+等价于
+MyException e = new MyException("this is my exception");
+e.initCause(e1);
+throw e;
+表示该异常是由e1引起的, 可通过这样的方式将各级异常串联起来，形成异常链;
 
 >>正则表达式
 主要用到两个类: Pattern 和 Matcher;
@@ -1015,6 +1068,195 @@ switch(gender){
 	default:
 		break;
 }
+
+>>泛型
+1, 自定义泛型类
+class NumGeneric<T>{
+	private T num;
+	public T getNum(){
+		return this.num;
+	}
+	public void setNum(T t){
+		this.num = t;
+	}
+}
+2, 自定义泛型方法
+public static <T> void test(T t){ //<T>放在函数返回值的前面
+	System.out.println("print " + t);
+}
+public static <T extends Number> void test(T t){
+	System.out.println("print " + t);
+}
+传递列表作为参数的例子:
+public void sell(List<? extends Animal> pet){ //注意形参定义的形式
+	for(Animal v: pet){
+		//...
+	}
+}
+等价于
+public <T extends Animal> void sell(List<T> pet){
+	for(T v: pet){
+		//...
+	}
+}
+List<Dog> dogList = new ArrayList<Dog>();
+dogList.add(new Dog());
+sell(dogList); //实参传参
+List<Cat> catList = new ArrayList<Cat>();
+catList.add(new Cat());
+sell(catList); //实参传参
+注: 泛型作为方法参数可以代替重载;
+3, 使用泛型的好处
+在编译阶段即可检查错误，避免运行时异常;
+不用进行强制类型转换;
+注: 泛型类型必须匹配，如下面这样会报错,
+List<Number> list = new ArrayList<Integer>();
+
+>>多线程
+1, 线程的创建
+1)继承Thread类, 重写run()方法;
+class MyThread extends Thread{
+	public void run(){
+		System.out.println(getName() + "正在执行!");
+	}
+}
+MyThread mt = new MyThread();
+mt.start();
+2)实现Runnable接口, 重写run()方法;
+Runnable接口只有一个抽象方法run(), 所以比较简单;
+class MyThread implements Runnable{
+	int i = 1;
+	public void run(){
+		while(i <= 5){
+			System.out.println(Thread.currentThread().getName() + "正在执行" + i);
+			i++;
+	}
+}
+MyThread m = new MyThread();
+Thread t1 = new Thread(m);
+Thread t2 = new Thread(m);
+t1.start();
+t2.start();
+注: 两个线程共享同一个变量i，结果具有不确定性，要用到线程同步来解决;
+3)实现Callable接口，重写call()方法，具有返回值，并且可以对异常进行声明和抛出;
+class MyThread implements Callable<String>{
+	public String call() throws Exception{
+		String s = "正在执行";
+		return s;
+	}
+}
+Callable<String> call = new MyThread();
+FutureTask<String> ft = new FutureTask<>(call);
+Thread t = new Thread(ft);
+t.start();
+System.out.println(ft.get()); //需要添加异常处理
+注: Thread.currentThread()是获得当前线程;
+2, 线程的状态和生命周期
+1)线程的状态
+新建(New)、可运行(Runnable)、正在运行(Running)、阻塞(Blocked)、终止(Dead);
+2)生命周期
+线程的生命周期，就是线程五种状态之间的转换过程;
+New: Thread t = new Thread();
+Runnable: t.start();
+Runnable->Running: 获得CPU使用权;
+Running->Runnable: 时间片用完/yield();
+Running->Blocked: join()/wait()/sleep()/IO请求;
+Blocked->Runnable: 等待调用join()的线程执行完毕/notify()或notifyAll()/sleep超时/IO请求完成;
+Running->Dead: 线程执行完毕/异常终止;
+3, sleep(n)
+Thread.sleep(1000) //让当前正在执行的休眠1000毫秒;
+调用此方法需要处理异常;
+4, join()/join(n)
+抢占式执行; 
+t.join(); //让t优先执行
+t.join(n); //在n毫秒的时间内让t优先执行
+join()使主线程由正在运行状态变成阻塞状态，等待调用该方法的线程结束后才能执行;
+如在线程my中调用t.join(), 会将线程t的执行加入到自己之前，只有t执行完以后，my才会执行;
+my{
+	t.start();
+	t.join();
+}
+my{
+	t1.start();
+	t2.start();
+	t1.join();
+}
+此时, t1并非独占，t2仍然会和t1一起随机执行, 但只有等线程t1执行完以后，线程my才会执行;
+5, 线程优先级
+java线程有10个优先级，分为数字1-10，超出范围则抛出异常，默认是5;
+常量: Thread.MAX_PRIORITY: 10, Thread.MIN_PRIORITY: 1, Thread.NORM_PRIORITY: 5;
+getPriority(); //获取优先级
+setPriority(n); //设置优先级
+注: 优先级高不一定优先执行，还与操作系统的环境以及调度有关;
+6, 线程同步
+使用关键字synchronized，使共享对象在同一个时刻只能被一个线程访问;
+synchronized可以用在三个地方: 成员方法、静态方法、语句块，分别如下:
+public synchronized void saveAccount(){}
+public static synchronized void saveAccount(){}
+synchronized (obj){...}
+7, 线程间通信
+线程通信使用以下两个方法:
+1)wait(): 中断方法的执行，使线程等待;
+2)notify()/notifyAll(): 唤醒处于等待的某一个线程/所有线程;
+举例, 生产者消费者问题:
+//Container.java 容器
+public class Container{ 
+	private int n; //面包
+	private boolean flag = false; //容器中是否有面包
+	public synchronized int getN(){ //消费
+		if(!flag){ //没有面包
+			wait(); //消费线程等待
+		}
+		System.out.println("消费: " + n);
+		flag = false; //消费完，重置标记为false
+		notifyAll(); //唤醒生产线程
+		return n;
+	}
+	public synchronized void setN(int n){ //生产
+		if(flag){ //容器中已有面包
+			wait(); //生产线程等待
+		}
+		System.out.println("生产: " + n);
+		flag = true; //生产完，重置标记为true
+		notifyAll(); //唤醒消费线程
+		this.n = n;
+	}
+}
+//Producer.java 生产者
+public class Producer implements Runnable{
+	private Container container;
+	public Producer(Container container){
+		this.container = container;
+	}
+	@Override
+	public void run(){
+		int i = 1;
+		while(true){
+			container.setN(i++);
+			Thread.sleep(1000);
+		}
+	}
+}
+//Consumer.java 消费者
+public class Consumer implements Runnable{
+	private Container container;
+	public Consumer(Container container){
+		this.container = container;
+	}
+	@Override
+	public void run(){
+		while(true){
+			container.getN();
+			Thread.sleep(1000);
+		}
+	}
+}
+
+
+
+
+
+
 
 
 
