@@ -818,16 +818,20 @@ class StudentComparator implements Comparator<Student>{ //定义三方类进行�
 对数组进行排序，使用Arrays.sort();
 
 >>异常处理
-1，最底层的异常类 Throwable，由 Throwable 继承出两个类 Error 与 Exception；
+1, 异常处理的5个关键字:
+try + catch + finally: 捕获异常;
+throws: 声明异常;
+throw: 抛出异常;
+2，最底层的异常类 Throwable，由 Throwable 继承出两个类 Error 与 Exception；
 Error是底层致命错误，会导致程序中断; 
 Error常用的有: 虚拟机错误(VirtualMachineError)、内存溢出(OutofMemoryError)、线程死锁(ThreadDeath)等;
 Exception是程序逻辑错误导致，我们平时用到的异常都是继承Exception类;
 Exception包括检查异常(Checked Exception)和非检查异常(Unchecked Exception);
-检查异常是由编译器处理的异常, 这种异常必须处理;
+检查异常是由编译器处理的异常, 这种异常必须处理，如IOException, SQLException等;
 非检查异常指不需要编译器处理的异常，如RuntimeException, 这种异常可以不处理, 常用的有:
 NullPointerException, ArrayIndexOutOfBoundsException, ArithmeticException, ClassCastException,
 NumberFormatException, ArrayStoreException, InputMismatchException, FileNotFoundException等;
-2，抛出异常的关键字有 throw 和 throws 两个，使用如下
+3，抛出异常的关键字有 throw 和 throws 两个，使用如下
 public double divide(int one, int two) throws Exception{
 	if(two == 0){
 		throw new Exception("除数为0");
@@ -835,7 +839,7 @@ public double divide(int one, int two) throws Exception{
 		return one / two;
 	}
 }
-3，处理异常
+4，处理异常
 1)由 try...catch...finally来处理异常
 public void compute(){
 	try{
@@ -854,13 +858,13 @@ public void compute() throws Exception{
 }
 注：函数内部有未处理的抛出异常，函数头必须声明throws异常;
 注：如果抛出的是非检查异常，则调用时可以不处理，编译器不会报错;
-4, 自定义异常
+5, 自定义异常
 class MyException extends Exception{
 	public MyException(){
 		super("This is customized exception");
 	}
 }
-5, 异常链
+6, 异常链
 throw new MyException("this is my exception", e1); 
 等价于
 MyException e = new MyException("this is my exception");
