@@ -242,6 +242,8 @@ select Dno, avg(Sage) from Student group by Dno having avg(Sage) < 30 order by D
 limit 10; //返回查询结果的前10条
 limit 3, 10; //返回从第4条结果开始的10条记录
 注: limit可用于后端实现查询分页显示;
+select * from tname limit m, n; 等价于
+select * from tname limit n offset m;
 
 >>按多个字段分组
 查询每个部门里，每种职位的人员数量与平均底薪:

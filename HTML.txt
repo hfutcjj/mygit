@@ -60,6 +60,23 @@
 	<input type="reset" value="重置">
 </form>
 
+>>文件表单
+<form method="post" action="" enctype="multipart/form-data">
+	<input type="file" name="">
+</form>
+注: 表单的enctype属性默认为"application/x-www-form-urlencoded", 如果上传文件要更改enctype;
+
+>>meta的常用属性
+<meta charset="utf-8">
+<meta name="keywords" content="HTML,PHP,SQL">
+<meta http-equiv="expires" content="31 DEC 2020">
+
+>>a搭配iframe的使用
+<iframe name="baidu"></iframe>
+<a href="http://www.baidu.com" target="baidu">搜一搜</a>
+或者用js实现:
+window.frames['baidu'].location.href = "http://www.baidu.com";
+
 >>锚点的两种实现
 1, <a href="test.html#target1">target1</a>
 <a name="target1"><div>....</div></a>
@@ -109,5 +126,44 @@ coords: 定义区域点的坐标
 <input type="datetime"> //对于不支持的浏览器可用"datetime-local"代替
 <input type="month">
 <input type="week">
-注: 前端框架如jQuery也提供了很多日期时间的插件可供使用；
+注: 前端框架如jQuery也提供了很多日期时间的插件可供使用;
+
+>>图片的惰性加载
+<div>
+	<img src="loading.png" alt="1" data-src="photo-1.jpg">
+	<img src="loading.png" alt="2" data-src="photo-2.jpg">
+	<img src="loading.png" alt="3" data-src="photo-3.jpg">
+</div>
+<script>
+	window.onload = function(){
+		var images = document.getElementsByTagName('img');
+		for(var i in images){
+			images[i].src = images[i].getAttribute('data-src');
+		}
+	};
+</script>
+
+>>iframe
+1, 常用属性
+<iframe src="test.html" frameborder="1" width="500px" height="300px"></iframe>
+2, 相互调用
+1)在父窗口中调用iframe中的元素
+<iframe src="test.html" id="test"></iframe>
+<script>
+	var obj = document.getElementById('test').contentWindow;
+</script>
+2)在iframe中调用父窗口的元素
+<script>
+	var obj = window.top.document.getElementById('父窗口的元素ID');
+</script>
+3)兄弟iframe间相互调用
+<iframe src="index1.html" id="test1"></iframe>
+<iframe src="index2.html" id="test2"></iframe>
+//test1中调用test2的元素
+<script>
+	var obj2 = window.top.document.getElementById('test2').contentWindow.getElementById('test2中的元素ID');
+</script>
+注: 如果iframe的网页存在跨域问题，则无法相互调用;
+
+
 
