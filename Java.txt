@@ -3,9 +3,77 @@
 编译(源程序.java->字节码文件.class)和解释执行(jvm)，jvm依赖于具体的平台，是实现java跨平台的基础；
 2，jre = jvm + 标准类库,
 jdk = jre + 开发工具集;
-3，jdk中的两个组件javac(编译)和java(解释执行);
+3，jdk中的两个组件javac(编译器)和java(虚拟机);
 javac.exe和java.exe包含在bin目录下，安装jdk后需要把该目录添加到环境变量中，如在环境变量的path中添加
-D:\Java\jdk1.8.0-261\bin;
+D:\Java\jdk1.8.0_261\bin;
 4, 命令行运行java程序:
 javac Hello.java
 java Hello
+
+>>eclipse
+1, 打开eclipse时会提示设置工作目录，如D:\Java\workspace, 工作目录可通过File->Switch Workspace进行切换;
+2, 新建工程test后，源文件放在D:\Java\workspace\test\src目录下，编译生成的字节码文件放在D:\Java\workspace\test\bin目录下;
+3, 可通过Window->Preferences进行个性化设置，通过Window->Show View设置当前打开哪些子窗口；
+4, test工程右键->Resource->encoding设置程序的编码，有时导入源码中出现中文乱码可通过这种方式解决;
+也可通过Window->Preferences->encoding进行编码的设置;
+
+>>基本语法
+1, 标识符可包含字母、数字、_和$，不能以数字开头，区分大小写，不能为关键字和保留字;
+2, 目前java有48个关键字，2个保留字(goto、const);
+3, 项目名首字母小写，类名首字母大写，变量名和方法名首字母小写，都遵循驼峰命名法;
+4, 变量的三个要素: 变量类型、变量名、变量值;
+5, 变量的分类:
+按数据类型分: 基本类型、引用类型；
+按作用范围分: 类级、对象实例级、方法级(局部变量)、块级;
+6, 内存的划分: 栈、堆、常量池;
+7, ascii码
+用1个字节表示字母数字及常用符号;
+标准ascii码: 7位，表示128个字符;
+扩展ascii码: 8位，表示256个字符;
+8, unicode码
+用两个字节表示全世界所有的字符;
+char c = '\u005d';
+String s = "A\u00d2\u02a8B";
+9，常量用final修饰，常量的命名全部用大写，多个单词之间用_分隔，这与变量不同，如
+int minValue = -100;
+final int MIN_VALUE = -100;
+10, 运算符
+算术运算符、赋值运算符、关系运算符、逻辑运算符、条件运算符、位运算符;
+11, &&与&都是逻辑与运算符，前者是短路逻辑，||与|类似;
+12, 局部变量在使用前一定要初始化，否则会报错;
+
+>>数据类型
+1, 分类
+1)基本类型
+	数值型
+		整数类型: byte(1), short(2), int(4), long(8);
+		浮点类型: float(4), double(8);
+	字符型: char(2);
+	布尔型: boolean(1);
+2)引用类型
+类(class)、接口(interface)、数组;
+2，long类型字面量后要加L，float类型字面量后要加f, 如
+long a = 123L;
+float b = 1.23f;
+3, 八进制加前导0，十六进制加前导0x, 如
+int a = 12;
+int b = 012;
+int c = 0x12;
+4, 类型转换
+1)自动转换(隐式转换)
+小类型可以自动转换为大类型，不会丢失精度, 如
+long a = 100;
+double b = 1.23f; 
+char c = 65;
+2)强制转换(显式转换)
+大类型转换为小类型，需要经过强制转换店，如
+int a = (int)100L;
+float b = (float)1.23;
+char c = (char)65536;
+注: char用2个字节表示，范围为0~65535, 超过这个表示范围需要使用强制转换;
+5, 不同基本类型的数值比较，只要值相等，==就返回true;
+10L == 10.0; //true
+'a' == 97; //true
+
+
+
