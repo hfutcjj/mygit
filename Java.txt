@@ -221,7 +221,7 @@ final作用于类, 表示类不能被继承;
 final作用于方法，表示方法不能被重写;
 final作用于属性，表示常量;
 3, 继承
-1)类只能单继承，而接口可以多继承;
+1)java只支持类的单继承，但可以实现多个接口，接口之间也可以多继承;
 2)方法重写
 子类方法的参数数量和类型要与父类一致, 如果不一致就属于方法重载;
 子类方法访问修饰符的可见性必须大于等于父类方法;
@@ -294,7 +294,72 @@ public abstract class Animal{
 }
 2)abstract不能与final、static、private一起使用;
 6, 接口
-1)
+1)继承一个类的同时可以实现多个接口
+public class FourthPhone extends ThirdPhone implements IPhoto, INet{
+	//...
+}
+ThirdPhone phone1 = new FourthPhone();
+phone1.message(); //从父类继承的方法;
+IPhoto phone2 = new FourthPhone();
+phone2.photo(); //从接口IPhoto实现的方法;
+INet phone3 = new FourthPhone();
+phone3.network(); //从接口INet实现的方法
+2)实现类需要实现接口里的所有抽象方法, 否则实现类就是抽象类;
+interface IAnimal{
+	void run();
+	void eat();
+}
+abstract class Pet implements IAnimal{ //未实现接口的全部方法，所以定义为抽象类
+	@Override 
+	public void run(){
+		System.out.println("Pet can run...");
+	}
+}
+class Cat extends Pet{ //继承抽象类，实现抽象方法
+	@Override
+	public void eat(){
+		System.out.println("Cat can eat...");
+	}
+}
+3)接口中的方法默认是 public abstract, 接口中的常量默认是 public static final;
+interface IAnimal{
+	String NATION = "China";
+	void eat();
+}
+4)接口中的组成要素
+抽象方法、常量、默认方法、静态方法;
+interface IAnimal{
+	String NATION = "China"; //常量, 默认是 public static final
+	void eat(); //抽象方法, 默认是 public abstract
+	public default void run(){ //默认方法
+		//...
+	}
+	public static void sleep(){ //静态方法
+		//...
+	}
+}
+class Cat implements IAnimal{
+	@Override
+	public void eat(){ //必须实现抽象方法
+		//...
+	}
+	@Override
+	public void run(){ //是否重写默认方法可选
+		IAnimal.super.run();
+		//...
+	}
+}
+注: 重写默认方法时不用加default, 实现类中调用接口的默认方法用 接口名.super.方法名 的格式;
+静态方法不能被重写, 只能通过 接口名.方法 的格式调用接口的静态方法;
+5)当接口和父类中含有同名方法或同名常量/变量时
+如果只实现两个接口，则必须重新定义该同名方法;
+如果继承父类的同时实现两个接口，则优先调用父类的同名方法;
+与父类的方法优先不同，父类的变量与接口的常量如果同名，则地位相同，必须显示指定调用哪一个，如
+super.name, IPhoto.name, INet.name, 或者在子类中重新定义该变量;
+6)接口的继承
+public interface ISon extends IFather{}
+接口是可以多继承的
+public interface IHuman extends ITalk, IWork{}
 
 
 >>Object类
