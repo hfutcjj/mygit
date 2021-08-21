@@ -357,9 +357,52 @@ class Cat implements IAnimal{
 与父类的方法优先不同，父类的变量与接口的常量如果同名，则地位相同，必须显示指定调用哪一个，如
 super.name, IPhoto.name, INet.name, 或者在子类中重新定义该变量;
 6)接口的继承
-public interface ISon extends IFather{}
-接口是可以多继承的
 public interface IHuman extends ITalk, IWork{}
+7)接口的继承与类的继承两者的区别
+类只能单继承, 而接口可以多继承;
+类可以继承静态方法, 但不能重写, 接口不能继承静态方法;
+7, 内部类
+成员内部类、静态内部类、方法内部类、匿名内部类;
+1)成员内部类
+public class Person{
+	int age;
+	public Heart getHeart(){ //获取内部类
+		return new Heart();
+	}
+	class Heart{ //内部类
+		return age + "岁的心脏在跳动"; //等价于 Person.this.age
+	}
+}
+获取成员内部类的几种方式:
+方式1: new 外部类.new 内部类
+Person.Heart h = new Person().new Heart();
+方式2: 外部类对象.new 内部类
+Person p = new Person();
+Person.Heart h = p.new Heart();
+方式3: 外部类对象.获取方法
+p.getHeart();
+注: 内部类可以直接访问外部类的属性和方法, 或者通过 外部类.this.成员 的方式来访问外部类的成员;
+编译后生成的两个文件: Person.class 和 Person$Heart.class;
+2)静态内部类
+在内部类前加static修饰符就成为静态内部类;
+获取静态内部类: Person.Heart h = new Person.Heart();
+调用静态内部类里的静态成员: Person.Heart.静态成员;
+静态内部类里访问外部静态成员: Person.静态成员;
+静态内部类里访问外部实例成员: new Person().实例成员;
+编译后生成的文件同成员内部类;
+3)方法内部类
+public class Car{
+	public void run(){
+		class Engine{
+			public void run(){
+				//...
+			}
+		}
+		Engine engine = new Engine();
+		return engine.run();
+	}
+}
+编译后生成的两个文件: Car.class 和 Car$1Engine.class;
 
 
 >>Object类
