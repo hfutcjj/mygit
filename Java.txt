@@ -468,6 +468,106 @@ public class Animal{
 }
 
 
+>>Scanner类
+1, 实例化如从控制台输入
+Scanner sc = new Scanner(System.in);
+2, 常用输入方法
+sc.next(); //输入字符串，以空格结束
+sc.nextLine(); //输入字符串，以换行符结束
+sc.nextInt()/nextFloat()/nextDouble();
+
+
+>>包装类
+1, 基本数据类型对应的包装类
+byte-Byte, short-Short, int-Integer, long-Long,
+float-Float, double-Double, 
+char-Character, 
+boolean-Boolean;
+其中, Byte, Short, Integer, Long, Short, Double都继承自Number;
+2, 装箱 / 拆箱
+//装箱: 基本类型->包装类
+int i = 6;
+Integer o1 = i; //自动装箱, 底层实现为 Integer.valueOf(i)
+Integer o2 = new Integer(i); //手动装箱
+Integer o3 = Integer.valueOf(i); //手动装箱
+//拆箱: 包装类->基本类型
+int i1 = o1; //自动拆箱, 底层实现为 o1.intValue()
+int i2 = o1.intValue(); //手动拆箱
+3, 基本类型与字符串之间的转换
+//基本类型->字符串:
+int i = 12;
+String s1 = "" + i; //1
+String s2 = Integer.toString(i); //2
+String s3 = String.valueOf(i); //3
+//字符串->基本类型
+String s = "12";
+int i1 = Integer.parseInt(s); //1
+int i2 = Integer.valueOf(s); //
+4, 包装类的比较
+java在几种包装类中提供了缓存设计，会对一定范围内的数据做缓存，优先从缓存中取数据，超出范围才创建新对象;
+Byte、Short、Integer、Long缓存[-128, 127]区间的数据;
+Character缓存[0, 127]区间的数据;
+Boolean缓存true和false;
+Float和Double不支持缓存;
+Integer i1 = 65;
+Integer i2 = 65;
+i1 == 65; //true
+i1 == 'A'; //true
+i1.equals(65); //true
+i1.equals(65.0f); //false
+i1.equals('A'); //false
+Integer i3 = 200;
+Integer i4 = 200;
+i3 == i4; //false
+Float f1 = 100.0f;
+Float f2 = 100.0f; 
+f1 == f2; //false
+注: equals()方法首先比较类型是否相同，如果类型不同，则直接返回false;
+
+
+>>异常处理
+1, 异常类的层次
+1)Throwable是所有异常类的父类，包括Error和Exception两大子类，常用方法；getMessage()、printStackTrace();
+2)Error: 严重错误，应用程序处理不了，常见的有: VirtualMachineError, OutOfMemoryError, ThreadDeath等;
+3)Exception: 应用程序能处理的异常，分为检查异常(Checked)和非检查异常(Unchecked);
+非检查异常包括RuntimeException以及它的相关子类，常见的有: NullPointerException, ArrayIndexOutOfBoundsException, 
+ArithmeticException, ClassCastException, InputMismatchException, NumberFormatException, FileNotFoundException等;
+其余异常都是检查异常，编译器要求必须进行处理，常见的有: IOException, SQLException等;
+2, 异常处理的5个关键字:
+处理异常: try, catch, finally; 抛出异常: throw; 声明异常: throws;
+3, 终止finally执行的方法
+System.exit(1);
+4, throws
+public static int test() throws ArithmeticException, InputMismatchException{
+	//...
+}
+当调用test()方法时，可以直接用try/catch来处理异常，也可以由方法调用者继续声明异常类型;
+当声明的是非检查异常时，调用时不处理异常编译器不会报错;
+5, throw
+当在方法内主动throw一个异常时，如果内部不进行处理，可由方法throws该异常，throws的异常必须与抛出的异常相同或者是其父类;
+6, 自定义异常
+class MyException extends Exception{
+	public MyException(){
+		super("年龄必须大于18岁");
+	}
+}
+该异常类属于检查异常，编译器必须处理该异常; 如果继承自RuntimeException则为非检查异常;
+7, 输出异常信息
+e / e.toString(): 异常类型和描述信息，如 java.lang.ArithmeticException: /by zero;
+e.getMessage(): 描述信息，如 /by zero;
+e.printStackTrace(): 打印异常产生的堆栈信息，包括异常类型、描述信息和出错位置等;
+8, 异常链
+当前抛出的异常中包含上一层异常的信息;
+try{
+	test();
+}catch(Exception e){
+	Exception ex = new Exception("新异常");
+	ex.initCause(e);
+	throw ex;
+	//或直接写成一句: throw new Exception("新异常", e);
+}
+
+
 >>注解
 1, 用来对包、类、属性、方法、局部变量、方法参数等元素进行说明和注释的标记;
 2, 按照运行机制，分为源码注解、编译时注解、运行时注解;
