@@ -726,6 +726,43 @@ try{
 }
 
 
+>>泛型
+1, 泛型的作用
+提高程序的类型安全、消除强制类型转换;
+2, 泛型类
+public class NumGeneric<T>{
+	private T num;
+	//...
+}
+public class KeyValueGeneric<K, V>{
+	//...
+}
+NumGeneric<Integer> intNum = new NumGeneric<>();
+KeyValueGeneric<String, Double> kvObj = new KeyValueGeneric<>();
+注: 集合中声明的类型必须与传递的实际类型保持一致，如下这种是错误的
+List<Number> list = new ArrayList<Integer>(); //❌
+3, 泛型方法
+方法的参数或返回值都可以指定泛型;
+public <T> void f1(T t){ }
+public <T extends Animal> void f2(T t){ }
+public <T super Animal> void f3(T t){ }
+public void f4(List<?> pets){ } //通配符
+public void f5(List<? extends Animal> pets){ }
+public void f6(List<? super Animal> pets){ }
+4, 继承泛型类
+1)子类明确泛型类的参数类型
+public interface GenericInterface<T>{ 
+	//...
+}
+public class Demo1 implements GenericInterface<Integer>{
+	//...
+}
+2)子类不明确泛型类的参数类型
+public class Demo2<T> implements GenericInterface<T>{
+	//...
+}
+
+
 >>注解
 1, 用来对包、类、属性、方法、局部变量、方法参数等元素进行说明和注释的标记;
 2, 按照运行机制，分为源码注解、编译时注解、运行时注解;
