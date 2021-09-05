@@ -799,6 +799,208 @@ public class Singleton{
 }
 
 
+>>多线程
+1, 进程(process)与线程(thread)
+进程是操作系统分配资源的最小单位，线程是程度执行与调度的最小单位，
+一个进程一般包含多个线程;
+2, Thread类
+1)构造方法
+Thread();
+Thread(String name);
+Thread(Runnable target);
+Thread(Runnable target, String name);
+2)常用方法
+run(); //线程执行体, 需要被重写
+start(); //启动线程
+sleep(long m); //让自己休眠, Thread.sleep(), 使当前线程休眠m毫秒，属于静态方法，并且需要进行异常处理
+join()/join(m); //别的线程抢先执行, 调用join()的线程抢占执行, 需要进行异常处理
+wait()/wait(m); //让自己等待，需要处理异常
+notify(); //唤醒某个正在等待的线程
+notifyAll(); //常用, 唤醒所有正在等待的线程
+注: 在A线程中调用B.join()方法，只能保证B插队在A之前，而B会和其他线程并发执行;
+A: B.join(m)的意思是，A等待B执行m毫秒后再执行;
+3, 创建线程的三种方式
+1)继承Thread类
+class MyThread extends Thread{
+	@Override
+	public void run(){ //... }
+}
+MyThread t = new MyThread("java");
+t.start();
+2)实现Runnable接口
+class MyThread implements Runnable{
+	private int i = 10;
+	@Override
+	public void run(){
+		while(i > 0){
+			System.out.println(Thread.currentThread().getName() + "-" + i);
+			i--;
+		}
+	}
+}
+MyThread m = new MyThread();
+Thread t1 = new Thread(m, "java");
+Thread t2 = new Thread(m, "c++");
+t1.start();
+t2.start();
+注: 此时两个线程共享变量i;
+Thread.currentThread()返回当前线程;
+3)实现Callable接口
+此方式的优点是具有返回值，且可以声明并抛出异常;
+4, 线程的状态和生命周期
+1)五种状态
+新建(NEW)、可运行/就绪(RUNNABLE)、正在运行(RUNNING)、阻塞(BLOCKED)、终止(TERMINATED);
+2)生命周期
+线程的生命周期，就是线程在这五种状态之间的转换过程;
+新建: new Thread();
+可运行: start();
+可运行->正在运行: 获得CPU使用权;
+正在运行->可运行: CPU时间片用完/yield();
+正在运行->阻塞: join()/wait()/sleep()/IO请求;
+阻塞->可运行: 等待调用join()的线程执行完毕/notify()或notifyAll()/sleep时间超时/IO请求完成;
+正在运行->终止: 线程执行完毕/异常终止/stop();
+5, 线程的优先级
+1)优先级分为10个级别, 由低到高用数字1-10表示, 默认为5;
+2)常用方法
+t.getPriority(); //获取优先级
+t.setPriority(n); //设置优先级
+注: 优先级高并不能保证一定会优先执行，因为会受到操作系统调度的影响;
+6, 线程同步
+1)synchronized可以保证共享对象在同一时刻只能被一个线程访问;
+2)synchronized关键字可以用在如下地方:
+//方法
+public synchronized void saveAccount(){}
+//语句块
+synchronized(obj){}
+3)案例: 银行账户存取款线程同步问题
+class Bank{ //银行账户类
+	private String account;
+	private int balance;
+	//构造方法、getter/setter、toString方法省略
+	public synchronized void save(){ //存钱方法, 用第一种方式同步
+		int balance = getBalance();
+		balance += 100;
+		Thread.sleep(1000); //休眠，省略异常处理
+		setBalance(balance);
+		System.out.println("存钱后账户余额为: " + balance);
+	}
+	public void withdraw(){ //取钱方法, 用第二种方式同步
+		synchronized(this){
+			int balance = getBalance();
+			balance -= 200;
+			Thread.sleep(1000); //休眠，省略异常处理
+			setBalance(balance);
+			System.out.println("取钱后账户余额为: " + balance);
+		}
+	}
+}
+class SaveAccount implements Runnable{ //存款线程
+	Bank bank;
+	public SaveAccount(Bank bank){ this.bank = bank; }
+	@Override
+	public void run(){
+		bank.save();
+	}
+}
+class WithdrawAccount implements Runnable{	//取款线程
+	Bank bank;
+	public WithdrawAccount(Bank bank){ this.bank = bank; }
+	@Override
+	public void run(){
+		bank.withdraw();
+	}
+}
+public class Test{
+	public static void main(String[] args){
+		Bank bank = new Bank("1001", 1000);
+		Thread t1 = new Thread(new SaveAccount(bank));
+		Thread t2 = new Thread(new WithdrawAccount(bank));
+		t1.start();
+		t2.start();
+		try{
+			t1.join();
+			t2.join();
+		}catch(InterruptedException e){
+			e.printStackTrace();
+		}
+		System.out.println("账户余额为: " + bank.getBalance());
+	}
+}
+7, 线程间通信
+1)通过wait()和notifyAll()/notify()来实现进程间通信;
+2)案例: 生产者消费者线程通信
+class Box{ //商品容器类, 容器里只放一件商品
+	private int n; //商品的序号
+	private boolean flag = false; //false表示无商品，true表示有商品
+	public synchronized int get(){ //消费
+		if(!flag){ //容器空则等待
+			try{
+				wait();
+			}catch(InterruptedException e){
+				e.printStackTrace();
+			}
+		}
+		System.out.println("消费: " + n);
+		this.flag = false;
+		notifyAll(); //唤醒等待的其他进程(如生产者进程)
+		return n;
+	}
+	public synchronized void set(int n){ //生产
+		if(flag){ //容器满则等待
+			try{
+				wait();
+			}catch(InterruptedException e){
+				e.printStackTrace();
+			}
+		}
+		System.out.println("生产: " + n);
+		this.n = n;
+		this.flag = true;
+		notifyAll(); //唤醒等待的其他进程(如消费者进程)
+	}
+}
+class Producer implements Runnable{ //生产者进程
+	Box box;
+	public Producer(Box box){ this.box = box; }
+	@Override
+	public void run(){
+		int i = 1;
+		while(true){
+			box.set(i++);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+}
+class Consumer implements Runnable{ //消费者进程
+	Box box;
+	public Consumer(Box box) {
+		this.box = box;
+	}
+	@Override
+	public void run() {
+		while(true) {
+			box.get();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+}
+public class Test{
+	public static void main(String[] args){
+		Box box = new Box();
+		Thread t1 = new Thread(new Producer(box));
+		Thread t2 = new Thread(new Consumer(box));
+		t1.start();
+		t2.start();
+	}
+}
 
 
 
