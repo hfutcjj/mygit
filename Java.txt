@@ -474,6 +474,14 @@ public class Animal{
 }
 
 
+>>System类
+System.in; //系统输入
+System.out; //系统输出
+System.exit(n); //程序终止, n表示状态
+System.gc(); //垃圾回收
+System.currentTimeMillis(); //返回从1970年到现在的毫秒数，常用于程序计时
+
+
 >>Scanner类
 1, 实例化如从控制台输入
 Scanner sc = new Scanner(System.in);
@@ -1001,6 +1009,121 @@ public class Test{
 		t2.start();
 	}
 }
+
+
+>>输入输出流
+1, File类
+1)常用方法
+File f = new File("E:/demo/test.txt");
+File f = new File("E:/demo", "test.txt");
+f.exists();
+f.isDirectory();
+f.isFile();
+f.mkdir()/f.mkdirs(); //创建单级目录/多级目录
+f.createNewFile(); //创建文件, 需要处理IOException异常
+f.delete(); //删除目录或文件
+f.getPath(); //返回路径, 与创建File时传入的参数相同
+f.getAbsolutePath(); //返回绝对路径
+f.getParent(); //返回父级目录
+f.getName(); //返回文件名/目录名
+f.length(); //文件大小，以字节为单位
+2)绝对路径与相对路径
+从盘符开始的路径为绝对路径, 从当前路径开始的路径为相对路径;
+java文件所在的目录即为当前路径, eclipse较为特殊，当前路径为当前工程的目录;
+2, 字节流(InputStream/OutputStream)
+1)文件输入流 FileInputStream
+FileInputStream fis = new FileInputStream(f); //需要处理FileNotFoundException异常
+FileInputStream fis = new FileInputStream("demo/test.txt");
+byte[] b;
+fis.read(); //读入一个字节, 返回读取的字节值, -1表示到达文件末尾
+fis.read(b); //从输入流中读数据存放到b中, 返回一共读取了多少个字节, 返回-1也表示文件末尾
+fis.read(b, offset, len); //从数组b的offset位置开始存放，最多放len个字节
+fis.close(); //关闭输入流
+注: read()与read(b)的返回值是不同的;
+举例: 按字节读取文件内容
+int n = 0;
+while((n=fis.read()) != -1){
+	System.out.print((char)n);
+}
+或
+byte[] b = new byte[100];
+fis.read(b);
+System.out.println(new String(b));
+2)文件输出流 FileOutputStream
+FileOutputStream fos = new FileOutputStream(f);
+FileOutputStream fos = new FileOutputStream("demo/test.txt", true); //第二个参数true表示追加，false表示覆盖
+fos.write(n/'a'); //将指定字节写到文件
+fos.write(b); //将字节数组b的内容写到文件
+fos.write(b, offset, len); //将字节数组从offset位置开始的len个字节写到文件
+fos.close(); //关闭输出流
+注: 字节流一般用于处理二进制文件如图片, 文本文件更应该用字符流来处理;
+举例: 复制图片文件
+FileInputStream fis = new FileInputStream("bing.jpg");
+FileOutputStream fos = new FileOutputStream("bing2.jpg");
+int n = 0;
+byte[] b = new byte[1000]; //大小随便取
+while((n=fis.read(b)) != -1){ //边读边写
+	fos.write(b, 0, n); //保证复制后图片与原图片大小一致
+}
+fis.close();
+fos.close();
+3)缓冲输入输出流 BufferedInputStream/BufferedOutputStream
+文件输入输出流是与硬盘交互数据，速度较慢，而缓冲输入输出流是从内存读取数据，速度很快;
+过程: CPU-内存缓冲区-其他输入输出流(如硬盘文件);
+构造缓冲输入输出流的参数是输入输出流的子类, 如
+BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("test.txt"));
+bos.write(b);
+缓冲输入输出流的常用方法与文件输入输出流相同;
+注: 缓冲输出流, 当缓冲区未满则不会自动写数据，必须调用bos.flush()或bos.close()才会写数据;
+3, 字符流 (Reader/Writer)
+1)字节字符转换流 InputStreamReader/OutputStreamWriter
+举例:
+InputStreamReader isr = new InputStreamReader(new FileInputStream("test.txt")); //流的连接
+OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream("test2.txt"));
+//第一种方式: 一个一个读
+int n = 0;
+while((n = isr.read()) != -1){
+	System.out.print((char)n);
+}
+//第二种方式: 读入到字符数组，并将文件拷贝
+char[] c = new char[10];
+while((n = isr.read(c)) != -1){
+	String s = new String(c, 0, n); //一定要保持精确
+	System.out.print(s);
+	osw.write(s);
+	osw.flush();
+}
+注: OutputStreamWriter输出时记得flush()刷新并close()关闭;
+2)文件字符输入输出流 FileReader/FileWriter
+FileReader fr = new FileReader("test.txt");
+FileWriter fw = new FileWriter("test.txt");
+常用方法同文件字节流，把byte[]数组换成char[]数组;
+3)缓冲字符输入输出流 BufferedReader/BufferedWriter
+BufferedReader br = new BufferedReader(fr);
+BufferedWriter bw = new BufferedWriter(fw);
+常用方法与缓冲字节流类似;
+BufferedReader提供了readLine()方法一次可以读取一行字符串, 
+String s = null;
+while((s = br.readLine()) != null){
+	//todo s
+}
+4, 对象的序列化
+1)序列化与反序列化, 就是java对象和字节序列之间转换的过程;
+步骤: 创建一个类继承Serializable接口->创建对象->将对象写入文件(或网络传输)/从文件读取对象;
+对象读写涉及两个类: ObjectInputStream/ObjectOutputStream;
+2)举例
+class Cat implements Serializable{....}
+Cat cat1 = new Cat("zhao", 30);
+FileInputStream fis = new FileInputStream("bing.jpg");
+FileOutputStream fos = new FileOutputStream("bing2.jpg");
+ObjectInputStream ois = new ObjectInputStream(fis);
+ObjectOutputStream oos = new ObjectOutputStream(fos);
+oos.writeObject(cat1); //把对象序列化到文件
+oos.writeObject(null); //作为结束标记
+oos.flush();
+Cat cat = (Cat)ois.readObject(); //从文件反序列化到对象
+
+
 
 
 
