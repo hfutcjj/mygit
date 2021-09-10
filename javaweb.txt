@@ -238,8 +238,31 @@ tomcat/webaps              //tomcat应用根目录
 @WebServlet(urlPatterns="/unused",loadOnStartup=2)
 
 
+>>JSP(java server page)
+1, 执行过程
+Tomcat: jsp页面 (转译)-> Servlet源代码 (编译)-> Servlet字节码 (执行)-> html页面;
+jsp的底层就是Servlet;
+2, jsp的基本语法
+1)JSP代码块
+用于在JSP中嵌入java代码, 如 <% java代码; %>;
+2)JSP声明构造块
+用于声明变量或方法, 如 <%! 声明语句; %>;
+3)JSP输出指令
+用于在JSP页面显示java代码执行结果, 如 <%= java代码 %>;
+4)JSP处理指令
+用于提供JSP执行过程中的辅助信息, 如 <%@ jsp指令 %>;
+常用的处理指令:
+<%@ page %>: 定义当前jsp页面全局设置;
+<%@ include %>: 将其他jsp页面与当前jsp页面合并;
+<%@ taglib %>: 引入jsp标签库;
+举例:
+<%@ page contentType="text/html; charset="utf-8" pageEncoding="utf-8" import="java.util.*, java.io" %>
+<%@ include file="include/header.jsp" %>
 
 
+>>http请求
+1, 请求行，请求头，请求体
+get请求没有请求体;
 
 
 
