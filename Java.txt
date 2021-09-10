@@ -771,7 +771,7 @@ public class Demo2<T> implements GenericInterface<T>{
 }
 
 
->>注解
+>>注解Annotation
 1, 用来对包、类、属性、方法、局部变量、方法参数等元素进行说明和注释的标记;
 2, 按照运行机制，分为源码注解、编译时注解、运行时注解;
 源码注解: 只在源码中保留，编译时丢弃，如@Override;

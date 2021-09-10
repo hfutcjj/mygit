@@ -158,6 +158,84 @@ new Demo().xpath("//employee[1]");
 
 
 >>Servlet
+>>apache tomcat
+1, 免费开源的web应用服务器程序;
+2, J2EE与tomcat
+J2EE是一组技术规范与指南, 具体实现由软件厂商决定;
+tomcat是J2EE WEB(Servlet与JSP)标准的实现者;
+3, Servlet是服务器小程序，用于动态生成web内容;
+4, 安装
+安装J2EE的eclipse, tomcat, 配置tomcat, 然后把tomcat整合到eclipse中;
+tomcat的默认端口号是8080;
+>>开发Servlet程序的步骤
+1, 新建Dynamic Web Project工程;
+2, 在工程下建包和类，类继承HttpServlet，并重写service()方法;
+//目录结构
+hello
+	src
+		com.imooc.servlet
+			FirstServlet.class
+//FirstServlet类
+protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	String name = req.getParameter("name");
+	String html = "<h1 style='color: red;'>Hello " + name + "</h1>";
+	System.out.println("返回给浏览器的数据为: " + html);
+	PrintWriter out = resp.getWriter(); //固定写法
+	out.println(html);
+}
+注: service()方法是统一对所有请求进行处理;
+专门处理get请求, 重写doGet()方法, 专门处理post请求，重写doPost()方法;
+3，配置WEB-INF/web.xml, 绑定URL
+在</web-app>上面添加
+<!-- 声明Servlet -->
+  <servlet>
+  	<!-- Servlet的别名 -->
+  	<servlet-name>first</servlet-name>
+  	<servlet-class>com.imooc.servlet.FirstServlet</servlet-class>
+  </servlet>
+  <!-- 将Servlet与URL绑定 -->
+  <servlet-mapping>
+  	<servlet-name>first</servlet-name>
+  	<url-pattern>/hi</url-pattern>
+  </servlet-mapping>
+4, 点击tomcat的debug，在url中输入 http://localhost:8080/hello/hi?name=bing;
+>>java web的工程结构
+1, eclipse中可以任意定义工作目录，发布后工程会自动存放到tomcat/webapps/目录下;
+2, 目录结构
+tomcat/webaps              //tomcat应用根目录
+	hello                  //工程
+		META-INF           
+			MENIFEST.MF
+		WEB-INF             //web应用的安全目录，应用存放配置文件
+			classes        //编译后的class文件
+			lib            //三方jar包
+			web.xml       //核心部署配置文件
+		index.html        //默认首页
+访问默认主页: http://localhost:8080/hello
+>>Servlet生命周期
+1, 加载-web.xml
+2, 创建-构造函数
+3, 初始化-init()
+4, 提供服务-service()
+5, 销毁-destroy()
+注: 在tomcat的整个全局中，只有一个Servlet对象，也就是只创建一次;
+>>注解简化web.xml配置
+直接在自定义的Servlet类上面添加注解:
+@WebServlet("/anno")
+>>启动时加载Servlet
+1, web.xml使用<load-on-startup>来设置自动加载;
+<load-on-startup>0~9999</load-on-startup> //越小越优先
+启动时加载常用于系统的预处理, 如创建数据库、数据的导入等;
+2, 步骤
+1)在自定义的Servlet类中重写init()方法, 方法体内进行预处理的操作;
+2)web.xml文件中添加
+<servlet>
+	<servlet-name>create</servlet-name>
+	<servlet-class>com.imooc.servlet.CreateServlet</servlet-class>
+	<load-on-startup>0</load-on-startup>
+</servlet>
+也可以通过注解来简化配置:
+@WebServlet(urlPatterns="/unused",loadOnStartup=2)
 
 
 
