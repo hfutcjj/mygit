@@ -222,6 +222,9 @@ tomcat/webaps              //tomcat应用根目录
 >>注解简化web.xml配置
 直接在自定义的Servlet类上面添加注解:
 @WebServlet("/anno")
+通配符的使用: @WebServlet("/employee/*")，可用来获得每个员工的信息,
+String url = request.getRequestUrl();
+String id = url.substring(url.lastIndexOf("/")+1);
 >>启动时加载Servlet
 1, web.xml使用<load-on-startup>来设置自动加载;
 <load-on-startup>0~9999</load-on-startup> //越小越优先
@@ -265,7 +268,7 @@ jsp的底层就是Servlet;
 1, http是无状态协议，也就是服务端不保留连接的相关信息；
 2, request
 请求行 + 请求头 + 请求体;
-POST /login.php HTTP/1.1
+POST /login HTTP/1.1
 request header
 //header和body之间必须有一空行
 request body
@@ -283,7 +286,8 @@ response body
 5XX：服务器错误，如 500;
 5, 获取请求头与设置响应头
 String userAgent = request.getHeader("User-Agent"); 
-response.setContentType("text/html;charset=utf-8");
+response.setHeader("Content-Type", "text/html;charset=utf-8");
+//等价于response.setContentType("text/html;charset=utf-8");
 6, ContentType
 ContentType决定浏览器采用何种方式对响应体进行处理;
 text/plain: 纯文本
@@ -292,7 +296,7 @@ text/xml: xml代码
 application/x-msdownload: 需要下载的资源
 image/jepg, image/gif, image/...: 图片
 7, 请求转发与响应重定向
-1)就是在多个Servlet(JSP)之间跳转, 有两种方式: 
+1)请求转发就是在多个Servlet(JSP)之间跳转, 页面跳转有两种方式: 
 请求转发: request.getRequestDispatcher().forward();
 响应重定向: response.sendRedirect();
 2)举例
@@ -314,6 +318,8 @@ public class Index extends HttpServlet {
 	}
 }
 注: 请求转发与响应重定向的参数不同, 响应重定向的参数需要加上工程名;
+servlet跳转到jsp页面:
+request.getRequestDispatcher("success.jsp").forward(request, response);
 3)两者的区别
 请求转发是在Servlet内部完成的, 浏览器只发送一次请求，所以地址栏的url不变;
 响应重定向是重新发送一次请求，所以地址栏的url会改变;
@@ -339,12 +345,91 @@ for(Cookie ck : cks){
 Session保存在服务器，通过浏览器Cookie的SessionId值提取用户数据;
 SessionId是与浏览器窗口绑定的，如果重新打开浏览器窗口，那么SessionId就会改变, 
 之前的Session值就获取不到了;
+session在tomcat服务器上默认保存30分钟，30分钟后，session就会被销毁;
 //设置Session
 HttpSession session = request.getSession();
 session.setAttribute("name", "zhao");
 //获取Session
 HttpSession session = request.getSession();
 String name = (String)session.getAttribute("name");
+10, ServletContext对象
+Servlet上下文对象, 是Web应用全局对象, 一个Web应用只会创建一个Servlet对象;
+只要tomcat不关闭，这个对象就一直存在;
+//设置ServletContext
+ServletContext context = request.getServletContext();
+context.setAttribute("title", "this is imooc page");
+//取得ServletContext
+String title = (String)context.getAttribute("title");
+11, 中文乱码问题
+1)请求的乱码
+tomcat的默认字符集是西欧字符集ISO-8859-1, 是不支持中文字符的;
+对于post请求, 将请求体中的字符集转换成utf-8, 在doPost()的第一行加入如下代码
+request.setCharacterEncoding("utf-8");
+对于get请求, tomcat8.0以上的版本默认发送的就是utf-8的格式，因此无需转换，
+对于tomcat8.0以前的版本，需要修改配置文件;
+2)响应的乱码
+response.setContentType("text/html;charset=utf-8");
+12, web.xml的常用配置
+1)修改web应用默认页面
+<welcome-file>index.html</welcome-file>
+2)Servlet通配符映射
+@WebServlet("/employee/*")
+3)设置全局参数
+<context-param>
+  <param-name>title</param-name>
+  <param-value>imooc page</param-value>
+</context-param>
+ServletContext context = req.getServletContext();
+String title = (String)context.getInitParameter("title");
+context.setAttribute("title", title);
+注: 把参数写在配置文件里，只要重启tomcat就能生效，如果写在程序里，下次修改参数后需要重新编译程序，
+很麻烦;
+4)设置404，500等状态码默认页面
+<error-page>
+  <error-code>404</error-code>
+  <location>/error/404.html</location>
+</error-page>
+<error-page>
+  <error-code>500</error-code>
+  <location>/error/500.html</location>
+</error-page>
+//新建错误页面存放目录
+WebContent
+	error         
+		404.html
+		500.jsp
+//500.jsp
+<%@ page contentType="text/html;charset=utf-8" isErrorPage="true" %>
+<body>
+	<p>服务器内部错误, 错误信息如下: </p>
+	<%
+		out.println(exception.getClass().getSimpleName() + ": " + exception.getMessage());
+	%>
+</body>
+13, 九大内置对象
+1)request       //请求对象-HttpServletRequest
+2)response      //响应对象-HttpServletResponse
+3)session		//用户会话-HttpSession
+4)application	//应用全局对象-ServletContext	
+5)out			//输出对象-PrintWriter
+6)page          //当前页面对象-this
+7)pageContext	//页面上下文对象-PageContext
+8)config		//应用配置对象-ServletConfig
+9)exception		//应用异常对象-Throwable
+注: exception对象只能用在错误页面中, 需要在页面的page指令下增加"isErrorPage"属性;
+14, java web应用打包与发布
+1)java web应用采用war包进行发布, 发布路径为: {tomcat-home}/webapps
+打包: File-Export-Web-WARfile-e:\myServlet.war, 点击startup.bat打开tomcat即可在浏览器中访问;
+2)修改默认端口号与浏览器访问路径
+//tomcat/conf/server.xml
+<Connector connectionTimeout="20000" port="80" protocol="HTTP/1.1" redirectPort="8443"/>
+<Context docBase="E:\Java\apache-tomcat-8.5.70\webapps\myServlet" path="/" .../></Host>
+
+
+>>JSTL与EL表达式
+
+
+
 
 
 
