@@ -29,9 +29,9 @@ CDATA指的是不应由XML解析器进行解析的文本数据, 原义输出;
 3)DTD
 文档类型定义, 文件扩展名为.dtd;
 <!ELEMENTS hr (employee)> //hr节点下只允许出现一个employee子节点
-注: employee后面添加+, *, ?分别表示允许出现1-n次, 0-n次, 0-1次节点
+注: employee后面添加+, *, ?分别表示允许出现1~n次, 0~n次, 0~1次节点
 <!ELEMENTS employee (name,age,salary,department)> //employee节点下必须包含以下四个节点，且按顺序出现
-<!ELEMENTS name (#PCDATA)> //name标签体只能时文本, #PCDATA表示文本
+<!ELEMENTS name (#PCDATA)> //name标签体只能是文本, #PCDATA表示文本
 <!ATTLIST employee number CDATA ""> 节点中的属性声明 number-属性名 CDATA-类型 ""-默认值
 4)举例
 //hr.xml
@@ -50,7 +50,7 @@ CDATA指的是不应由XML解析器进行解析的文本数据, 原义输出;
 	<employee>
 	<employee> 
 		//同上(省略) 
-	</employee
+	</employee>
 </hr>
 //hr.dtd
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -118,7 +118,7 @@ for(Element v : employees){
 }
 3, 举例, 给hr.xml表增加一条员工信息
 Element employee = root.addElement("employee");
-employee.addAttibute("no", "103");
+employee.addAttribute("no", "103");
 employee.addElement("name").setText("赵六");
 employee.addElement("age").setText("25");
 employee.addElement("salary").setText("3600");
@@ -218,7 +218,7 @@ tomcat/webaps              //tomcat应用根目录
 3, 初始化-init()
 4, 提供服务-service()
 5, 销毁-destroy()
-注: 在tomcat的整个全局中，只有一个Servlet对象，也就是只创建一次;
+注: Servlet是单例模式, 在Tomcat的整个全局环境中，Servlet实例对象只创建一次;
 >>注解简化web.xml配置
 直接在自定义的Servlet类上面添加注解:
 @WebServlet("/anno")
@@ -260,9 +260,91 @@ jsp的底层就是Servlet;
 <%@ include file="include/header.jsp" %>
 
 
->>http请求
-1, 请求行，请求头，请求体
-get请求没有请求体;
+
+>>请求与响应
+1, http是无状态协议，也就是服务端不保留连接的相关信息；
+2, request
+请求行 + 请求头 + 请求体;
+POST /login.php HTTP/1.1
+request header
+//header和body之间必须有一空行
+request body
+注: get请求没有请求体;
+3, response
+相应行 + 响应头 + 响应体;
+HTTP/1.1 200 OK
+response header
+response body
+4, http响应状态码
+1XX: 收到请求，正在处理;
+2XX: 成功，如 200 OK；
+3XX：重定向，表示请求没有成功，需要采取进一步的动作；
+4XX：客户端错误，表示客户端提交的请求有错误，如 404 NOT Found;
+5XX：服务器错误，如 500;
+5, 获取请求头与设置响应头
+String userAgent = request.getHeader("User-Agent"); 
+response.setContentType("text/html;charset=utf-8");
+6, ContentType
+ContentType决定浏览器采用何种方式对响应体进行处理;
+text/plain: 纯文本
+text/html: html代码
+text/xml: xml代码
+application/x-msdownload: 需要下载的资源
+image/jepg, image/gif, image/...: 图片
+7, 请求转发与响应重定向
+1)就是在多个Servlet(JSP)之间跳转, 有两种方式: 
+请求转发: request.getRequestDispatcher().forward();
+响应重定向: response.sendRedirect();
+2)举例
+假设在工程myServlet下有两个Servlet类, 
+@WebServlet("/direct/check")
+public class Check extends HttpServlet{
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		System.out.println("用户登录成功");
+		//请求转发
+		request.getRequestDispatcher("/direct/index").forward(request, response);
+		//响应重定向
+		response.sendRedirect("/myServlet/direct/index");
+	}
+}
+@WebServlet("/direct/index")
+public class Index extends HttpServlet {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		response.getWriter().println("This is index page");
+	}
+}
+注: 请求转发与响应重定向的参数不同, 响应重定向的参数需要加上工程名;
+3)两者的区别
+请求转发是在Servlet内部完成的, 浏览器只发送一次请求，所以地址栏的url不变;
+响应重定向是重新发送一次请求，所以地址栏的url会改变;
+8, 请求允许创建自定义属性
+request.setAttribute(属性名，属性值);
+Object attr = request.getAttribute(属性名);
+可通过请求转发, 将第一个servlet中的信息携带到第二个servlet中;
+注: 因为请求转发是同一个请求，所以可以携带信息，而响应重定向是两次不同的请求，所以不能这么做;
+9, Cookie与Session
+1)Cookie
+一般在第一次登录时设置Cookie或Session;
+如果不设置Cookie的有效期，则默认在关闭浏览器时Cookie失效;
+//设置Cookie
+Cookie ck = new Cookie("user", "bing");
+ck.setMaxAge(n); //设置Cookie的有效期为n秒
+response.setCookie(ck);  
+//获取Cookie
+Cookie[] cks = request.getCookies();
+for(Cookie ck : cks){
+	ck.getName(); //cookie名
+	ck.getValue(); //cookie值
+2)Session
+Session保存在服务器，通过浏览器Cookie的SessionId值提取用户数据;
+SessionId是与浏览器窗口绑定的，如果重新打开浏览器窗口，那么SessionId就会改变, 
+之前的Session值就获取不到了;
+//设置Session
+HttpSession session = request.getSession();
+session.setAttribute("name", "zhao");
+//获取Session
+HttpSession session = request.getSession();
+String name = (String)session.getAttribute("name");
 
 
 
