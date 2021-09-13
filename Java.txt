@@ -19,6 +19,7 @@ java Hello
 也可通过Window->Preferences->encoding进行编码的设置;
 5, 调试默认快捷键
 F6-单步调试, F8-直接跳到下一个断点, F5-进入函数, F7-跳出函数;
+6, 按 alt+/ 可出现智能提示;
 
 
 >>基本语法
