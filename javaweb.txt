@@ -239,6 +239,10 @@ String id = url.substring(url.lastIndexOf("/")+1);
 </servlet>
 也可以通过注解来简化配置:
 @WebServlet(urlPatterns="/unused",loadOnStartup=2)
+注: 配置形式与注解形式的区别:
+1)注解形式比配置形式简介;
+2)修改注解形式程序需要重新编译重新上线, 而web.xml是文本文件, 修改配置形式程序不需要重新编译;
+3)注解形式只对当前类有效，而配置形式对整个工程有效;
 
 
 >>JSP(java server page)
@@ -368,7 +372,8 @@ request.setCharacterEncoding("utf-8");
 对于get请求, tomcat8.0以上的版本默认发送的就是utf-8的格式，因此无需转换，
 对于tomcat8.0以前的版本，需要修改配置文件;
 2)响应的乱码
-response.setContentType("text/html;charset=utf-8");
+response.setCharacterEncoding("utf-8");
+或 response.setContentType("text/html;charset=utf-8");
 12, web.xml的常用配置
 1)修改web应用默认页面
 <welcome-file>index.html</welcome-file>
@@ -495,6 +500,232 @@ request.setAttribute("amt", 1987654.326);
 
 
 >>JSON
+1, FastJSON
+1)对象与json串的转换
+//对象转换成json串
+String s = JSON.toJSONString(employee);
+默认情况下, Date字段会被转换成时间戳, 可以在Employee类的字段前添加注解来对输出进行格式化: 
+@JSONField(name="hiredate", format="yyyy-MM-dd")
+private Date hdate;
+@JSONField(serialize=false) //不对dname序列化
+private String dname;
+//json串转换成对象
+Employee employee = JSON.parseObject(s, Employee.class);
+2)对象数组/集合与json串的转换
+List<Employee> list = new ArrayList<>();
+//对象集合转换成json串
+String s = JSON.toJSONString(list);
+//json串转换成对象集合
+List<Employee> list2 = JSON.parseArray(s, Employee.class);
+
+
+>>JavaBean
+符合下列规范的类，就是一个JavaBean;
+1)具有一个公有的无参构造函数;
+2)所有属性都是private;
+3)具有公有的getter/setter方法对私有属性进行读写;
+4)这个类时可序列化的;
+
+
+>>跨域
+1, 什么是跨域
+http://www.abc.com:8080/scripts/jquery.js
+协议: http
+子域名: www
+主域名: abc.com
+端口号: 8080
+请求资源路径: scripts/jquery
+当协议、子域名、主域名、端口号中任意一个不相同时，都算跨域；
+注: js同源策略的限制，js不能跨域调用;
+2, 处理跨域的方法
+1)js不能跨域，但后端可以跨域处理
+比如在北京服务器的后台(www.beijing.com/proxy.php)来调用上海服务器
+(www.shanghai.com/sevice.php)的服务，然后再把响应结果返回给前端；
+2)通过JSONP的方式，但JSONP只适用于GET请求；
+3)在服务器端添加两个头文件：
+header('Access-Control-Allow-Origin:*');
+header('Access-Control-Allow-Methods:POST,GET');
+
+
+>>正则表达式
+//创建正则表达式对象
+Pattern p = Pattern.compile("***"); //参数不需要//
+//匹配正则表达式
+Matcher m = p.matcher(s);
+//查找匹配结果
+while(m.find()){
+	m.group(0); //原始匹配
+	m.group(1)/m.group(2); //子组
+}
+
+
+>>过滤器
+1, Filter是Servlet模块下的内置组件, 作用是对URL进行统一的拦截处理;
+可以定义多个过滤器，形成过滤链, 请求依次通过过滤链, 响应再以相反的顺序通过过滤链;
+开发过滤器的步骤:
+1)实现Filter接口;
+2)重写doFilter()方法;
+public class Demo1 implements Filter {
+	@Override
+	public void destroy() { ... }
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+		System.out.println("过滤器已生效");
+		chain.doFilter(request, response); //将请求与响应对象沿着过滤链依次向后处理
+	}
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException { ... }
+
+}
+3)在web.xml中对过滤器进行配置说明拦截url的范围;
+<filter>
+  <filter-name>myFilter</filter-name>
+  <filter-class>com.imooc.test.Demo1</filter-class>
+</filter>
+<filter-mapping>
+  <filter-name>myFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>2
+或采用更简洁的注解形式代替配置形式:
+@WebFilter(filterName="MyFilter",urlPatterns="/*")
+2, 过滤器的生命周期
+初始化-Filter.init(): tomcat启动时;
+提供服务-Filter.doFilter(): 每次来请求时;
+销毁-Filter.destroy(): comcat关闭或重启;
+注: Filter也是单例模式，且该实例对象在并发环境中采用多线程提供服务(单例多线程);
+3, 详解
+1)对请求和响应的字符集进行设置
+public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+	HttpServletRequest req = (HttpServletRequest)request;
+	req.setCharacterEncoding("utf-8");
+	HttpServletResponse resp = (HttpServletResponse) response;
+	resp.setContentType("text/html;charset=utf-8");
+	chain.doFilter(request, response);
+}
+注: HttpServletRequest是ServletRequest的子接口, 接口只是J2EE的规范，tomcat中具体由RequestFacade类来实现;
+HttpServletRequest接口和ServletRequest接口在servlet-api.jar中，属于J2EE的规范包;
+RequestFacade类在catalina.jar中，属于tomcat的具体实现包;
+2)过滤器参数化
+//配置形式参数化
+将doFilter()设置的信息通过配置形式或注解形式来进行参数化，需要的时候再动态提取;
+<filter>
+  <filter-name>Demo1</filter-name>
+  <filter-class>com.imooc.test.Demo1</filter-class>
+  <init-param>
+  	<param-name>encoding</param-name>
+  	<param-value>utf-8</param-value>
+  </init-param>
+</filter>
+public class Demo1 implements Filter{
+	private String encoding;
+	public void init(FilterConfig filterConfig){
+		encoding = filterConfig.getInitParameter("encoding");
+	}
+	public void doFilter(){
+		//使用encoding
+	}
+}
+//注解形式参数化
+@WebFilter(filterName="Demo1", urlPatterns="/*" 
+	initParams={
+		@WebInitParam(name="encoding", value="UTF-8"),
+		@WebInitParam(name="p1", value="v1"),
+		@WebInitParam(name="p2", value="v2")
+	})
+3)url-pattern
+常用写法有以下三种形式: 
+/index.jsp  //精准匹配
+/serlvet/*  //前缀限定的模糊匹配
+*.jsp       //后缀限定的模糊匹配(注意前面没有斜杠/)
+注: 斜杠/指映射Web应用根路径, 且只对Servlet生效;
+/与/*含义不同，前者指向根路径，后者代表所有;
+如果要同时拦截多个url，可以通过添加多个<url-mapping>，其<filter-name>相同;
+注解形式:
+@WebFilter(filterName="MyFilter", urlPatterns="/servlet/*")  //指定单个url
+@WebFilter(filterName="MyFilter", urlPatterns={"/", "/servlet/*", "*.jsp"}) //指定多个url
+4)过滤链
+请求->过滤器1->过滤器2->服务器servlet->响应->过滤器2->过滤器1->客户端；
+每一个过滤器应具有单独的职能;
+过滤器的执行顺序以<filter-mapping>为准;
+调用chain.doFilter()将请求向后传递;
+chain.doFilter()之前的语句在请求发往服务器的时候处理，chain.doFilter()之后的语句在响应
+回传给客户端的时候处理;
+如果不调用chain.doFilter()方法, 请求到达该过滤器后就不再往后传递，直接原地返回;
+如果多个过滤器都按照注解形式配置, 执行的先后顺序是根据过滤器类名的字母顺序决定, 不推荐;
+4, 举例: 多端设备自动适配
+目录
+WebContent
+	desktop
+		index.html
+	mobile
+		index.html
+	WEB-INFO
+		web.xml
+//MyFilter.java
+public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain){
+	HttpServletRequest req = (HttpServletRequest)request;
+	HttpServletResponse resp = (HttpServletResponse)response;
+	String uri = req.getRequestURI();
+	if(uri.startsWith("/desktop") || uri.startsWith("/mobile")){  //将请求向后传递
+		chain.foFilter(request, response);
+	}else{
+		String userAgent = req.getHeader("user-agent").toLowerCase();
+		String targetURI = "";
+		if(userAgent.indexOf("android") > -1 || userAgent.indexOf("iphone") > -1){
+			targetURI = "/mobile" + uri;
+			resp.sendRedirect(targetURI);  //将请求返回，进行响应重定向
+		}else{
+			targetURI = "/desktop" + uri;
+			resp.sendRedirect(targetURI);
+		}
+	}
+}
+
+
+
+>>监听器
+1, Listener是Servlet模块下的内置组件, 作用是对web应用对象的行为进行监控, 
+通过Listener监听自动触发指定的功能代码;
+三种监听对象: 
+ServletContext(application) - 对全局ServletContext及其属性进行监听;
+HttpSession(session) - 对用户会话及其属性操作进行监听;
+ServletRequest(request) - 对请求及其属性操作进行监听;
+2, 开发监听器的步骤
+1)实现XxxListener接口，实现接口中对应的方法;
+2)在web.xml中配置<listener>使监听器生效， 或使用注解形式配置;
+3, 六种常用监听接口
+内置对象监听接口(监听对象的创建与销毁):
+ServletContextListener;
+HttpSessionListener;
+ServletRequestListner;
+属性监听接口:
+ServletContextAttributeListener;
+HttpSessionAttributeListener;
+ServletRequestAttributeListner;
+4, 代码实现
+@WebListener  //注解形式配置
+public class MyListener implements HttpSessionListener, HttpSessionAttributeListener{
+	@Override
+	public void sessionCreated(HttpSessionEvent se){
+		sysout("HttpSession创建, SessionId: " + se.getSession().getId());
+	}
+	@Override
+	public void sessionDestroy(HttpSessionEvent se){
+		sysout("HttpSession销毁");
+	}
+	@Override
+	public void attributeAdded(HttpSessionBindingEvent event){
+		sysout("新增session属性: " + event.getName() + "->" + event.getValue());
+	}
+	@Override
+	public void attributeRemoved(HttpSessionBindingEvent event) { ... }
+	@Override
+	public void attributeReplaced(HttpSessionBindingEvent event) { ... }
+}
+
+
+
+
 
 
 

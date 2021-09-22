@@ -9,37 +9,19 @@ var div = jdiv.get(0); //通过get()方法
 注：通过下标[0]或者.get(0)获取的是DOM元素，而通过.first()获得仍然是jquery对象;
 
 >>jquery选择器
-1, $('#container')
-id选择器
-2, $('.container')
-类选择器
-3, $('p')
-元素选择器
-4, $('*')
-全选选择器，选择所有元素节点组成的jquery对象;
-js中获取所有节点集合：document.getElementsByTagName('*');
-5, 层级选择器
+1, 基本选择器
+$('p')  //元素选择器
+$('#container')  //id选择器
+$('.container')  //类选择器 
+$('div, p')  //组合选择器
+$('*')  //通用选择器
+注: js中获取所有节点集合：document.getElementsByTagName('*');
+2, 层级选择器
 $('div>p') //直接子元素p
 $('div p') //所有后代p
 $('div+p') //紧跟其后的第一个兄弟p
 $('div~p') //后面的所有兄弟p
-6, 其他选择器
-$('div:first') //第一个
-$('div:last') //最后一个
-$('div:eq(index)') //= index
-$('div:gt(index)') //> index
-$('div:lt(index)') //< index
-$('div:even') //偶数(下标从0开始)
-$('div:odd') //奇数
-$('div:not(selector)') //否定
-$(':root') //文档的根元素
-$(':animated') //正在执行动画的
-$(':parent') //含有子元素或文本的元素
-$(':empty') //与':parent'相反
-$(':contains(text)') //包含指定文本的元素
-$(':has(selector)') //包含指定选择器的元素
-$(':visible') //显示的元素
-$(':hidden') //隐藏的元素(1,display: none; 2,type="hidden"的表单元素; 3,width和height设为0)
+3, 属性选择器
 $('[attribute']) //具有指定属性
 $('[attribute1][attribute2]') //具有多个指定属性
 $('[attribute="value"]') //属性等于指定值
@@ -48,11 +30,20 @@ $('[attribute^="value"]') //属性值以value开头
 $('[attribute$="value"]') //属性值以value结尾
 $('[attribute*="value"]') //属性值包含value串
 $('[attribute~="value"]') //属性值包含value单词
+4, 位置选择器
+$('div:first') //第一个
+$('div:last') //最后一个
+$('div:eq(index)') //= index
+$('div:gt(index)') //> index
+$('div:lt(index)') //< index
+$('div:even') //偶数(下标从0开始)
+$('div:odd') //奇数
 $(':first-child') //是第一个子元素
 $(':last-child') //是最后一个子元素
 $(':only-child') //是唯一的子元素
 $(':nth-child(n)') //是第n个子元素，n从1开始，这与':eq(index)'不同
 $(':nth-last-child(n)') //是倒数第n个子元素
+5, 表单选择器
 $(':input') //匹配所有input, textarea, select和button元素, 注意与$('input')的区别
 $(':text') //文本框，等价于'[type="text"]', 下同
 $(':password') //密码框
@@ -67,6 +58,16 @@ $(':enabled') //可用的表单元素
 $(':disabled') //不可用的表单元素
 $(':checked') //选中的单选或复选框
 $(':selected') //选中的下拉列表项
+6, 其他选择器
+$('div:not(selector)') //否定
+$(':root') //文档的根元素
+$(':animated') //正在执行动画的
+$(':parent') //含有子元素或文本的元素
+$(':empty') //与':parent'相反
+$(':contains(text)') //包含指定文本的元素
+$(':has(selector)') //包含指定选择器的元素
+$(':visible') //显示的元素
+$(':hidden') //隐藏的元素(1,display: none; 2,type="hidden"的表单元素; 3,width和height设为0)
 $(this) //把js的上下文对象this封装成jquery对象
 
 >>属性
