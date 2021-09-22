@@ -722,6 +722,21 @@ public class MyListener implements HttpSessionListener, HttpSessionAttributeList
 	@Override
 	public void attributeReplaced(HttpSessionBindingEvent event) { ... }
 }
+5, 应用场景
+1)流量分析统计
+2)静态数据预加载
+
+
+>>FreeMarker模板引擎
+1, 模板引擎
+模板+数据->模板引擎->展现结果
+2, 主流模板引擎
+JSP, FreeMarker, Beetl;
+3, JSP与FreeMarker的区别
+JSP是官方标准，执行方式是编译型，执行效率高，开发效率低，扩展能力弱，数据提取用JSTL+EL;
+FreeMarker不是官方标准，需要引入jar包，执行方式为解释型，执行效率低，开发效率高，扩展能力强，数据提取用内置标签;
+
+
 
 
 
