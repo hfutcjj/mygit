@@ -11,15 +11,21 @@ javac Hello.java
 java Hello
 
 
->>eclipse
-1, 打开eclipse时会提示设置工作目录，如D:\Java\workspace, 工作目录可通过File->Switch Workspace进行切换;
-2, 新建工程test后，源文件放在D:\Java\workspace\test\src目录下，编译生成的字节码文件放在D:\Java\workspace\test\bin目录下;
-3, 可通过Window->Preferences进行个性化设置，通过Window->Show View设置当前打开哪些子窗口；
-4, test工程右键->Resource->encoding设置程序的编码，有时导入源码中出现中文乱码可通过这种方式解决;
+>>eclipse for J2EE
+1, 安装eclipse后要添加安装的jre，方法: Window->Preferences->jre，选择对应版本即可;
+2, 打开eclipse时会提示设置工作目录，如E:\Java\workspace, 工作目录可通过File->Switch Workspace进行切换;
+3, 新建工程test后，源文件放在E:\Java\workspace\test\src目录下，编译生成的字节码文件放在E:\Java\workspace\test\bin目录下;
+4, 可通过Window->Preferences进行个性化设置，通过Window->Show View设置当前打开哪些子窗口；
+5, test工程右键->Resource->encoding设置程序的编码，有时导入源码中出现中文乱码可通过这种方式解决;
 也可通过Window->Preferences->encoding进行编码的设置;
-5, 调试默认快捷键
+6, 调试默认快捷键
 F6-单步调试, F8-直接跳到下一个断点, F5-进入函数, F7-跳出函数;
-6, 按 alt+/ 可出现智能提示;
+7, 按 alt+/ 可出现智能提示;
+8, 将tomcat整合到eclipse中，具体方法百度;
+
+
+>>外网的jar包网页打不开的解决方案
+通过阿里云的文件仓库下载: maven.aliyun.com
 
 
 >>基本语法
@@ -1124,6 +1130,145 @@ oos.writeObject(cat1); //把对象序列化到文件
 oos.writeObject(null); //作为结束标记
 oos.flush();
 Cat cat = (Cat)ois.readObject(); //从文件反序列化到对象
+
+
+>>XML(可扩展标记语言)
+1, XML文档结构
+1)XML与HTML
+XML没有预定义标签，HTML存在大量预定义标签;
+XML用于保存与传输数据，HTML用于显示信息;
+2)XML的用途
+程序的配置描述文件、保存程序产生的数据、网络间的数据传输;
+3)第一行必须是xml声明，有且只有一个根节点
+4)举例 
+//hr.xml
+<?xml version="1.0" encoding="UTF-8" ?>  //xml声明
+<!DOCTYPE hr SYSTEM "hr.dtd">  //可选, 引入dtd文件, hr-根节点, SYSTEM-本地
+<hr xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="hr.xsd">  //可选, 引入xml schema文件, 直接在根节点上添加
+<hr>  //根节点
+	<employee no="1001">
+		<name>张三</name>
+		<age>32</age>
+		<salary>8000</salary>
+		<department>
+			<dname>研发部</dname>
+			<address>XX大厦-B103</address>
+		</department>
+	</employee>
+	<employee no="1002">
+		.....
+	</employee>
+</hr>
+2, XML语义约束
+规定XML文档中允许出现哪些元素以及元素的数量, 语义约束有两种定义方式: 
+DTD和XML schema;
+1)DTD(文档类型定义)
+//hr.dtd
+<?xml version="1.0" encoding="UTF-8" ?>
+<!ELEMENT hr (employee+)>  	//节点, hr节点下必须出现1~n次employee节点
+<!ELEMENT employee (name, age, salary, department)>  //employee节点下必须包含这四个子节点，且按顺序出现
+<!ATTLIST employee no CDATA "">  //节点的属性, no-属性名, CDATA-类型, ""-默认值
+<!ELEMENT name (#PCDATA)>  //文本节点
+<!ELEMENT age (#PCDATA)>
+<!ELEMENT salary (#PCDATA)>
+<!ELEMENT department (dname, address)>
+<!ELEMENT dname (#PCDATA)>
+<!ELEMENT address (#PCDATA)>
+注: employee后加+, *, ?分别表示出现1~n次, 0~n次, 0~1次, 不加表示1次;
+2)XML schema
+XML schema 是W3C标准, 提供了数据类型、格式限定、数据范围等更多特性, 目前应用广泛;
+//hr.xsd
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema">
+	<element name="hr">
+		<complexType>
+			<sequence>
+				<element name="employee" minOccurs="1" maxOccurs="999">
+					<complexType>
+						<sequence>
+							<element name="name" type="string"></element>
+							<element name="age" type="int"></element>
+							<element name="salary" type="float"></element>
+							<element name="department">
+								<complexType>
+									<sequence>
+										<element name="dname" type="string"></element>
+										<element name="address" type="string"></element>
+									</sequence>
+								</complexType>
+							</element>
+						</sequence>
+						<attribute name="no" type="string" use="required"></attribute>
+					</complexType>
+				</element>
+			</sequence>
+		</complexType>
+	</element>
+</schema>
+3, XML文档解析
+1)DOM4j
+需要引入dom4j.jar包, DOM4j中的核心类SAXReader将XML文档解析成DOM树; 
+//遍历hr.xml中的员工信息
+String file = "E:/Java/workspace/test/src/hr.xml";
+SAXReader reader = new SAXReader();
+Document document = reader.read(file);  //将XML文档解析成DOM树
+Element root = document.getRootElement();  //获取XML文档的根节点
+List<Element> employees = root.elements("employee");  //获取所有的employee节点
+for(Element v: employees){
+	String s = "no: " + v.attribute("no").getText() +  //取属性的值
+		", name: " + v.element("name").getText();  //取子节点的值
+	sysout(s);
+}
+//新增一条员工信息
+Element emp = root.addElement("employee"); 
+emp.addAttribute("no", "1001");  //新增属性
+emp.addElement("name", "王五");  //新增元素节点
+Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+document.write(writer);  //写入文档
+writer.close();  //关闭输出流
+2)DOM4j + XPath表达式
+XPath是XML文档中用来查询数据的语言, 查询高效, 解析XML文档优先使用XPath;
+需要引入Jaxen.jar包, DOM4j底层依赖Jaxen实现XPath查询;
+/hr/employee  //根节点hr下的employee子节点
+/hr//employee  //根节点hr下的所有employee后代节点
+//employee[1]  //根据位置筛选, 第一个employee节点
+//employee[salary<3000]/name  //根据子节点筛选, 工资小于3000的employee节点的name节点
+//employee[@no=3304]  //根据属性筛选, no属性等于3304的employee节点
+//employee[3]|employee[8]  //第3个和第8个employee节点
+//举例
+public void xpath(String exp){
+	String file = "E:/Java/workspace/test/src/hr.xml";
+	SAXReader reader = new SAXReader();
+	Document document = reader.read(file);
+	List<Node> nodes = document.selectNodes(exp);  //核心方法
+	for(Node node: nodes){
+		Element elem = (Element)node;
+		//todo with elem
+	}
+}
+new Demo().xpath("//employee[position()<5]");
+
+
+>>Servlet与JSP
+1, 软件结构发展史
+单机桌面应用 -> C/S架构 -> B/S架构;
+2, J2EE与tomcat
+J2EE是一组技术规范与标准, 具体实现由软件厂商决定;
+tomcat是免费开源的web应用服务器程序, 是J2EE中的Servlet与JSP两个模块标准的实现;
+tomcat的默认端口号是8080;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
