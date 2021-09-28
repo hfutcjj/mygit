@@ -21,7 +21,7 @@ java Hello
 6, 调试默认快捷键
 F6-单步调试, F8-直接跳到下一个断点, F5-进入函数, F7-跳出函数;
 7, 按 alt+/ 可出现智能提示;
-8, 将tomcat整合到eclipse中，具体方法百度;
+8, 将tomcat整合到eclipse中，具体方法百度, 注意要设置Server path为tomcat的安装目录, Deploy path为tomcat下的webapps目录;
 
 
 >>外网的jar包网页打不开的解决方案
@@ -1249,19 +1249,227 @@ public void xpath(String exp){
 new Demo().xpath("//employee[position()<5]");
 
 
->>Servlet与JSP
+>>Servlet
 1, 软件结构发展史
 单机桌面应用 -> C/S架构 -> B/S架构;
 2, J2EE与tomcat
 J2EE是一组技术规范与标准, 具体实现由软件厂商决定;
 tomcat是免费开源的web应用服务器程序, 是J2EE中的Servlet与JSP两个模块标准的实现;
 tomcat的默认端口号是8080;
+3, Servlet创建
+Servlet是服务器端程序，用于动态生成web内容;
+//继承HttpServlet类, 重写service()方法
+public class MyServlet extends HttpServlet{
+	@Override
+	protected void service(HttpServletRequest request, HttpServletResponse response){
+		//...
+	}
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response){
+		//...
+	}
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response){
+		//...
+	}
+}
+注: service()默认会根据请求的类型将请求分发给doGet()或doPost()进行处理;
+//配置web.xml
+<servlet>
+	<servlet-name>MyServlet</servlet-name>
+	<servlet-class>com.imooc.demo.MyServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+	<servlet-name>MyServlet</servlet-name>
+	<url-pattern>/info</url-pattern>
+</servlet-mapping>
+//也可通过注解形式来配置
+@WebServlet("/info")
+注: 配置形式与注解形式的区别:
+1)注解形式比配置形式简洁;
+2)注解形式只对当前类有效，而配置形式对整个工程有效;
+3)修改注解形式程序需要重新编译重新上线, 而web.xml是文本文件, 修改配置形式程序不需要重新编译;
+//url访问格式
+http://IP地址(或域名):端口/工程名/url-pattern, 如
+http://localhost:8080/test/employee/2;
+注: 如果新建工程时将context root设置为/, 则url访问时可以省略工程名;
+4, java web工程结构
+1)eclipse中工作目录可以任意定义, 发布目录必须设置为tomcat/webapps, 工程test发布后自动存放到tomcat/webapps/test, 
+eclipse中对文件的修改会自动同步到发布内容;
+2)工程结构
+tomcat/webapps              //tomcat应用根目录
+	test                    //工程
+		META-INF           
+			MENIFEST.MF
+		WEB-INF             //web应用的安全目录
+			classes        //编译后的class文件
+			lib            //第三方jar包
+			web.xml        //核心部署配置文件
+		index.html         //前端网页
+5, Servlet生命周期
+Servlet生命周期也就是Servlet的执行过程, 分为以下几个步骤: 
+1)装载-web.xml
+tomcat加载时解析web.xml, 装载与url绑定的Servlet类;
+2)创建-构造函数
+第一次访问Servlet对应的url时，调用构造函数创建Servlet;
+3)初始化-init()
+在init()中对Servlet进行初始化操作;
+4)提供服务-service()
+通过service()提供服务, 如果调用了super.service(request, response), 则会继续将请求转发给doGet()或doPost()进行处理;
+5)销毁-destroy()
+tomcat重启或关闭时, 调用destroy()销毁Servlet;
+注: Servlet是单例模式, 在tomcat的全局环境中, Servlet实例对象只创建一次;
+6, 启动时加载Servlet
+1)启动时加载常用于系统的预处理，如创建数据库、导入数据、统计分析等;
+2)步骤
+//在自定义的Servlet类中重写init()方法, 在方法体内进行预处理的操作
+@Override
+public void init(){
+	//....
+}
+//web.xml中使用<load-on-startup>0~9999</load-on-startup>来设置自动加载，数字越小越优先
+<servlet>
+	<servlet-name>Create</servlet-name>
+	<servlet-class>com.imooc.demo.CreateServlet</servlet-class>
+	<load-on-startup>0</load-on-startup>
+</servlet>
+注: 配置形式设置自动加载不用设置servlet-mapping;
+//或使用注解形式
+@WebServlet(urlPatterns="/unused", loadOnStartup=0)
+注: 注解形式设置自动加载必须加上urlPatterns, 写上一个用不到的属性值;
+7, url-pattern中通配符*的使用
+@WebServlet("/employee/*"), 可用来获取每个员工的编号,
+String url = request.getRequestURL();
+String id = url.substring(url.lastIndexOf("/") + 1);
+8, Cookie与Session
+1)Cookie
+Cookie是浏览器保存在本地的文本内容，会作为request的请求头发送到服务器;
+一般在第一次登录时设置Cookie,设置后作为response的响应头发送回浏览器;
+如果不设置Cookie的有效期, 则默认在关闭浏览器时Cookie失效;
+//设置Cookie
+Cookie ck = new Cookie("username", "admin");
+ck.setMaxAge(n);  //设置Cookie的有效期为n秒
+response.addCookie(ck);
+//获取Cookie
+Cookie[] cks = request.getCookies();
+for(Cookie ck: cks){
+	ck.getName();  //cookie名
+	ck.getValue();  //cookie值
+}
+//Cookie的缺点
+安全性差、每次发送Cookie会占用带宽;
+2)Session(用户会话)
+Session保存在服务器, 默认保存30分钟，30分钟后自动销毁;
+Session是服务器的一块内存区域，有唯一的SessionID与之对应;
+该SessionID会在Session第一次创建时发送给浏览器作为Cookie保存，后面浏览器发送请求都会携带该SessionID;
+SessionID作为Cookie保存在浏览器，如果重新打开浏览器窗口，SessionID就会改变，之前的Session值就取不到了;
+调用request.getSession(), 如果是新的请求(即没有携带SessionID), 服务器会创建一块新的Session, 并将SessionID
+传回浏览器, 如果不是新的请求，则服务器会取与携带的SessionID对应的Session;
+//设置Session
+HttpSession session = request.getSession();
+session.setAttribute("username", "admin");
+//获取Session
+HttpSession session = request.getSession();
+String username = (String)session.getAttribute("username");
+//使当前Session失效
+session.invalidate();
+注: getSession(boolean)与getSession()的区别:
+getSession(true)与getSession()等价, 如果当前请求没有对应的Session则创建新Session;
+getSession(false)如果当前请求没有对应的Session则返回null;
 
 
+>>JSP
+1, Java服务器页面, jsp的底层就是Servlet, jsp的执行过程如下: 
+index.jsp --(转译)-> index_jsp.java(Servlet源码)
+		  --(编译)-> index_jsp.class(字节码)
+		  --(执行)-> html页面;
+为了使jsp页面支持中文，需要在jsp页面的第一行写一条处理指令: 
+<%@ page contentType="text/html;charset=utf-8" %>
+2, jsp的基本语法
+//代码块
+<% our.print("hello"); %>
+//声明构造块
+<%! List<String> list = new ArrayList<>(); %>
+<%! public int add(int a, int b){
+		return a + b;
+	} %>
+//输出指令--等价于 out.print()
+<%= list.get(1) %> 
+<%= add(4, 5) %>
+//处理指令
+<%@ page contentType="text/html;charset=utf-8" import="java.util.*, java.io.*" %> //定义当前jsp页面全局设置
+<%@ include file="include/header.jsp" %>  //引入其他jsp页面
+<%@ taglib uri="..." prefix="..." %>  //引入jsp标签库
 
 
-
-
+>>请求与响应
+1, http是无状态协议，也就是服务端不保留连接的相关信息；
+2, request格式
+请求行 + 请求头 + 请求体:
+请求行: POST /test/login HTTP/1.1
+请求头: request header
+请求体: request body  //header和body之间必须有一空行
+注: get请求没有请求体;
+前端页面请求后端url需要加上工程名, 如 /test/login;
+3, response格式
+响应行 + 响应头 + 响应体: 
+响应行: HTTP/1.1 200 OK
+响应头: response header
+响应体: response body
+4, http响应状态码
+1XX: 收到请求，正在处理;
+2XX: 成功，如 200 OK；
+3XX：重定向，表示请求没有成功，需要采取进一步的动作；
+4XX：客户端错误，表示客户端提交的请求有错误，如 404 NOT Found;
+5XX：服务器错误，如 500;
+5, get与post请求方式的区别
+get将数据附加在url里显式发送, 而post将数据放在请求体里隐式发送;
+get安全性差, 常用于向服务器的查询操作, 而post安全性高, 常用于对服务器的写操作;
+get将数据附加到url，所以长度是有限制的，而post对数据长度没有限制;
+get数据能保留在浏览器历史中, 可收藏为书签, 而post不可以;
+6, 请求参数的接收与响应的发送
+1)接收单个参数
+String username = request.getParameter("username");
+2)接收多个同名参数, 如复选框
+String[] likes = request.getParameterValues("likes");
+3)发送响应
+response.getWriter().println(s);
+4)获取url与uri
+String url = request.getRequestURL(); //http://localhost:8080/test/info
+String uri = request.getRequestURI(); ///test/info
+7, 获取请求头与设置响应头
+1)获取请求头
+String userAgent = request.getHeader("User-Agent");
+2)设置响应头
+response.setHeader(name, value);
+response.setContentType("text/xml;charset=utf-8");
+8, ContentType的作用
+ContentType决定浏览器采用何种方式对响应体进行处理, 常用的有: 
+text/plain(html, xml);  //纯文本格式, html格式, xml格式
+application/xml(json, pdf, octet-stream, x-www-form-urlencoded, x-msdownload);  //xml数据格式, json数据格式, pdf格式, 二进制流数据如文件下载, 表单格式, 资源下载
+image/gif(jpeg, png)  //图片格式
+9, 中文乱码问题
+1)请求的乱码, 放在第一行
+request.setCharacterEncoding("utf-8");
+2)响应的乱码
+response.setContentType("text/html;charset=utf-8");
+10, 请求转发与响应重定向
+页面的跳转有两种方式: 请求转发与响应重定向;
+1)请求转发
+request.getRequestDispatcher("/info").forwart(request. response);  //转发给另一个Servlet
+request.getRequestDispatcher("/success.jsp").forwart(request. response);  //转发给jsp页面
+2)响应重定向
+response.sendRedirect("/test/info");
+3)两者的区别
+前者是在Servlet内部完成，浏览器只发送一次请求，所以地址栏的url不变, 
+而后者是重新发送一次请求，所以地址栏的url会改变;
+两者的参数不同，后者需要加上工程名，如 /test/info;
+响应重定向第一次响应带回的信息: Status Code: 302, Location: /test/info;
+11, 请求可以创建自定义属性
+request.setAttribute("username", "zhao");  //设置
+request.getAttribute("username");  //获取
+可通过请求转发，将一个Servlet中的信息通过request携带到另一个Servlet或jsp页面;
+由于响应重定向是两次不同的请求，所以不能这么做;
 
 
 
