@@ -1288,11 +1288,15 @@ public class MyServlet extends HttpServlet{
 注: 配置形式与注解形式的区别:
 1)注解形式比配置形式简洁;
 2)注解形式只对当前类有效，而配置形式对整个工程有效;
-3)修改注解形式程序需要重新编译重新上线, 而web.xml是文本文件, 修改配置形式程序不需要重新编译;
+3)修改配置文件需要重启服务器, 修改注解形式需要重新编译程序, 后者更麻烦;
 //url访问格式
 http://IP地址(或域名):端口/工程名/url-pattern, 如
 http://localhost:8080/test/employee/2;
-注: 如果新建工程时将context root设置为/, 则url访问时可以省略工程名;
+注: 1)修改默认端口号为80的方法:
+修改tomcat的配置文件server.xml: <Connector connectionTimeout="20000" port="80" protocol="HTTP/1.1" redirectPort="8443"/>
+2)url访问省略工程名的两种设置方法:
+一是在新建工程时将 context root 设置为 /;
+二是修改tomcat的配置文件server.xml: <Context docBase="E:\Java\apache-tomcat-8.5.70\webapps\myServlet" path="/" .../></Host>
 4, java web工程结构
 1)eclipse中工作目录可以任意定义, 发布目录必须设置为tomcat/webapps, 工程test发布后自动存放到tomcat/webapps/test, 
 eclipse中对文件的修改会自动同步到发布内容;
@@ -1337,9 +1341,9 @@ public void init(){
 //或使用注解形式
 @WebServlet(urlPatterns="/unused", loadOnStartup=0)
 注: 注解形式设置自动加载必须加上urlPatterns, 写上一个用不到的属性值;
-7, url-pattern中通配符*的使用
+7, url-pattern中通配符*的使用(模糊匹配)
 @WebServlet("/employee/*"), 可用来获取每个员工的编号,
-String url = request.getRequestURL();
+String url = request.getRequestURL().toString();
 String id = url.substring(url.lastIndexOf("/") + 1);
 8, Cookie与Session
 1)Cookie
@@ -1376,6 +1380,71 @@ session.invalidate();
 注: getSession(boolean)与getSession()的区别:
 getSession(true)与getSession()等价, 如果当前请求没有对应的Session则创建新Session;
 getSession(false)如果当前请求没有对应的Session则返回null;
+9, ServletContext(Servlet上下文对象)
+是Web应用全局对象, 一个Web应用只会创建一个ServletContext对象, 只要tomcat不关闭，这个对象就一直存在;
+//设置ServletContext
+ServletContext context = request.getServletContext();
+context.setAttribute("username", "zhao");
+//获取ServletContext
+ServletContext context = request.getServletContext();
+String username = (String)context.getAttribute("username");
+10, Java Web最常用的三大作用域对象
+1)HttpServletRequest request -请求对象
+2)HttpSession session -用户会话对象
+3)ServletContext context -web应用全局对象
+注: 这三个对象的作用域和生命周期依次递增;
+为了避免资源浪费, 能用小作用域对象解决的问题，就尽量不要用大作用域对象;
+11, web.xml的常用配置
+1)配置默认页面
+<welcome-file-list>
+	<welcome-file>index.html</welcome-file>
+	<welcome-file>index.jsp</welcome-file>
+</welcome-file-list>
+2)配置Servlet
+3)配置过滤器
+4)配置监听器
+5)配置全局参数
+<context-param>
+	<param-name>title</param-name>
+	<param-value>imooc page</param-value>
+</context-param>
+//获取全局参数
+ServletContext context = request.getServletContext();
+String title = context.getInitParameter("title");
+12, 自定义404, 500状态码的默认页面
+1)新建错误目录及页面
+WebContent
+	META-INF
+	WEB-INF
+		lib
+		web.xml
+	error
+		404.html
+		500.jsp
+	index.html
+//500.jsp
+<%@ page contentType="text/html;charset=utf-8" isErrorPage="true" %>
+<body>
+	<p>服务器内部错误, 错误信息如下: </p>
+	<%
+		out.println(exception.getClass().getSimpleName() + ": " + exception.getMessage());
+	%>
+</body>
+注: exception对象只能用在错误页面中, 需要在页面的page指令下增加"isErrorPage"属性;
+2)配置web.xml
+<error-page>
+	<error-code>404</error-code>
+	<location>/error/404.html</location>
+</error-page>
+<error-page>
+	<error-code>500</error-code>
+	<location>/error/500.jsp</location>
+</error-page>
+13, Java Web应用的打包与发布
+java类可以导出成jar包，而Java Web应用可以到处成war包进行发布，发布路径为 tomcat/webapps/test.war;
+当点击startup.bat启动tomcat时，会自动对war包进行解压缩，然后就可以在浏览器中进行访问;
+eclipse中将工程导出为war包的步骤:
+File -> Export -> Web -> WAR file -> E:/Java/tomcat/webapps/test.war;
 
 
 >>JSP
@@ -1387,7 +1456,7 @@ index.jsp --(转译)-> index_jsp.java(Servlet源码)
 <%@ page contentType="text/html;charset=utf-8" %>
 2, jsp的基本语法
 //代码块
-<% our.print("hello"); %>
+<% out.print("hello"); %>
 //声明构造块
 <%! List<String> list = new ArrayList<>(); %>
 <%! public int add(int a, int b){
@@ -1400,6 +1469,17 @@ index.jsp --(转译)-> index_jsp.java(Servlet源码)
 <%@ page contentType="text/html;charset=utf-8" import="java.util.*, java.io.*" %> //定义当前jsp页面全局设置
 <%@ include file="include/header.jsp" %>  //引入其他jsp页面
 <%@ taglib uri="..." prefix="..." %>  //引入jsp标签库
+3, 九大内置对象
+jsp内置对象是对Servlet使用的简化;
+1)request   	 //请求对象-HttpServletRequest
+2)response   	 //响应对象-HttpServletResponse
+3)session    	 //用户会话-HttpSession  		 =request.getSession()
+4)application    //应用全局对象-ServletContext   =request.getServletContext()
+5)out         	 //输出对象-PrintWriter     	 =response.getWriter()
+6)page			 //当前页面对象  				 =this
+7)pageContext	 //页面上下文对象-PageContext
+8)config	     //应用配置对象-ServletConfig
+9)exception      //异常对象-Throwable
 
 
 >>请求与响应
@@ -1435,7 +1515,7 @@ String[] likes = request.getParameterValues("likes");
 3)发送响应
 response.getWriter().println(s);
 4)获取url与uri
-String url = request.getRequestURL(); //http://localhost:8080/test/info
+String url = request.getRequestURL().toString(); //http://localhost:8080/test/info
 String uri = request.getRequestURI(); ///test/info
 7, 获取请求头与设置响应头
 1)获取请求头
