@@ -1,35 +1,3 @@
->>JSON
-1, FastJSON
-1)对象与json串的转换
-//对象转换成json串
-String s = JSON.toJSONString(employee);
-默认情况下, Date字段会被转换成时间戳, 可以在Employee类的字段前添加注解来对输出进行格式化: 
-@JSONField(name="hiredate", format="yyyy-MM-dd")
-private Date hdate;
-@JSONField(serialize=false) //不对dname序列化
-private String dname;
-//json串转换成对象
-Employee employee = JSON.parseObject(s, Employee.class);
-2)对象数组/集合与json串的转换
-List<Employee> list = new ArrayList<>();
-//对象集合转换成json串
-String s = JSON.toJSONString(list);
-//json串转换成对象集合
-List<Employee> list2 = JSON.parseArray(s, Employee.class);
-
-
->>正则表达式
-//创建正则表达式对象
-Pattern p = Pattern.compile("***"); //参数不需要//
-//匹配正则表达式
-Matcher m = p.matcher(s);
-//查找匹配结果
-while(m.find()){
-	m.group(0); //原始匹配
-	m.group(1)/m.group(2); //子组
-}
-
-
 >>过滤器
 1, Filter是Servlet模块下的内置组件, 作用是对URL进行统一的拦截处理;
 可以定义多个过滤器，形成过滤链, 请求依次通过过滤链, 响应再以相反的顺序通过过滤链;

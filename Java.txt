@@ -1278,9 +1278,6 @@ public void xpath(String exp){
 new Demo().xpath("//employee[position()<5]");
 
 
->>JSON
-
-
 >>Servlet
 1, 软件结构发展史
 单机桌面应用 -> C/S架构 -> B/S架构;
@@ -1627,6 +1624,214 @@ request.setAttribute("username", "zhao");  //设置
 request.getAttribute("username");  //获取
 可通过请求转发，将一个Servlet中的信息通过request携带到另一个Servlet或jsp页面;
 由于响应重定向是两次不同的请求，所以不能这么做;
+
+
+>>JSON
+1, JSON即JavaScript对象表示法，独立于具体语言，是一种轻量级的数据交换格式;
+JSON语法简单，用于数据交换；而XML解析复杂，常用于数据存储;
+2, JSON本身是对象，但在应用中，前台与后台交换的是JSON串, 如
+'{"name": "zhao", "age": 30}';
+3, js中操作json的函数
+//把js对象转换成json串
+JSON.stringify()
+//把json串解析成js对象；
+JSON.parse()
+4, FastJson
+FastJson是阿里巴巴开发的jar包, 用于将JavaBean与JSON字符串相互转换;
+1)对象与json串的转换
+//对象转换成json串
+String s = JSON.toJSONString(employee);  //{"name": "zhao", "age": 26}
+默认情况下, Date字段会被转换成时间戳, 可以在Employee类的字段前添加注解来对输出进行格式化: 
+@JSONField(name="hiredate", format="yyyy-MM-dd")
+private Date hdate;
+@JSONField(serialize=false) //不对dname序列化
+private String dname;
+//json串转换成对象
+Employee employee = JSON.parseObject(s, Employee.class);
+2)集合与json串的转换
+List<Student> list = new ArrayList<>();
+//集合转换成json串
+String s = JSON.toJSONString(list);  //[{"name": "zhao", "age": 20}, {"name": "qian", "age": 30}, ...]
+//json串转换成集合
+List<Student> list2 = JSON.parseArray(s, Student.class);
+3)前后台通过ajax进行交互的案例
+//index.html
+$.ajax({
+	url: "/test/info",  //必须加上工程名
+	type: "get",
+	data: {},
+	dataType: "json",
+	success: function(data){
+		for(var i = 0; i < data.length; i++){
+			//data[i]
+		}
+	},
+	error: function(xhr){
+		console.log(xhr.status + ": " + xhr.statusText);
+	}
+});
+//InfoServlet.java
+List<Student> list = new ArrayList<>();
+list.add(new Student("zhao", 30));
+list.add(new Student("qian", 20));
+response.getWriter().println(JSON.toJSONString(list));
+
+
+>>正则表达式
+1, 基本语法
+1)元字符
+.  任意字符(回车和换行符除外)
+^  匹配开头
+$  匹配结尾
+|  或
+\  转义
+() 匹配子组
+[] 字符类
+量词:
+?  出现0次或1次
+*  出现0次或多次
++  出现1次或多次
+{n} 出现n次
+{n,m} 出现n到m次
+{n,} 出现至少n次
+注：范围量词{n,m}中间不能有空格，否则无效;
+2)转义字符
+\n 换行
+\r 回车
+\f 换页
+\t 水平制表
+\v 垂直制表
+3)字符类
+[a-zA-Z0-9]
+\d 数字类 [0-9]
+\D 非数字类 [^0-9]
+\w 单词字符 [a-zA-Z0-9_]
+\W 非单词字符 [^a-zA-Z0-9_]
+\s 空白符 [\t\n\x0B\f\r]
+\S 非空白符 [^\t\n\x0B\f\r]
+\b 单词边界
+\B 非单词边界
+注: 对字符类取反，^必须放在[]里第一个位置，否则无效;
+2, \b, \B, ^, $ 举例(js)
+'This is a boy.'.replace(/is/g, 'X'); //'ThX X a boy.'
+'This is a boy.'.replace(/\bis\b/g, 'X'); //'This X a boy.'
+'This is a boy.'.replace(/\Bis\b/g, 'X'); 'ThX is a boy.'
+'@123@abc@'.replace(/@./g, 'X'); //'X23Xbc@'
+'@123@abc@'.replace(/^@./g, 'X'); //'X23@abc@'
+'@123@abc@'.replace(/.@/g, 'X'); //'@12XabX'
+'@123@abc@'.replace(/.@$/g, 'X'); //'@123@abX'
+3, 单个中文的匹配
+[\u4e00-\u9fa5]
+4, 贪婪模式与非贪婪模式
+量词匹配默认使用贪婪模式，采用尽可能多的匹配;
+在量词后加?则使用非贪婪模式;
+'12345678'.replace(/\d{3,6}/, 'X'); //'X78'
+'12345678'.replace(/\d{3,6}?/, 'X'); //'X45678'
+'12345678'.replace(/\d{3,6}/g, 'X'); //'X78'
+'12345678'.replace(/\d{3,6}?/g, 'X'); //'XX78'
+'123-12345678'.match(/\d+?-\d+?/)  //'123-1'
+5, 前瞻后顾
+不仅考虑自身的匹配，还要考虑前面或者后面的字，语法：
+exp(?=assert) //后面符合断言
+exp(?!assert) //后面不符合断言
+例如：
+'a2*34vv'.replace(/\w(?=\d)/g, 'X'); //'X2*X4vv'
+'a2*34vv'.replace(/\w(?!\d)/g, 'X'); //'aX*3XXX'
+6, 常用的正则表达式
+1)非空
+/.+/   
+2)保留两位小数的浮点数
+/^[-\+]?\d+\.\d{2}$/
+3)中国大陆的手机号
+/^1[34578]\d{9}$/
+4)email地址
+/^\w+(\.\w+)*@\w+(\.\w+)*$/
+5)url地址
+/^(https?://)?(\w+\.)+[a-zA-Z]+$/
+7, js中正则表达式
+1)定义正则表达式
+var reg = /\bis\b/g; //字面量
+var reg = new RegExp('\\bis\\b', 'g'); //构造函数
+注：\b是匹配单词边界;
+常用的修饰符(修饰符可省略)：
+g: 全文搜索;
+i: 忽略大小写;
+m: 多行匹配;
+2)正则对象的属性
+global: 是否全文搜索，默认为false;
+ignoreCase: 是否区分大小写，默认为false;
+multiline: 是否多行搜索，默认为false；
+source: 正则表达式的文本字符串;
+lastIndex: 当前匹配的下一个位置索引，仅对全文搜索有效;
+3)正则对象的方法
+reg.test(s)
+是否存在的匹配，返回true或false;
+/\w\d/.test('a1b2c3d4'); //true
+reg.exec(s)
+模式匹配，如果没有匹配的文本则返回null，否则返回一个结果数组；
+非全文搜索的多次匹配结果都一样：
+var reg = /(\w)\d/, s = 'a1b2c3';
+var r = reg.exec(s);
+r; //['a1', 'a', index: 0]
+全文搜索每次匹配后reg的lastIndex都会变化，会导致结果不一样：
+var reg = /(\w)\d/g, s = 'a1b2c3';
+var r1 = reg.exec(s); //['a1', 'a', index: 0]
+var r2 = reg.exec(s); //['b2', 'b', index: 2]
+var r3 = reg.exec(s); //['c3', 'c', index: 4]
+var r4 = reg.exec(s); //null
+var r5 = reg.exec(s); //同r1
+reg.lastIndex; //2
+注：lastIndex同样会影响修饰符为g的全文搜索的test()结果：
+var reg = /\w\d/g, s = 'a1b2';
+reg.test(s); //true
+reg.test(s); //true
+reg.test(s); //false
+可以通过每次构造一个新正则对象来消除结果的不一致性：
+/\w\d/g.test('a1b2'); //true(all the time)
+4)字符串对象的方法
+s.search(reg)
+查找参数指定的子串的位置，返回匹配到的下标，不存在则返回-1;
+接收的参数可以是字符串，也可以是正则表达式；
+search()方法不执行全局搜索，它将忽略g，并且总是从字符串的开头进行查找：
+'aaa123bbb'.search(/\w\d/); //2
+s.match(reg)
+查找匹配的结果数组;
+这个方法reg是否为全局搜索对结果的影响很大，
+reg非全局返回第一次匹配的结果，包括分组，
+reg全局则返回所有匹配的结果，但不包括分组信息;
+注意这个方法与reg.exec(s)返回结果的区别；
+var s = 'a1b2c3d4', reg = /(\w)\d/;
+var r = s.match(reg);
+r; //['a1', 'a', index: 0]
+var s = 'a1b2c3d4', reg = /(\w)\d/g;
+var r = s.match(reg);
+r; //['a1', 'b2', 'c3', 'd4']
+s.replace(reg, rep)
+对字符串进行正则替换;
+第一个参数可以是字符串，也可以是正则表达式;
+第二个参数可以是替换字符串，也可以是回调函数，自定义替换结果;
+'a1b1c1'.replace('1', 'X'); //'aXb1c1'
+'a1b1c1'.replace(/1/g, 'X'); //'aXbXcX'
+'a1b2c3d4'.replace(/\d/g, function(match, index, origin){
+	return parseInt(match)+1;
+}); //'a2b3c4d5'
+注：replace()方法传入字符串只能替换第一个匹配
+s.split(reg)
+将字符串按指定参数分割成数组；
+'a,b,c,d'.split(','); //['a', 'b', 'c', 'd']
+'a1b2c3d4'.split(/\d/); //['a', 'b', 'c', 'd', '']
+8, java中正则表达式
+//创建正则表达式对象
+Pattern p = Pattern.compile("***"); //参数不需要起止符//
+//匹配正则表达式
+Matcher m = p.matcher(s);
+//查找匹配结果
+while(m.find()){
+	m.group(0); //原始匹配
+	m.group(1)/m.group(2); //子组
+}
+
+
 
 
 
