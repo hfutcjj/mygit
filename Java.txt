@@ -1139,6 +1139,16 @@ oos.writeObject(cat1); //把对象序列化到文件
 oos.writeObject(null); //作为结束标记
 oos.flush();
 Cat cat = (Cat)ois.readObject(); //从文件反序列化到对象
+5, 读取字符文件的一种常用写法
+StringBuffer content = "";
+FileInputStream fis = new FileInputStream("***");
+InputStreamReader isr = new InputStreamReader(fis);
+BufferedReader br = new BufferedReader(isr);
+String line = "";
+while((line = br.readLine()) != null){
+	sb.append(line);
+}
+//todo with sb
 
 
 >>跨域
@@ -1832,11 +1842,84 @@ while(m.find()){
 }
 
 
+>>过滤器
+1, 过滤器的作用
+Filter对URL进行统一的过滤和拦截，通常用于应用程序层面的全局处理;
+多个过滤器形成过滤链, 请求依次通过过滤链, 响应再以相反的顺序通过过滤链;
+2, 开发过滤器的步骤
+1)实现Filter接口
+2)重写doFilter()方法
+public class MyFilter implements Filter{
+	@Override
+	public void init(){ //... }
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain){
+		//todo
+		chain.doFilter(request, response);  
+	}
+	@Override
+	public void destroy(FilterConfig config){ //... }
+3)在web.xml中对过滤器进行配置说明拦截url的范围
+<filter>
+  <filter-name>myFilter</filter-name>
+  <filter-class>com.imooc.test.Demo1</filter-class>
+</filter>
+<filter-mapping>
+  <filter-name>myFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+或采用注解形式: @WebFilter(filterName="MyFilter", urlPatterns="/*")
+注意事项: 
+1)HttpServletRequest/HttpServletResponse是ServletRequest/ServletResponse的子接口;
+2)调用chain.doFilter()将请求向后传递;
+chain.doFilter()之前的语句处理请求，chain.doFilter()之后的语句处理响应;
+如果不调用chain.doFilter()方法, 请求到达该过滤器后就不再往后传递，直接原地返回;
+3)如果要同时拦截多个url，可以通过添加多个<filter-mapping>，其<filter-name>相同; 或采用注解形式如
+@WebFilter(filterName="MyFilter", urlPatterns="/servlet/*")  //指定单个url
+@WebFilter(filterName="MyFilter", urlPatterns={"/", "/servlet/*", "*.jsp"}) //指定多个url
+3, 过滤器的生命周期
+初始化-Filter.init(): tomcat启动时;
+提供服务-Filter.doFilter(): 每次来请求时;
+销毁-Filter.destroy(): comcat关闭或重启;
+注: Filter也跟Servlet一样，使用单例多线程模式提供服务;
+4, 过滤链
+请求->过滤器1->过滤器2->servlet->产生响应->过滤器2->过滤器1->客户端；
+每一个过滤器应具有单独的职能, 过滤器的执行顺序以<filter-mapping>为准;
+如果多个过滤器都按照注解形式配置, 执行的先后顺序是根据过滤器类名的字母顺序决定, 不推荐;
+5, 使用场景
+1)请求和响应的字符集设置
+2)用户身份的校验;
+3)多端设备自动适配
+新建工程时将 context root 设置为 /;
+目录
+WebContent
+	desktop
+		index.html
+	mobile
+		index.html
+	WEB-INFO
+		web.xml
+//MyFilter.java
+public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain){
+	HttpServletRequest req = (HttpServletRequest)request;
+	HttpServletResponse resp = (HttpServletResponse)response;
+	String uri = req.getRequestURI();
+	if(uri.startsWith("/desktop") || uri.startsWith("/mobile")){  //将请求向后传递
+		chain.doFilter(request, response);
+	}else{
+		String userAgent = req.getHeader("user-agent").toLowerCase();
+		String targetURI = "";
+		if(userAgent.indexOf("android") > -1 || userAgent.indexOf("iphone") > -1){
+			targetURI = "/mobile" + uri;
+		}else{
+			targetURI = "/desktop" + uri;
+		}
+		resp.sendRedirect(targetURI);  //将请求返回，进行响应重定向
+	}
+}
 
 
-
-
-
+>>监听器
 
 
 
