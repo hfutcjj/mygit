@@ -1316,7 +1316,7 @@ public class MyServlet extends HttpServlet{
 //配置web.xml
 <servlet>
 	<servlet-name>MyServlet</servlet-name>
-	<servlet-class>com.imooc.demo.MyServlet</servlet-class>
+	<servlet-class>com.imooc.servlet.MyServlet</servlet-class>
 </servlet>
 <servlet-mapping>
 	<servlet-name>MyServlet</servlet-name>
@@ -1376,7 +1376,7 @@ public void init(){
 //web.xml中使用<load-on-startup>0~9999</load-on-startup>来设置自动加载，数字越小越优先
 <servlet>
 	<servlet-name>Create</servlet-name>
-	<servlet-class>com.imooc.demo.CreateServlet</servlet-class>
+	<servlet-class>com.imooc.servlet.CreateServlet</servlet-class>
 	<load-on-startup>0</load-on-startup>
 </servlet>
 注: 配置形式设置自动加载不用设置servlet-mapping;
@@ -1862,7 +1862,7 @@ public class MyFilter implements Filter{
 3)在web.xml中对过滤器进行配置说明拦截url的范围
 <filter>
   <filter-name>myFilter</filter-name>
-  <filter-class>com.imooc.test.Demo1</filter-class>
+  <filter-class>com.imooc.filter.MyFilter</filter-class>
 </filter>
 <filter-mapping>
   <filter-name>myFilter</filter-name>
@@ -1920,7 +1920,45 @@ public void doFilter(ServletRequest request, ServletResponse response, FilterCha
 
 
 >>监听器
-
+1, Listener用于对Web应用中三大作用域对象的创建与销毁、以及这些对象的属性的增删改操作进行监听;
+三种监听对象: ServletContext(application), HttpSession(session), ServletRequest(request);
+2, 六种常用监听接口
+内置对象监听接口(监听对象的创建与销毁):
+ServletContextListener;
+HttpSessionListener;
+ServletRequestListner;
+属性监听接口(监听属性的增删改操作):
+ServletContextAttributeListener;
+HttpSessionAttributeListener;
+ServletRequestAttributeListner;
+3, 开发监听器的步骤
+1)实现XxxListener接口，实现接口中对应的方法;
+public class MyListener implements HttpSessionListener, HttpSessionAttributeListener{
+	@Override
+	public void sessionCreated(HttpSessionEvent se){
+		sysout("HttpSession创建, SessionId: " + se.getSession().getId());
+	}
+	@Override
+	public void sessionDestroy(HttpSessionEvent se){
+		sysout("HttpSession销毁");
+	}
+	@Override
+	public void attributeAdded(HttpSessionBindingEvent event){
+		sysout("新增session属性: " + event.getName() + "->" + event.getValue());
+	}
+	@Override
+	public void attributeRemoved(HttpSessionBindingEvent event) { ... }
+	@Override
+	public void attributeReplaced(HttpSessionBindingEvent event) { ... }
+}
+2)在web.xml中配置<listener>使监听器生效;
+<Listener>
+	<listener-class>com.imooc.listener.MyListener</listener-class>
+</Listener>
+或注解形式: @WebListener
+4, 应用场景
+1)流量分析统计
+2)静态数据预加载
 
 
 
