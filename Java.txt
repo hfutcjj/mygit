@@ -1958,7 +1958,12 @@ public class MyListener implements HttpSessionListener, HttpSessionAttributeList
 或注解形式: @WebListener
 4, 应用场景
 1)流量分析统计
+创建一个监听器实现ServletContextListener接口和ServletRequestListener接口, 在contextInitialized()中初始化数据, 
+在requestInitialized()中动态更新访问时间和访问量, 然后定义一个Servlet用来获取这些数据, 将json串发送到前台, 
+前台通过ajax与Servlet交互取得json数据, 最后通过Echarts图表来展示数据;
 2)静态数据预加载
+创建一个监听器实现ServletContextListener接口, 在contextInitialized()中将一些静态数据存放到ServletContext中, 
+然后程序的其他地方可以随时使用这些数据;
 
 
 
