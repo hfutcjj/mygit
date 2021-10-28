@@ -6,10 +6,12 @@
 5, lib, 存储库文件;
 6, share, 错误信息和字符集文件;
 
+
 >>启动和关闭mysql服务
 1, net start mysql //启动
 2, net stop mysql //关闭
 注: net start/stop 也能启动与关闭其他服务;
+
 
 >>登录与退出
 1, mysql -hlocalhost -uroot -p -P3306 //登录
@@ -17,19 +19,19 @@
 2, 退出
 exit / quit / \q;
 
+
 >>SQL语句的类型：
 1)DDL 数据定义语言
 数据库、数据表、视图、索引;
 create;
 2)DCL 数据控制语言
-用户、权限;
-grant, revoke;
+用户、权限、事务控制;
+grant, revoke,
+commit, rollback;
 3)DML 数据操作语言
 表的数据;
 select, insert, update, delete;
-4)TPL 事务处理语言；
-事务;
-commit, rollback;
+
 
 >>操作数据库
 1, 创建数据库
@@ -52,6 +54,7 @@ select database();
 8, 设置客户端的编码
 set names utf8 / gbk;
 注: 设置数据库服务器的编码需要在配置文件中设置;
+
 
 >>数据类型
 1, 整型
@@ -88,11 +91,9 @@ set names utf8 / gbk;
 5)timestamp: 4字节
 注: 实际开发中日期时间类型经常用整型代替;
 
->>操作数据表
-1, 查看当前数据库中的所有表
-show tables;
-show tables from mysql;
-2, 创建表
+
+>>创建数据表
+1, 创建数据表的几种方法
 1)基本创建命令
 create table [if not exists] tname(
 	cname ctype,
@@ -117,13 +118,18 @@ create table tnewname like toldname;
 可复制字段类型以及约束条件;
 4)复制表结构以及数据到新表
 create table tnewname select cnames from toldname where condition;
-3, 查看创建的数据表结构信息
+2, 查看创建的数据表结构信息
 show columns from t; 
 desc / describe t; //这两种查询一样，都是显示所有列的信息
 show create table t; //显示创建表的信息
-4, 约束
-约束保证数据的完整性和一致性;
-约束分为列级约束和表级约束;
+3, 查看当前数据库中的所有表
+show tables;
+show tables from mysql;
+
+
+>>约束
+1, 约束保证数据的完整性和一致性; 约束分为列级约束和表级约束;
+2, 常用的约束
 1)primary key //主键, 一张表只能有一个主键列，主键自动为 not null 和 unique;
 2)not null //非空约束
 3)unique //唯一性约束
@@ -139,29 +145,33 @@ cascade(级联): 从父表删除或更新时，自动修改子表;
 set null(置空): 从父表删除或更新时，将子表对应字段置为空;
 restrict(拒绝): 拒绝对父表的删除或更新;
 注: 实际开发中物理的外键约束用得比较少，一般用程序来逻辑的控制;
-5, 修改表的结构
-1)添加列
+
+
+>>修改表的结构
+1, 添加列
 alter table tname add [column] cname ctype [first|after cname];
-2)删除列
+2, 删除列
 alter table tname drop [column] cname;
-3)修改列
+3, 修改列
 modify只能修改列的类型和位置:
 alter table tname modify [column] cname ctype [first|after cname];
 change除了能修改列的类型和位置，还能修改列名:
 alter table tname change [column] coldname cnewname ctype [first|after cname];
-4)添加约束
+4, 添加约束
 alter table tname add [constraint pk_tname_id] primary key (id);
 alter table tname add [constraint uq_tname_name] unique (name);
 alter table tname add [constraint fk_tname_pid] foreign key (pid) references province (id);
 alter table tname alter cname set default 15;
 alter table tname alter cname drop default;
-5)删除约束
+5, 删除约束
 alter table tname drop primary key;
 alter table tname drop [index|foreign key] constraint_name;
-6)修改表名
+6, 修改表名
 alter table tname rename [to|as] tnewname;
-6, 插入记录
-1)直接插入
+
+
+>>插入记录
+1, 直接插入
 insert [into] tname[(cname, ...)] values (val, ...);
 举例:
 insert into tname values (default/null, 'zhao', 30, 5200);
@@ -169,23 +179,25 @@ insert into tname(name, age, salary) values ('zhao', 30, 5200);
 insert into tname(cnames) values (...), (...), ...;
 注: 插入数据时，对于带有auto_increment约束的主键，省略时可以用default/null来代替;
 对于有默认值的字段，可以不插入值，也可以插入default;
-2)插入其他表的数据
+2, 插入其他表的数据
 insert into t1(pname) select name from t where condition;
 insert into t1 select null, name from t where condition;
 与create...select不同，create...select要求复制的列名要相同，
 而insert into...select不要求列名相同，只要求能一一对应;
-3)插入的字段使用子查询
+3, 插入的字段使用子查询
 insert into student(name, age, deptno) values 
 	('zhao', 30, select dno from dept where dname = '计算机系');
 注: 这种子查询只能返回一条数据才是有效的;
-4)mysql方言(只在mysql中支持)
+4, mysql方言(只在mysql中支持)
 insert into 表名 set 字段1=值1, 字段2=值2, ...;
-5)ignore关键字
+5, ignore关键字
 忽略有冲突的数据，只插入数据库中不存在的数据;
 如果没有ignore关键字，只要一条数据出错，其他所有数据都插不进去;
 insert ignore into 表名 ...;
-7, 更新数据
-1)单表更新
+
+
+>>更新数据
+1, 单表更新
 update tname set cname = value where condition;
 update tname set cname1 = value1, cname2 = value2 where condition;
 //根据其他条件修改
@@ -194,7 +206,7 @@ update student set age = age + 1 order by age desc limit 3;
 update t_emp set salary = salary - 100 order by salary + ifnull(comm, 0) desc limit 3;
 举例: 比如要给主键加1, 就必须先降序排列再修改，否则会引发主键冲突, 如
 update student set sno = sno + 1 order by sno desc;
-2)多表更新
+2, 多表更新
 update 表1 [left/right] join 表2 on 条件 set 字段1 = 值1, 字段2 = 值2, ...;
 等价于
 update 表1, 表2 set 字段1 = 值1, 字段2 = 值2, ... where 连接条件;
@@ -215,10 +227,12 @@ update t_emp e1 join (select avg(salary) avgsal from t_emp) e2 on e1.salary < e2
 update t_emp e left join t_dept d on e.dno = d.dno 
 	set e.dno = 20
 	where e.dno is null or (d.dname = 'SALES' and e.salary < 2000);
-8, 删除数据
-1)单表删除
+
+	
+>>删除数据
+1, 单表删除
 delete from tname where condition;
-2)多表删除
+2, 多表删除
 delete t1 from t1 join t2 on t1.c1 = t2.c2 where condition;
 delete t2 from t1 join t2 on t1.c1 = t2.c2 where condition;
 delete t1, t2 from t1 join t2 on t1.c1 = t2.c2 where condition;
@@ -227,10 +241,13 @@ delete t1, t2 from t1 join t2 on t1.c1 = t2.c2 where condition;
 删除SALES部门的员工，以及没有部门的员工:
 delete e from t_emp e left join t_dept d on e.dno = d.dno 
 	where d.dname = 'SALES' or e.dno is null;
-3)delete与truncate
+3, delete与truncate
 delete是在事务机制下删除数据，删除之前要先保存日志，而truncate是直接删除，速度更快;
 truncate [table] 表名;
-9, 查询数据
+
+
+>>查询数据
+1, 查询的完整格式
 select [distinct] [tname.]cnames [as cnewnames]
 	from tname where condition
 	group by cname [having condition]
@@ -241,30 +258,38 @@ select Dno, avg(Sage) from Student group by Dno having avg(Sage) < 30 order by D
 注: 进行分组查询时，查询的字段必须是分组的字段或者其他字段的聚合函数;
 limit 10; //返回查询结果的前10条
 limit 3, 10; //返回从第4条结果开始的10条记录
-注: limit可用于后端实现查询分页显示;
+2, limit可用于后端实现查询分页显示;
 select * from tname limit m, n; 等价于
 select * from tname limit n offset m;
-
->>按多个字段分组
+3, 查询中各子句的执行顺序
+from -> where -> group by -> having -> select -> order by -> limit;
+注: where一定是排在group by之前执行的;
+举例: 查询每个部门中, 1982年以后入职的员工超过2个人的部门编号。
+select deptno from t_emp where hiredate >= '1982-01-01' 
+	group by deptno having count(*) >= 2 
+	order by deptno;
+4, where的注意事项
+当检索大数据量时，优化where子句也能加快检索速度;
+1)索引字段的条件应写在前面;
+2)筛选掉记录最多的条件写在前面;
+5, having
+having是group by的条件，having里只能放分组字段或者聚合函数，
+不过建议把分组字段的条件放到where中，where是在分组之前执行，提高效率;
+6, 按多个字段分组
 查询每个部门里，每种职位的人员数量与平均底薪:
 select deptno, job, count(*), avg(salary) from t_emp group by deptno, job order by deptno;
-
->>with rollup //汇总
+7, with rollup //汇总
 select deptno, job, count(*), sum(salray), avg(salary), max(salary), min(salary) 
 	from t_emp group by deptno, job with rollup;
 对分组的结果进行汇总;
 如果按一个字段分组，则汇总成一条最终的结果;
 如果按两个字段分组，则按第一个分组字段的每个值进行汇总;
-
->>group_concat()
+8, group_concat()
 把非分组字段的所有值拼接成一个字符串，让它可以出现在select中;
 查询每个部门内底薪超过2000元的人数和员工姓名:
 select deptno, group_concat(ename), count(*) from t_emp where sal >= 2000 
 	group by deptno;
-	
->>having
-having是group by的条件，having里只能放分组字段或者聚合函数，
-不过建议把分组字段的条件放到where中，where是在分组之前执行，提高效率;
+
 
 >>索引
 1, 建表时创建索引
@@ -288,6 +313,7 @@ drop index id_name on student;
 注: 索引默认采用btree来组织;
 索引对数据的查询很重要，但增加写数据的效率，所以对于写操作比较多的场合，索引不能太多;
 
+
 >>比较运算符
 1, 基本比较运算符
 >, >=, <, <=, =, !=;
@@ -303,6 +329,7 @@ where name like 'a%';
 where name regexp '^[a-zA-Z]{4}$';
 where name regexp '^[\\u4e00-\\u9fa5]{2,4}$'; //查询汉字人名
 
+
 >>逻辑运算符
 1, and //且
 2, or //或
@@ -310,10 +337,6 @@ where name regexp '^[\\u4e00-\\u9fa5]{2,4}$'; //查询汉字人名
 where not expression;
 4, xor //异或
 
->>where的注意事项
-当检索大数据量时，优化where子句也能加快检索速度;
-1, 索引字段的条件应写在前面;
-2, 筛选掉记录最多的条件写在前面;
 
 >>子查询
 子查询可以写在select、from、where子句中，分别称为select子查询、from子查询、where子查询;
@@ -327,6 +350,7 @@ insert into tname(cnames) select ...;
 3)出现在from后，这样的子查询的结果作为临时表，必须起一个别名;
 注: 推荐使用from子查询，特别不推荐使用select子查询和where子查询;
 select子查询和where子查询都是相关子查询，效率非常低，而from子查询不是相关子查询，只执行一次，效率高;
+
 
 >>in, all, any, exists
 这些都是where子查询的语法，实际工作中应该改为连接来实现;
@@ -343,6 +367,7 @@ select eno, ename, sal from t_emp where exists(
 	select grade from t_salgrade where sal between losal and hisal and grade in (3, 4)
 	);
 
+	
 >>连接
 1)内连接
 select * from student t1 [inner] join dept t2 on t1.Dno = t2.Dno;
@@ -370,9 +395,11 @@ select t1.* from t1 left join t2 on t1.name = t2.name where t2.name is null;
 选择在t2表中但不在t1表中的人的记录：
 select t2.* from t1 right join t1 on t1.name = t2.name where t1.name is null;
 
+
 >>外连接的注意事项
 1, 内连接中，查询条件写在on子句与where子句里的效果相同，但在外连接中，条件写在where子句里，
 不符合条件的记录会被过滤掉，而不是保留下来;
+
 
 >>连接举例
 1, 连接条件不一定是关联字段的相等关系，也可以是其他关系，如
@@ -400,6 +427,7 @@ select e1.ename, e1.dno, e1.salary from t_emp e1
 	join (select dno, avg(salary) avgsal from t_emp group by dno) e2 on e1.dno = e2.dno 
 	where e1.salary > e2.avgsal;
 注: 这个查询的条件可以写在on里面，如 on e1.dno = e2.dno and e1.salary > e2.avgsal;
+
 
 >>mysql系统函数
 1, 字符串函数
@@ -487,6 +515,7 @@ count(*)与count(score)的区别:
 select e.ename, d.dname, if(d.dname='SALES', 'A', 'B') gift 
 	from t_emp e left join t_dept d on e.dno = d.dno;
 	
+	
 >>条件语句
 case 	
 	when 表达式 then 值1
@@ -518,8 +547,10 @@ update t_emp e left join t_dept d on e.dno = d.dno
 		end
 	);
 
+	
 >>修改mysql默认分隔符
 delimiter //
+
 
 >>自定义函数
 1, 不带参数
@@ -543,6 +574,7 @@ delimiter ;
 注: 函数体由多条语句组成的话需要加 begin...end 结构;
 4, 删除函数
 drop function f1;
+
 
 >>存储过程
 1, 优点
@@ -596,6 +628,7 @@ drop procedure sp1;
 如果函数体或过程体有多个语句，需要包含在begin...end语句块中;
 存储过程需要通过call来调用;
 
+
 >>存储引擎
 1, 定义
 mysql用不同的技术将数据保存在内存中，就是存储引擎;
@@ -623,6 +656,7 @@ cnames ctypes
 )engine=InnoDB default charset=utf8;
 3)修改数据表的存储引擎
 alter table tname engine = InnoDB;
+
 
 >>事务机制
 1, RDBMS = SQL语句 + 事务(ACID)
@@ -656,6 +690,7 @@ set session transaction isolation level repeatable read;
 案例: 序列化是让事务逐一执行，可以避免读错数据的情况，但牺牲了数据库的并发性，一般很少使用;
 set session transaction isolation level serializable;
 
+
 >>数据的导入、导出与备份
 1, 导出与备份的区别
 数据导出，导出的纯粹是业务数据;
@@ -674,6 +709,78 @@ mysql > source D:/backup.sql;
 4, 备份
 全量备份(第一次)->增量备份1->增量备份2->....
 数据的备份需要在linux环境，并且没有图形用户界面，具体操作另行百度;
+
+
+>>配置文件my.ini
+一些主要的配置项如下:
+[client] #图形界面客户端配置
+port=3306
+[mysql] #命令行界面配置
+no-beep
+[mysqld] #数据库配置
+port=3306 #端口号
+datadir=C:/ProgramData/MySQL/MySQL Server 8.0\Data #数据目录
+default_authentication_plugin=mysql_native_password #密码认证插件
+default-storage-engine=INNODB #默认存储引擎
+sql-mode="STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION" #开启严格模式
+log-output=FILE #用文件记录日志
+general-log=0 #关闭日志输出
+general_log_file="DESKTOP-D5J8UKO.log" #日志文件名称
+slow-query-log=1 #开启慢查询日志
+slow_query_log_file="DESKTOP-D5J8UKO-slow.log" #慢查询日志文件名称
+long_query_time=10 #大于多少秒的执行SQL被记录在慢查询日志
+log-error="DESKTOP-D5J8UKO.err" #错误日志名称
+log-bin="DESKTOP-D5J8UKO-bin" #
+server-id=1 #数据库ID(数据库集群使用)
+lower_case_table_names=1 #把表名转换成小写
+secure-file-priv="C:/ProgramData/MySQL/MySQL Server 8.0/Uploads" #导入导出数据的目录地址
+max_connections=151 #最大连接数
+thread_cache_size=10 #线程数量
+
+	
+>>数据库设计
+1, 数据库设计的目标
+较少的存储空间、高效的数据访问、减少数据冗余、易于维护;
+2, 数据库设计的步骤
+需求分析、逻辑设计、物理设计、维护优化;
+3, 需求分析
+确定实体以及实体的属性，确定实体间的联系以及联系的属性。实体和联系都是关系表;
+实体间的联系有一对一、一对多、多对多的联系，一对一和一对多的联系一般作为属性包含在
+实体的关系表中，而多对多的联系要用独立的关系表来表示；
+将多对多的联系转化为两个一对多的联系，如学生-课程之间多对多的联系，通过考试这个联系表，
+转化为学生-考试和课程-考试这两个一对多的联系；
+4, 逻辑设计
+1)将需求分析的结果转化为逻辑模型，结果用E-R图来表示，与具体的DBMS无关；
+矩形表示实体，椭圆表示属性，菱形表示联系，线段用来连接实体与属性、实体与联系，
+联系的m:n的关系在线段上标出，主键属性在下面加下划线;
+2)逻辑模型设计的要求
+符合第一范式1NF、第二范式2NF、第三范式3NF、BC范式BCNF，不规范的逻辑设计会导致
+数据冗余以及插入、更新、删除异常;
+3)第一范式
+表中的属性不可再分；
+不符合1NF的可将属性拆分，使之符合1NF；
+4)第二范式
+在满足1NF的基础上，不存在某个非主属性对候选码的部分函数依赖;
+单一主键的表都满足2NF；
+某些复合主键的表不满足2NF，可将其拆分为两个实体表[以及一个联系表]，使之满足2NF；
+5)第三范式
+在满足2NF的基础上，不存在某个非主属性对候选码的传递函数依赖；
+不满足3NF的表，可将其拆分为两个实体表[和一个联系表]，使之满足3NF；
+6)BC范式
+在满足3NF的基础上，不存在候选码之间的传递函数依赖；
+不满足BCNF一般是因为表中存在多个联系，可将其拆分为多个单一联系的表，使之满足BCNF；
+5, 物理设计
+数据库设计的具体物理实现；
+包括选择具体的DBMS，选取合适的存储引擎，确定数据库、表、字段的命名，
+确定字段的数据类型，以及建立索引等；
+在物理设计阶段，有时会反范式化设计，即为了提高访问速度，在表中增加一到多个冗余字段；
+6, 维护和优化
+维护数据字典、维护索引、维护表结构、对表进行垂直拆分和水平拆分；
+1)表的垂直拆分和水平拆分
+垂直拆分: 如果表的字段太多，可将其分为两个表，如t(cid, c2, c3, c4, c5, c6, c7)拆分为
+t1(cid, t2, t3, t4)和t2(cid, t5, t6, t7);
+水平拆分: 如果表的数据量太大，可按照主键的哈希值，将其分为多个表;
+
 
 >>sql查询案例
 1, 删除重复记录
@@ -716,50 +823,6 @@ select t1.name, t1.datestr, t1.times from kills t1 join kills t2 on t1.sid = t2.
 注: 聚合函数只能出现在having中，不能出现在where中;
 5, 如何查询每个人打怪数量排名前三的日期
 ？
-	
->>数据库设计
-1, 数据库设计的目标
-较少的存储空间、高效的数据访问、减少数据冗余、易于维护;
-2, 数据库设计的步骤
-需求分析、逻辑设计、物理设计、维护优化;
-3, 需求分析
-确定实体以及实体的属性，确定实体间的联系以及联系的属性。实体和联系都是关系表;
-实体间的联系有一对一、一对多、多对多的联系，一对一和一对多的联系一般作为属性包含在
-实体的关系表中，而多对多的联系要用独立的关系表来表示；
-将多对多的联系转化为两个一对多的联系，如学生-课程之间多对多的联系，通过考试这个联系表，
-转化为学生-考试和课程-考试这两个一对多的联系；
-4, 逻辑设计
-1)将需求分析的结果转化为逻辑模型，结果用E-R图来表示，与具体的DBMS无关；
-矩形表示实体，椭圆表示属性，菱形表示联系，线段用来连接实体与属性、实体与联系，
-联系的m:n的关系在线段上标出，主键属性在下面加下划线;
-2)逻辑模型设计的要求
-符合第一范式1NF、第二范式2NF、第三范式3NF、BC范式BCNF，不规范的逻辑设计会导致
-数据冗余以及插入、更新、删除异常;
-3)第一范式
-表中的属性不可再分；
-不符合1NF的可将属性拆分，使之符合1NF；
-4)第二范式
-在满足1NF的基础上，不存在某个非主属性对候选码的部分函数依赖;
-单一主键的表都满足2NF；
-某些复合主键的表不满足2NF，可将其拆分为两个实体表以及一个联系表，使之满足2NF；
-5)第三范式
-在满足2NF的基础上，不存在某个非主属性对候选码的传递函数依赖；
-不满足3NF的表，可将其拆分为两个实体表和一个联系表，使之满足3NF；
-6)BC范式
-在满足3NF的基础上，不存在候选码之间的传递函数依赖；
-不满足BCNF一般是因为表中存在多个联系，可将其拆分为多个单一联系的表，使之满足BCNF；
-5, 物理设计
-数据库设计的具体物理实现；
-包括选择具体的DBMS，选取合适的存储引擎，确定数据库、表、字段的命名，
-确定字段的数据类型，以及建立索引等；
-在物理设计阶段，有时会反范式化设计，即为了提高访问速度，在表中增加一到多个冗余字段；
-6, 维护和优化
-维护数据字典、维护索引、维护表结构、对表进行垂直拆分和水平拆分；
-1)表的垂直拆分和水平拆分
-垂直拆分: 如果表的字段太多，可将其分为两个表，如t(cid, c2, c3, c4, c5, c6, c7)拆分为
-t1(cid, t2, t3, t4)和t2(cid, t5, t6, t7);
-水平拆分: 如果表的数据量太大，可按照主键的哈希值，将其分为多个表;
-
 
 
 
