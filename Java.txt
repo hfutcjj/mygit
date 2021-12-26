@@ -367,7 +367,7 @@ class Cat implements IAnimal{
 5)当接口和父类中含有同名方法或同名常量/变量时
 如果只实现两个接口，则必须重新定义该同名方法;
 如果继承父类的同时实现两个接口，则优先调用父类的同名方法;
-与父类的方法优先不同，父类的变量与接口的常量如果同名，则地位相同，必须显示指定调用哪一个，如
+与父类的方法优先不同，父类的变量与接口的常量如果同名，则地位相同，必须显式指定调用哪一个，如
 super.name, IPhoto.name, INet.name, 或者在子类中重新定义该变量;
 6)接口的继承
 public interface IHuman extends ITalk, IWork{}
@@ -386,7 +386,9 @@ public class Person{
 		return new Heart();
 	}
 	class Heart{ //内部类
-		return age + "岁的心脏在跳动"; //等价于 Person.this.age
+		public void fn(){
+			return age + "岁的心脏在跳动"; //等价于 Person.this.age
+		}
 	}
 }
 获取成员内部类的几种方式:
@@ -589,7 +591,7 @@ s3.equals(s4); //true
 1)String不可修改，而StringBuilder可以动态修改, 适用于字符串被频繁操作的场景;
 StringBuffer是线程安全的, 但StringBuilder的效率更高;
 2)StringBuilder与String的转换
-StringBuilder sb = new String("hello");
+StringBuilder sb = new StringBuilder("hello");
 String s = sb.toString();
 3)常用方法
 StringBuilder除了拥有部分String类的方法，如length(), charAt(), indexOf()/lastIndexOf(), substring()等，还有: 
@@ -1093,29 +1095,11 @@ bos.write(b);
 缓冲输入输出流的常用方法与文件输入输出流相同;
 注: 缓冲输出流, 当缓冲区未满则不会自动写数据，必须调用bos.flush()或bos.close()才会写数据;
 3, 字符流 (Reader/Writer)
-1)字节字符转换流 InputStreamReader/OutputStreamWriter
-举例:
-InputStreamReader isr = new InputStreamReader(new FileInputStream("test.txt")); //流的连接
-OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream("test2.txt"));
-//第一种方式: 一个一个读
-int n = 0;
-while((n = isr.read()) != -1){
-	System.out.print((char)n);
-}
-//第二种方式: 读入到字符数组，并将文件拷贝
-char[] c = new char[10];
-while((n = isr.read(c)) != -1){
-	String s = new String(c, 0, n); //一定要保持精确
-	System.out.print(s);
-	osw.write(s);
-	osw.flush();
-}
-注: OutputStreamWriter输出时记得flush()刷新并close()关闭;
-2)文件字符输入输出流 FileReader/FileWriter
+1)文件字符输入输出流 FileReader/FileWriter
 FileReader fr = new FileReader("test.txt");
 FileWriter fw = new FileWriter("test.txt");
 常用方法同文件字节流，把byte[]数组换成char[]数组;
-3)缓冲字符输入输出流 BufferedReader/BufferedWriter
+2)缓冲字符输入输出流 BufferedReader/BufferedWriter
 BufferedReader br = new BufferedReader(fr);
 BufferedWriter bw = new BufferedWriter(fw);
 常用方法与缓冲字节流类似;
@@ -1139,16 +1123,6 @@ oos.writeObject(cat1); //把对象序列化到文件
 oos.writeObject(null); //作为结束标记
 oos.flush();
 Cat cat = (Cat)ois.readObject(); //从文件反序列化到对象
-5, 读取字符文件的一种常用写法
-StringBuffer content = "";
-FileInputStream fis = new FileInputStream("***");
-InputStreamReader isr = new InputStreamReader(fis);
-BufferedReader br = new BufferedReader(isr);
-String line = "";
-while((line = br.readLine()) != null){
-	sb.append(line);
-}
-//todo with sb
 
 
 >>跨域
@@ -1423,13 +1397,22 @@ session.invalidate();
 getSession(true)与getSession()等价, 如果当前请求没有对应的Session则创建新Session;
 getSession(false)如果当前请求没有对应的Session则返回null;
 10, ServletContext(Servlet上下文对象)
-是Web应用全局对象, 一个Web应用只会创建一个ServletContext对象, 只要tomcat不关闭，这个对象就一直存在;
+1)是Web应用全局对象, 一个Web应用只会创建一个ServletContext对象, 只要tomcat不关闭，这个对象就一直存在;
 //设置ServletContext
 ServletContext context = request.getServletContext();
 context.setAttribute("username", "zhao");
 //获取ServletContext
 ServletContext context = request.getServletContext();
 String username = (String)context.getAttribute("username");
+2)可以通过全局参数来配置ServletContext
+//配置文件web.xml
+<context-param>
+	<param-name>title</param-name>
+	<param-value>imooc page</param-value>
+</context-param>
+//获取全局参数
+ServletContext context = request.getServletContext();
+String title = context.getInitParameter("title");
 11, Java Web最常用的三大作用域对象
 1)HttpServletRequest request -请求对象
 2)HttpSession session -用户会话对象
@@ -1446,13 +1429,6 @@ String username = (String)context.getAttribute("username");
 3)配置过滤器
 4)配置监听器
 5)配置全局参数
-<context-param>
-	<param-name>title</param-name>
-	<param-value>imooc page</param-value>
-</context-param>
-//获取全局参数
-ServletContext context = request.getServletContext();
-String title = context.getInitParameter("title");
 13, 自定义404, 500状态码的默认页面
 1)新建错误目录及页面
 WebContent
@@ -1620,8 +1596,8 @@ response.setContentType("text/html;charset=utf-8");
 10, 请求转发与响应重定向
 页面的跳转有两种方式: 请求转发与响应重定向;
 1)请求转发
-request.getRequestDispatcher("/info").forwart(request. response);  //转发给另一个Servlet
-request.getRequestDispatcher("/success.jsp").forwart(request. response);  //转发给jsp页面
+request.getRequestDispatcher("/info").forward(request. response);  //转发给另一个Servlet
+request.getRequestDispatcher("/success.jsp").forward(request. response);  //转发给jsp页面
 2)响应重定向
 response.sendRedirect("/test/info");
 3)两者的区别
@@ -1880,7 +1856,7 @@ chain.doFilter()之前的语句处理请求，chain.doFilter()之后的语句处
 3, 过滤器的生命周期
 初始化-Filter.init(): tomcat启动时;
 提供服务-Filter.doFilter(): 每次来请求时;
-销毁-Filter.destroy(): comcat关闭或重启;
+销毁-Filter.destroy(): tomcat关闭或重启;
 注: Filter也跟Servlet一样，使用单例多线程模式提供服务;
 4, 过滤链
 请求->过滤器1->过滤器2->servlet->产生响应->过滤器2->过滤器1->客户端；
