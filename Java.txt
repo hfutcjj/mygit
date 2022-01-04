@@ -24,6 +24,47 @@ F6-单步调试, F8-直接跳到下一个断点, F5-进入函数, F7-跳出函�
 8, 将tomcat整合到eclipse中，具体方法百度, 注意要设置Server path为tomcat的安装目录, Deploy path为tomcat下的webapps目录;
 
 
+>>idea
+1, 普通java工程
+1)创建java工程
+New -> Project -> Java -> 输入工程名;
+2)java工程的目录结构
+Test
+	src //源代码目录
+	out //编译后的文件存放目录
+	lib //第三方jar包存放目录
+3)将普通java工程打成jar包
+File -> Project Structure -> Artifacts -> + -> JAR(Empty) -> 填写包名如demo 
+	-> 点击demo.jar -> Create Manifest(选择工程目录) -> 双击右侧编译后的工程选入左侧 
+	-> 设置Main Class(入口类)
+	-> Build菜单 -> Build Artifacts;
+然后可以看到 out/artifacts/demo/demo.jar, 打包完成;
+运行jar包的方法: 进入jar包所在的目录, cmd进入控制台, 在控制台输入: java -jar demo.jar, 就可以成功运行;
+2, java web工程
+1)创建java web工程
+New -> Project -> Java Enterprise -> 勾选Web Application -> 输入工程名 -> 新建完成;
+点击 Edit Configurations 进入配置页面，在Server页面更改On frame deactivation选择热部署,
+在Deployment页面修改Application context为 "/demo";
+2)java web工程的目录结构
+Test
+	src //源代码目录
+	out //编译后的文件存放目录
+	lib //第三方jar包存放目录
+	web //web目录
+		WEB-INF	
+			web.xml
+		index.jsp
+3)将web工程打成war包
+File -> Project Structure -> Artifacts -> + -> Web Application:Archive(Empty) -> 填写包名如demo
+	-> 点击demo.war -> 双击右侧编译后的工程和web资源文件将其选入左侧
+	-> Build菜单 -> Build Artifacts;
+然后就可以看到 out/artifacts/demo/demo.war, 打包完成;
+运行war包的方法: 将war包复制到tomcat的webapps目录下, 点击bin/startup.bat启动tomcat, 就可以在浏览器中进行访问;
+3, 引入jar包
+新建lib目录, 将需要的jar包放在lib目录下, 然后通过将jar包引入到工程依赖，方法为: 
+File -> Project Structure -> Modules -> Dependencies -> + -> JARS, 将jar包引入;
+
+
 >>外网的jar包网页打不开的解决方案
 通过阿里云的文件仓库下载: maven.aliyun.com
 
@@ -603,6 +644,24 @@ sb.replace(2, 5, "hi"); //替换
 sb.reverse(); //反转
 
 
+>>日期时间
+String、java.util.Date、java.sql.Date之间的转换:
+s(String), udDate(java.util.Date), sdDate(java.sql.Date);
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+1, s->udDate
+udDate = sdf.parse(s);
+2, udDate->s
+s = sdf.format(udDate);
+3, sdDate->udDate
+udDate = sdDate;
+4, udDate->sdDate
+long timestamp = udDate.getTime();
+sdDate = new java.sql.Date(timestamp);
+注: java.sql.Date是java.util.Date的子类，子类到父类可以自动转换，而从父类到子类不能自动转换;
+注: 从键盘输入的字符串格式保存到数据库中的日期，需要通过两部: 
+String->java.util.Date->java.sql.Date;
+
+
 >>集合
 1, 集合框架的层次:
 两大接口: Collection和Map, Collection有三个子接口: List、Queue、Set; 
@@ -615,6 +674,7 @@ ArrayList底层是数组，查询速度快, LinkedList底层是双向链表，�
 2)ArrayList的常用方法
 List<String> list = new ArrayList<>();
 List<String> list = new ArrayList<>(list2/set2); //根据已有的列表或集合来初始化
+List<String> list = Arrays.asList("zhao", "qian", "sun"); //快速初始化
 list.add("java"); //末尾增
 list.add(1, "java"); //中间增
 list.get(1); //查
@@ -824,6 +884,13 @@ public class Singleton{
 		return obj;
 	}
 }
+2, 工厂模式
+
+
+>>反射
+
+
+>>Lambda表达式
 
 
 >>多线程
@@ -1298,6 +1365,7 @@ public class MyServlet extends HttpServlet{
 </servlet-mapping>
 //也可通过注解形式来配置
 @WebServlet("/info")
+注: 实际项目中比较常用的方式是将servlet映射设置为index.html;
 注: 配置形式与注解形式的区别:
 1)注解形式比配置形式简洁;
 2)注解形式只对当前类有效，而配置形式对整个工程有效;
@@ -2063,6 +2131,139 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response) t
 		<br>
 	</#list>
 </body>
+
+
+>>JDBC
+1, JDBC基于驱动程序实现与数据库的连接, JDBC是一套接口标准，具体的数据库提供不同的驱动程序来实现JDBC;
+2, JDBC的开发流程
+1)加载并注册JDBC驱动
+下载mysql驱动的jar包, 并引入到工程;
+String dbDriver = "com.mysql.cj.jdbc.Driver";  //JDBC驱动类
+Class.forName(dbDriver);  //注册驱动类
+2)创建数据库连接
+String dbURL = "jdbc:mysql://localhost:3306/imooc?useSSL=false&useUnicode=true&characterEncoding=utf-8&
+	serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true";  //连接字符串
+String dbUsername = "root";  //数据库用户名
+String dbPassword = "123456";  //数据库密码
+Connection conn = DriverManager.getConnection(dbURL, dbUsername, dbPassword);
+注: 不同的数据库系统的连接字符串格式是不同的;
+有一种常见的连接异常是由于服务器的防火墙把3306的端口给屏蔽了;
+3)创建Statement对象
+Statement stmt = conn.createStatement();
+String sql = "select * from employee where dname = '" + dname + "'";
+ResultSet rs = stmt.executeQuery(sql);
+注: 这种查询会发生SQL注入攻击风险，应该用PreparedStatement预编译SQL来代替;
+4)遍历查询结果
+while(rs.next()){
+	int eno = rs.getInt("eno");
+	String ename = rs.getString("ename");
+	float salary  = rs.getFloat("salary");
+}
+5)关闭连接
+if(conn != null && !conn.isClosed()){
+	conn.close();
+}
+注: 关闭连接的代码应该放在finally块中;
+3, SQL注入攻击
+1)当输入的dname为: ' or 1=1 or 1='时, 原来的查询就成为:
+select * from employee where dname = '' or 1=1 or 1=''; 会查询出所有数据;
+使用预编译SQL, 会对输入数据中的特殊字符如'进行转义, 避免SQL注入攻击;
+2)PreparedStatement预编译SQL
+String sql = "select * from employee where dname = ?";
+PreparedStatement pstmt = conn.prepareStatement(sql);
+pstmt.setString(1, dname);
+ResultSet rs = pstmt.executeQuery(); //查询操作返回结果集
+当输入dname为: ' or 1=1 or 1='时, 预编译后的SQL查询就成为:
+select * from employee where dname = '\' or 1=1 or 1=\'';
+注: 增删改的写操作统一使用: int cnt = pstmt.executeUpdate(); 返回影响的数据行数;
+注: PreparedStatement是Statement的子接口;
+3)预编译对SQL语句的解析只有一次，所以效率更高;
+4, 事务操作
+mysql默认使用自动提交, 使用事务时应先关闭自动提交(又叫开启手动提交);
+事务使用commit()进行提交, rollback()进行回滚;
+try{
+	conn.setAutoCommit(false);
+	//... 多条SQL操作
+	conn.commit();
+}catch(Exception e){
+	e.printStackTrace();
+	conn.rollback();
+}
+5, 日期的处理
+1)应用程序中的日期类是java.util.Date, 而jdbc中的日期类是java.sql.Date, 后者是前者的子类;
+2)java.sql.Date->java.util.Date可以直接转换，如从数据库中提取数据:
+java.sql.Date sdDate = rs.getDate("hiredate");
+employee.setHiredate(sdDate);
+3)java.util.Date->java.sql.Date不能直接转换，需要通过时间戳:
+long timestamp = udDate.getTime();
+java.sql.Date sdDate = new java.sql.Date(timestamp);
+pstmt.setDate(5, sdDate);
+6, 连接池
+管理与分配数据库的连接, 应用程序->连接池->数据库, 常用的连接池有Druid和C3P0;
+1)Druid
+首先需要下载druid-1.*.*.jar包, 并引入到test工程;
+在test/src目录下新建一个文件druid-config.properties,
+test 
+	src
+		com
+		druid-config.properties   //新建的属性文件, 与最外层的包同级
+	out		//发布后生成的目录
+		production
+			test
+				com
+				druid-config.properties
+//druid-config.properties
+driverClassName=com.mysql.cj.jdbc.Driver
+url=jdbc:mysql://localhost:3306/imooc?useSSL=false&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+username=root
+password=123456
+initialSize=10  //可选, druid创建的初始连接数
+maxActive=20 //可选, druid创建的最大连接数
+然后在java文件中通过druid创建数据库连接需要经过以下三个步骤:
+//DruidDemo.java
+//加载属性文件
+Properties properties = new Properties();
+String propertyFile = DruidDemo.class.getResource("/druid-config.properties").getPath(); //通过本java文件寻找druid配置文件的路径
+propertyFile = new URLDecoder().decode(propertyFile, "utf-8"); //空格与%20的解码
+properties.load(new FileInputStream(propertyFile));
+//获取DataSource数据源对象
+//创建数据库连接
+DataSource dataSource = DruidDataSourceFactory.createDataSource(properties);
+Connection conn = dataSource.getConnection();
+注: 对数据库服务器连接的监控可以通过Navicat的工具->服务器监控查看;
+注: 通过Druid管理的连接, 调用conn.close()后连接并没有真正关闭，而是放回到连接池中;
+2)C3P0
+C3P0的操作与Druid类似, 不同的是C3P0是通过c3p0-config.xml文件来保存配置参数的;
+7, Commons DbUtils
+Apache对jdbc的操作进行封装的组件, 需要下载commons-dbutils-1.*.jar包并引入到工程;
+Commons DbUtils中的核心类是QueryRunner，通过QueryRunner执行增查删改的操作;
+Druid + Commons DbUtils 操作数据库如下:
+1)查询操作
+QueryRunner qr = new QueryRunner(dataSource);
+List<Employee> list = qr.query("select * from employee limit ?, 10", 
+	new BeanListHandler<>(Employee.class),
+	new Object[]{5});  //直接将查询结果存储到实体对象的集合中
+注: 不需要取连接对象, 由内部自动进行维护;
+2)结合事务进行修改操作
+Connection conn = null;
+try{
+	conn = dataSource.getConnection();
+	conn.setAutoCommit(false);
+	String s1 = "update employee set salary = salary + 1000 where eno = ?";
+	String s2 = "update employee set salary = salary - 500 where eno = ?";
+	QueryRunner qr = new QueryRunner();
+	qr.update(conn, s1, new Object[]{1001});
+	qr.update(conn, s2, new Object[]{1002});
+	conn.commit();
+}catch(Exception e){
+	e.printStackTrace();
+	conn.rollback();
+}finally{
+	conn.close();
+}
+
+
+
 
 
 
