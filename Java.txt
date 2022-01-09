@@ -2424,6 +2424,168 @@ try{
 }
 
 
+>>maven
+1, maven是项目管理工具, 对java项目进行构建与依赖管理, maven有以下的优点:
+1)保证了在不同的IDE下项目的结构相同;
+2)自动下载与管理jar包;
+3)可扩展的插件机制;
+2, maven的下载与安装
+下载maven的zip文件, 解压后将其bin目录添加到环境变量, 在cmd中输入: mvn -v 查看其版本号;
+3, maven与eclipse的整合
+将刚下载的maven添加到eclipse中, 方法: 
+Window -> Preferences -> Maven -> Installations -> Add, 选择maven文件夹即可;
+4, maven项目标准结构
+1)maven的坐标
+GroupId: 机构或团体的英文, 采用"逆向域名"形式书写, 如 com.imooc;
+ArtifactId: 项目名称, 说明其用途, 如 cms, oa等；
+version: 版本号, 采用"版本+单词"的形式, 如 1.0.0.RELEASE;
+2)工程结构
+maven-first -------------------//maven工程
+	src 
+		main 
+			java --------------//java源代码
+			resources ---------//资源目录, 保存配置文件、静态图片等
+		test 
+			java --------------//测试类的源代码
+			resources ---------//测试时使用的资源文件
+	target 
+		classes ---------------//编译产生的字节码文件(.class)
+	pom.xml -------------------//项目对象模型(Preject Object Model)
+5, 依赖管理
+自动将jar包从远程仓库下载到本地仓库;
+远程仓库: search.maven.org;
+本地仓库: 本机存放jar包的目录;
+//在pom.xml的<project>里添加
+<dependencies>
+	<dependency>
+		<groupId>mysql</groupId>
+		<artifictId>mysql-connector-java</artifictId>
+		<version>5.1.47</version>
+	</dependency>
+</dependencies>
+maven启动时会自动加载pom.xml文件;
+点击保存后, 会在maven工程下生成一个 Maven Dependencies 目录, 用来存放jar包;
+注: 从apache的maven中央仓库下载jar包速度太慢，可以配置从国内的阿里云maven仓库下载:
+//在pom.xml的<project>里添加
+<repositories>
+	<repository>
+		<id>aliyun</id>
+		<name>阿里云</name>
+		<url>https://maven.aliyun.com/repository/public</url>
+	</repository>
+</repositories>
+注: 也可通过Maven的配置文件来修改中央仓库和本地仓库的地址;
+6, 项目打包
+maven项目打包是通过插件来实现的, maven输出jar包插件: maven-assembly-plugin;
+普通java工程打包经过以下两个步骤:
+1)在pom.xml的<project>里添加
+<build>
+	<!-- 配置插件 -->
+	<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.5.5</version>
+			<configuration>
+				<archive>
+					<manifest>
+						<mainClass>com.imooc.maven.PinyinTestor</mainClass>
+					</manifest>
+				</archive>
+				<descriptorRefs>
+					<!-- all in one, 在打包时将所有引用的jar合并到输出的jar文件中 -->
+					<descriptorRef>jar-with-dependencies</descriptorRef>
+				</descriptorRefs>
+			</configuration>
+		</plugin>
+	</plugins>
+</build>
+2)Run Configurations -> Maven Build -> New Configuration进入配置页面:
+Name: build-jar;
+Base directory: ${workspace_loc:/mtest}
+Goals: assembly:assembly
+然后点击Run, 就会在target目录下生成jar包;
+7, Maven构建web工程
+1)新建普通maven工程mtest, 在mtest/src/main目录下新建webapp目录, 用来存放web资源文件;
+2)右击mtest -> Properties -> Maven -> Project Facets进入设置面板:
+Project Facet: Dynamic Web Module(3.1);
+Runtimes: Apache Tomcat v8.5;
+Context root: mtest;
+Content directory: src/main/webapp;
+完成后的工程主要目录:
+mtest
+	src
+		main
+			java
+			resources
+			webapp	
+				WEB-INF
+					lib
+					web.xml
+				index.jsp
+8, web项目打包
+普通java工程打包经过以下两个步骤:
+1)在pom.xml的<project>里添加
+<packaging>war</packaging>
+<build>
+	<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-war-plugin</artifactId>
+			<version>3.2.2</version>
+		</plugin>
+	</plugins>
+</build>
+2)Run Configurations -> Maven Build -> New Configuration进入配置页面:
+Name: build-war;
+Base directory: ${workspace_loc:/mtest}
+Goals: package
+然后点击Run, 就会在target目录下生成war包;
+9, 修改本地仓库
+本地仓库默认地址: ${user.home}/.m2/repository, 需要通过配置文件和IDE来修改本地仓库地址;
+1)修改maven的配置文件: maven/conf/settings.xml;
+//settings.xml
+<localRepository>D:/maven-local-repository</localRepository>
+2)修改eclipse中的maven本地仓库
+Window -> Preferences -> Maven -> User Settings页面:
+User Settings: E:\Java\apache-maven-3.8.4\conf\settings.xml;
+Update Settings, Reindex;
+10, IDEA操作maven
+1)IDEA配置maven
+刚启动IDEA时点击Configure -> Settings -> Build -> Build Tools -> Maven 配置页面:
+Maven home directory: E:\Java\apache-maven-3.8.4;
+User settings file: E:\Java\apache-maven-3.8.4\conf\settings.xml;
+Local repository: D:\maven-local-repository;
+2)创建工程
+直接新建工程 -> Maven, 填写工程名、groupId、artifactId、version;
+3)IDEA右侧点开Maven选项卡, 直接有Maven常用的命令, 非常方便对工程进行操作;
+11, Maven常用命令
+使用Maven的命令, 需要先将maven的bin目录添加到环境变量path中;
+1)mvn archetype:generate  //创建maven工程
+2)mvn compile  //编译源代码
+3)mvn test  //执行测试用例
+4)mvn clean  //清除产生的项目
+5)mvn package  //项目打包
+6)mvn install  //将打包后的项目jar包放到本地仓库
+//cmd
+>>f:
+f:>mvn archetype:generate  
+f:>cd mtest
+f:\mtest>mvn compile
+f:\mtest>mvn package
+
+
+>>MyBatis
+
+
+
+
+
+
+
+
+
+
 
 
 
