@@ -1,0 +1,316 @@
+>>CentOS(社区企业版操作系统)
+Linux的免费发行版，与之对应的收费版是 Red Hat Enterprise Linux;
+
+
+>>VMware Workstation虚拟机
+通过该软件在windows系统上安装Linux;
+需要查看是否开启了CPU虚拟化, 查看方法: 任务管理器 -> 性能 -> 虚拟化, 如果没有开启需要先开启;
+开启CPU虚拟化: BIOS -> config -> Virtualization -> Enabled;
+然后通过VMware来安装CentOS;
+
+
+>>Linux系统目录
+/ 根目录
+/bin 二进制命令目录
+/boot 内核与系统引导程序目录
+/dev 设备文件目录
+/etc yum、rpm方式安装应用程序的默认配置文件路径
+/home 用户数据的目录
+/var 系统与软件服务运行日志目录
+/lib 共享库目录
+/proc 进程信息目录
+/root 超级用户目录
+/sbin root可执行命令(系统管理命令)的存放目录
+/usr 用户应用程序的目录, 最常用的目录, 尤其是下面这两个子目录
+/usr/local 编译方式安装程序的默认目录
+/usr/src 程序源码目录
+
+
+>>Xshell与Xftp
+Xshell是用于在windows下对Linux服务器进行远程访问;
+Xftp是Xshell的配套组件, 用于向服务器上传/下载文件;
+SSH客户端: 专为远程登陆和其他网络服务提供的安全性协议, 基于SSH远程连接工具常见的有Xshell与SecureCRT;
+
+
+>>文件操作命令
+命令格式: 命令 [参数选项] [文件或路径]
+1)cd  //切换目录
+2)pwd  //查看当前目录
+3)ls、ll  //显示目录内容, ll显示详细信息
+ls 显示当前目录下的内容
+ls /home 显示/home目录下的内容
+4)mkdir [-p] 目录  //-p表示创建多级目录
+5)cp [-r] 源文件路径 目的文件路径 //-r表示复制整个目录
+6)mv 源文件或目录 移动或更名后的文件或目录
+7)rm [-rf] 删除文件  //-r表示迭代删除目录, -f直接删除无需询问
+8)find /usr -name *.jpg //在指定目录下按指定格式查找文件
+注: 使用键盘Tab命令可以进行自动补全;
+使用--help可以查看命令的帮助, 如 mkdir --help;
+
+
+>>vim
+vim是Linux自带的文本编辑工具;
+vim的三种模式: 普通模式、编辑模式、命令模式;
+常用操作快捷键:
+i  //进入编辑模式;
+esc  //退出编辑模式;
+/test  //查找字符test, 按n定位到下一个目标位置;
+u  //撤销上一次修改;
+:% s/8080/9999/g  //将8080全部替换成9999 
+:q, :wq, :wq!  //退出, 保存并退出, 修改只读文件后强制保存并退出
+注: 命令快捷键只能在普通模式中使用;
+
+
+>>常用文本命令
+1, echo  文本输出
+echo "hello"  //输出到屏幕
+echo "hello" > a.txt  //把内容写到文件(重写)
+echo "hello" >> a.txt  //追加
+2, cat  查看文件内容 或 合并文件
+cat a.txt  //查看文件内容
+cat -n a.txt  //查看文件内容并显示行号
+cat a.txt b.txt >> c.txt  //合并a.txt和b.txt到c.txt
+3, tail  显示文件内容尾部
+tail a.txt  //显示文件最后几行的内容
+tail -n 3 a.txt  //显示最后3行
+tail -f a.txt  //动态显示文件内容(按 ctrl+C 退出)
+注: tail命令常用于对服务器日志的监控
+4, grep  利用正则表达式对文本文件的数据进行查找
+grep 520 a.txt  //查找含有520的行, 输出到屏幕
+grep 520 a.txt > out.txt  //将结果输出到指定文件
+grep -E "log[0-9]{1,5}.txt" a.txt  //-E表示按正则表达式查找
+ll | grep log.txt  //查找文件名为log.txt的文件
+注: |表示通道, 将前面命令查询的结果作为后面命令的数据源;
+注: > 表示将前面的结果(覆盖)写到后面的文件中, >> 表示追加;
+
+
+>>文件打包与压缩
+1, tar结合gzip进行打包与压缩, 扩展名.tar.gz;
+tar用于打包(.tar), gzip用于压缩(.gz);
+2, 压缩命令: 
+tar zcvf tomcat.tar.gz /usr/local/tomcat
+3, 解压缩命令:
+tar zxvf tomcat.tar.gz [-C /usr/local/tomcat]  //可选项表示解压缩后的目录, 否则存放到当前目录
+其中, tar常用可选项:
+z: 通过gzip压缩或解压;
+c: 创建新的.tar.gz文件;
+v: 显示执行过程;
+f: 指定压缩文件名称;
+x: 解压缩.tar.gz文件;
+-C 指定解压缩目录;
+
+
+>>安装与卸载应用程序
+1, 安装应用程序的两种方式:
+1)rpm与yum: 软件包管理器, 相当于应用程序安装文件的执行者;
+2)编译安装: 用户自己从网站下载程序源码进行编译安装;
+注: rpm与yum的关系:
+rpm需要用户自己解决依赖问题, 更高级的yum通过引入软件仓库, 联网下载rpm包及依赖, 并依次自动安装;
+如果yum仓库未提供rpm, 就需要采用编译安装方式;
+2, yum常用命令
+yum search 应用名  //在仓库中查询是否存在指定应用
+yum install [-y] 引用名  //全自动下载安装应用及其依赖, -y表示自动确认所有询问
+yum info 引用名  //查看应用详细信息
+yum list installed 应用名  //查看已安装的应用程序
+rpm -ql 应用名  //查看安装后输出的文件清单
+yum remove [-y] 应用名  //全自动卸载指定应用
+which 命令  //查看命令安装在哪个目录下
+3, 编译安装
+编译安装分两步: 
+1)将.tar.gz压缩文件解压
+tar zxvf redis_6.2.6.tar.gz
+2)进入redis目录, 编译
+cd redis_6.2.6
+make
+注: 第一次执行make之前，需要先下载gcc编译器;
+4, 两种安装方式的区别
+------------------------------------------------------------------------
+				yum安装					编译安装
+兼容性 		差, 每种发行版都要准备		好, 全平台通用
+复杂度		简单						复杂
+安装速度	快							慢
+来源		应用仓库					官网下载
+应用场景	日常系统软件				开源软件, 最新版本
+存放地点	/usr/bin/					当前的编译目录, 如redis_6.2.6
+--------------------------------------------------------------------------
+
+
+>>tree
+tree命令用于显示所有子孙目录及子孙文件;
+tree [-d] //当前目录下的, [-d]表示仅显示子孙目录
+tree [-d] /usr/local  //指定目录下的
+
+
+>>Linux系统管理命令
+1, ifconfig
+查看网卡的IP地址;
+2, netstat -tulpn 或者 netstat -ano
+查看网络端口号;
+3, ps -ef
+查看所有正在运行的进程;
+4, kill -9 PID (强制关闭) / kill -s quit PID (正常退出)
+杀死PID进程;
+注: netstat只列出有关网络通讯的进程, 而ps则是包含本地进程在内的所有进程;
+注: 可使用通道技术来组合使用这些命令, 如
+ps -ef | grep vim  //筛选包含字符串"vim"的进程
+5,shutdown -r now
+立即重启Linux;
+
+
+>>应用服务化
+1, 应用服务化是指让应用程序以服务方式在系统后台运行;
+Linux系统对服务化应用进行统一化管理;
+2, 服务管理命令: systemctl;
+systemctl常用指令: 
+start  //启动服务, 如 systemctl start redis
+stop  //停止服务
+restart  //重启服务
+enable  //设置开机启动
+disable  //禁止开启启动
+status  //查看服务状态
+daemon-reload  //重载服务配置文件
+list-unit-files  //列出所有服务
+3, 举例: 将redis服务化;
+手动启动redis:
+cd /usr/local/redis-6.2.6
+./src/redis-server [redis.conf]
+将redis变成系统服务: 编写redis.service文件, 具体内容可百度;
+注: 服务化的进程以.service服务描述文件保存在 /usr/lib/systemd/system 目录里;
+
+
+>>Linux用户与用户组
+groupadd dev    //创建用户组
+useradd zhao   //创建新用户
+passwd zhao    //为用户zhao修改密码
+usermod -g dev zhao  //修改用户信息, 或分配组
+usermod -G dev,test zhao  //给用户zhao分配多个用户组
+groups [zhao]   //显示用户属于哪些用户组, 默认为当前用户
+newgrp test  //切换用户的当前组
+
+
+>>Linux文件权限
+----------------------------------------------------------------------------
+1, 文件权限代码表: 
+d 		r 		w 		x 		r 		w 		x		r 		w 		x 	
+		4		2		1		4		2		1		4		2		1
+目录 属主读取 属主写入 属主执行 组读取 组写入 组执行 其他读取 其他写入 其他执行
+------------------------------------------------------------------------------
+注: 没有对应权限则用-代替, 如 drwxr-xr-x; 对于目录, w表示修改目录名称, x表示进入目录;
+2, 修改文件权限命令
+chown zhao:dev dev-document   //将文件dev-document的属主修改为zhao
+chmod 750 dev-document   //修改文件dev-document的权限为 drwxr-x---
+
+
+>>sudo超级管理员权限
+root通过visudo命令给普通用户授权后, 普通用户才能使用sudo获取超级管理员权限;
+先通过root给普通用户授权, 执行visudo, 添加第二行: 
+root 	ALL=(ALL) 	ALL
+zhao	ALL=(ALL)	ALL
+然后执行 visudo -c;
+
+
+>>Linux防火墙
+1, centos6基于iptables来实现防火墙, 是在网络层, 而centos7基于firewall实现防火墙, 是在应用层;
+2, 核心命令: firewall-cmd;
+firewall-cmd state   //查看防火墙是否启动(running表示已启动)
+firewall-cmd --list-ports   //查看防火墙开放了哪些端口
+firewall-cmd --zone=public --permanent --add-port=8080/tcp   //开放8080端口
+firewall-cmd --zone=public --permanent --remove-port=8080/tcp  //关闭8080端口
+firewall-cmd --zone=public --permanent --add-port=8000-9000/tcp  //开放8000-9000区间的端口
+firewall-cmd --reload  //开放和关闭端口后都要重新加载配置才能生效
+
+
+>>shell
+1, shell是一个用C语言编写的脚本解释器, 文件以.sh结尾, 类似于windows中的bat;
+Linux中最常用的是 bash shell, 路径: /bin/bash;
+2, 举例: 一键发布tomcat应用程序
+cd /usr/local
+vim deploy_tomcat.sh
+##以下为deploy_tomcat.sh的内容
+echo "准备下载tomcat9"
+wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.58/bin/apache-tomcat-9.0.58.tar.gz
+echo "解压"
+tar zxf apache-tomcat-9.0.58.tar.gz
+echo "防火墙开放8080端口"
+firewall-cmd --zone=public --permanent --add-port=8080/tcp
+firewall-cmd --reload
+echo "启动tomcat9"
+cd ./apache-tomcat-9.0.58/bin
+./startup.sh
+##结束
+然后可以通过 bash deploy_tomcat.sh 来执行该shell脚本;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

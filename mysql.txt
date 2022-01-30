@@ -19,6 +19,13 @@
 2, 退出
 exit / quit / \q;
 
+>>修改用户可以远程操作数据库的主机地址
+user mysql;
+update user set host = '%' where user = 'root';
+flush privileges;  //让修改的权限数据立即生效
+注: '%'表示任意设备都可以使用root用户来登陆数据库服务器;
+注: 远程访问数据库服务器需要防火墙放行3306端口;
+
 
 >>SQL语句的类型：
 1)DDL 数据定义语言
