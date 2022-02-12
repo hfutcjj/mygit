@@ -1,4 +1,5 @@
 >>什么是redis
+Redis是Key-Value型的NoSQL、内存型数据库;
 1, redis是远程的
 redis可以安装在服务端和客户端，一般指的是服务端的redis;
 2, redis是基于内存的
@@ -6,35 +7,63 @@ redis的数据和结构都存于内存，所以速度非常快，而mysql是存�
 3, redis是非关系型的数据库
 关系型如mysql在使用前必须定义好数据字典，而redis不用;
 
->>redis的应用场景
+
+>>redis的特点
 1, 缓存
-把常用的数据缓存起来，不用每次都从mysql中查询，是提升系统性能的常用方法之一;
-2, 队列
-使用list类型的压入和弹出操作来模拟队列;
-3, 数据存储
+将常用的且不变的数据从mysql提取出来保存到redis中, 之后应用程序直接从redis中取数据;
+2, 持久化
 redis可以把数据定期持久化到硬盘中，这样就保证了数据的完整性;
+3, 多种数据结构
+4, 广泛的语言支持
+5, 主从复制
+6, 分布式与高可用
+
 
 >>redis默认端口: 6379
 
->>登录redis
-1, 服务端cmd
-cd d:/redis
-redis-server.exe [redis.windows.conf]
-2, 客户端cmd
-cd d:/redis
-redis-cli.exe [-h 127.0.0.1] [-p 6379]
+
+>>Linux环境安装redis
+$ cd /usr/local
+$ wget https://download.redis.io/releases/redis-6.2.6.tar.gz
+$ tar xzf redis-6.2.6.tar.gz
+$ cd redis-6.2.6
+$ make
+注: 第一次使用make命令需要先下载gcc编译器: yum install -y gcc;
+Linux中启动redis服务器: 
+./redis-6.2.6/src/redis-server [./redis-6.2.6/redis.conf]
+
+
+>>Windows环境安装redis
+redis官网没有提供windows的下载版本, 需要上github下载, 直接下载zip压缩文件;
+windows中启动redis服务器: 点击 redis-server.exe;
+
+
+>>通过客户端操作redis
+1, Linux
+./redis-6.2.6/src/redis-cli [-h 127.0.0.1] [-p 6379]
+2, Windows
+点击 redis-cli.exe;
+注: 通过客户端操作redis需要先启动redis服务器;
+通过客户端关闭redis服务: ./src/redis-cli shutdown;
+在操作具体数据之前, 使用 select n 选择数据库;
+
 
 >>redis数据类型
 1, String
-可以是字符串、整数或浮点，统称为元素;
-常用操作: set--设置值, get--取值, incr--自增, incrby--加法, decrby--减法;
-set s1 'hello world' 
-get s1 //'hello world'
-set s2 10
-get s2 //10
-incr s2 //自增1, 11
-incrby s2 5 //加, 16
-decrby s2 10 //减, 6
+可以是字符串、整数或浮点，都属于字符串类型;
+select 0  //选择0号数据库
+set name zhao  //设置 name 的值为 zhao
+get name  //获取 name 的值
+mset name zhao age 30  //一次设置多个值
+mget name age  //一次获取多个值
+keys he*  //查询符合条件的key, 使用 keys * 查看所有的key
+dbsize  //返回key的个数
+exists a  //返回 key=a 是否存在
+del a  //删除 key=a 的数据
+expire hello 20  //设置 key=hello 20秒后过期
+ttl hello  //查看 key=hello 的过期剩余时间
+incr/decr count  //count值自增/自减
+incrby/decrby count 10  //自增/自减指定步长
 2, List
 元素序列;
 常用操作: lpush--左进, lpop--左出, rpush--右进, rpop--右出, llen--长度;
@@ -70,54 +99,24 @@ zadd zset1 8.8 v1
 zadd zset1 9.9 v2
 zadd zset1 7.7 v3
 zcard zset1 //3
-zrange zset1 0 2 [withscores] //'v3' 'v1' 'v2
+zrange zset1 0 2 [withscores] //'v3' 'v1' 'v2'
 
 
->>php安装redis扩展
-下载php_redis.dll文件，放到php的ext目录下;
-启用php.ini中的 extension=php_redis.dll;
-然后重启php服务器，通过phpinfo()查看redis扩展是否安装成功;
+>>redis常用配置
+daemonize yes  //让redis以守护进程的方式在后台运行, 默认为no
+port 6379  //默认端口号
+logfile ""  //日志文件, 保存redis底层的输出信息; 例如设置成 "redis.log", 那么原来输出到cmd中的信息就会保存到redis.log中;
+databases 16  //默认容量16个数据库(0-15), redis数据库的名称就是0-15中的数字, 通过 select n 来切换数据库;
+requirepass 12345  //设置redis的密码, 默认该项禁止; 在客户端通过密码认证: auth 12345;
+dir ./   //数据文件的保存目录, 数据持久化, dump.rdb 就是保存在硬盘的备份文件;
 
->>phpredis
-phpredis的帮助文档地址: https://github.com/phpredis/phpredis
-执行phpredis需要打开服务端的redis;
-0, 连接redis
-$redis = new Redis();
-$redis->connect('127.0.0.1', 6379);
-1, String类型操作
-$redis->set('s1', 'hello');
-$val = $redis->get('s1'); //'hello'
-$redis->set('s1', 3);
-$redis->incrby('s1', 2);
-$val = $redis->get('s1'); //5
-2, List类型操作
-$redis->delete('list1'); //清空
-$redis->lPush('list1', 'a');
-$redis->lPush('list1', 'b');
-$redis->lPush('list1', 'c');
-$len = $redis->lLen('list1'); //3
-$val = $redis->rPop('list1'); //'a'
-3, Set类型操作
-$redis->delete('set1');
-$redis->sAdd('set1', 'a');
-$redis->sAdd('set1', 'b');
-$redis->sAdd('set1', 'c');
-$redis->sAdd('set1', 'c');
-$len = $redis->sCard('set1'); //3
-$val = $redis->sMembers('set1'); //['a', 'b', 'c']
-4, Hash类型操作
-$redis->delete('hash1');
-$redis->hSet('hash1', 'name', 'zhao');
-$redis->hSet('hash1', 'age', 30);
-$name = $redis->hGet('hash1', 'name'); //'zhao'
-$age = $redis->hGet('hash1', 'age'); //30
-$val =$redis->hMget('hash1', ['name', 'age']); //['name'=>'zhao', 'age'=>30]
-5, Sort Set类型操作
-$redis->delete('zset1');
-$redis->zAdd('zset1', 90.2, 'zhao');
-$redis->zAdd('zset1', 98.6, 'qian');
-$redis->zAdd('zset1', 82.5, 'sun');
-$val = $redis->zRange('zset1', 0, -1); //['sun', 'zhao', 'qian']
-$val = $redis->zRange('zset1', 0, -1, true); //['sun'=>82.5, 'zhao'=>90.2, 'qian'=>98.6]
-$val = $redis->zRevRange('zset1', 0, 2); //['qian', 'zhao', 'sun']
+
+
+
+
+
+
+
+
+
 
