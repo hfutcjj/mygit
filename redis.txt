@@ -1,5 +1,6 @@
 >>什么是redis
-Redis是Key-Value型的NoSQL、内存型数据库;
+Redis是Key-Value型的NoSQL、内存型数据库; 
+通常将实体信息、数据和页面的缓存信息等不太变动的信息存放到redis中, 提高读取速度;
 1, redis是远程的
 redis可以安装在服务端和客户端，一般指的是服务端的redis;
 2, redis是基于内存的
@@ -17,6 +18,15 @@ redis可以把数据定期持久化到硬盘中，这样就保证了数据的完
 4, 广泛的语言支持
 5, 主从复制
 6, 分布式与高可用
+
+
+>>redis持久化策略
+把数据持久化到硬盘, 当启动redis后可以从磁盘将数据加载到内存, 然后在内存中读取数据;
+实现redis持久化策略有两种方式；
+1)RDB(数据快照模式)
+保存的是数据本身;
+2)AOF(追加模式)
+保存的是数据变更记录, 当服务器重新启动时, 会把所有的写操作重新执行一遍, 从而实现数据备份;
 
 
 >>redis默认端口: 6379
@@ -49,8 +59,10 @@ windows中启动redis服务器: 点击 redis-server.exe;
 
 
 >>redis数据类型
+redis中的数据都是按 key-value 来存储的;
+实际应用中大多使用String类型, 因为对象也可以序列化为JSON串保存为String;
 1, String
-可以是字符串、整数或浮点，都属于字符串类型;
+value的值为字符串, 字符串、整数、浮点数都属于字符串;
 select 0  //选择0号数据库
 set name zhao  //设置 name 的值为 zhao
 get name  //获取 name 的值
@@ -64,42 +76,39 @@ expire hello 20  //设置 key=hello 20秒后过期
 ttl hello  //查看 key=hello 的过期剩余时间
 incr/decr count  //count值自增/自减
 incrby/decrby count 10  //自增/自减指定步长
-2, List
-元素序列;
-常用操作: lpush--左进, lpop--左出, rpush--右进, rpop--右出, llen--长度;
-lpush list1 3
-lpush list1 5
-lpush list1 9
-rpop list1 //3
-llen list1 //2
-3, Set
-无序的元素集合, 元素必须唯一;
-常用操作: sadd--添加, srem--删除, scard--长度, sismember--元素是否存在;
-sadd set1 3
-sadd set1 5
-sadd set1 9
-scard set1 //3
-sismember set1 5 //1
-srem set1 9 
-sismember set1 9 //0
-4, Hash
-key-value的散列组, 其中key是字符串, value是元素, key必须唯一;
-常用操作: hset--添加, hget--取值, hmget--取多个值, hlen--长度;
-hset hash1 k1 3
-hset hash1 k2 5
-hset hash1 k3 5
-hget hash1 k2 //5
-hlen hash1 //3
-hset hash1 k3 9 //修改value
-hmget hash1 k1 k2 //3 5
-5, Sort Set(也称为Zset)
-score-value的有序集合, 其中score为浮点, value为元素;
-常用操作: zadd--添加, zcard--长度, zrange--显示排序结果;
-zadd zset1 8.8 v1
-zadd zset1 9.9 v2
-zadd zset1 7.7 v3
-zcard zset1 //3
-zrange zset1 0 2 [withscores] //'v3' 'v1' 'v2'
+2, Hash
+用于存储结构化数据, 如 emp:1 -> {name: "zhao", age: 30, city: "hefei"};
+与String不同, Hash的value为结构化数据;
+hset emp:1 name zhao  //设置1号员工的name值
+hget emp:1 name  //获取1号员工的name值
+hmset emp:1 name zhao age 30  //一次设置1号员工的多个值 
+hmget emp:1 name age / hgetall emp:1  //一次获取1号员工的多个值 / 获取1号员工的所有值
+hdel emp:1 age  //删除1号员工的age
+hexists emp:1 age  //返回1号员工的age是否存在
+hlen emp:1  //返回1号员工有多少个属性值
+注: hdel emp:1 age 是删除1号员工的age属性, 而 del emp:1 是删除整个1号员工;
+当把emp:1中所有属性都删除, 那么emp:1这个key也自动移除;
+3, List
+value的值为列表, 如 mylist -> {d, e, f, c, b, a};
+rpush mylist c b a  //右侧插入
+lpush mylist f e d  //左侧插入
+rpop mylist  //右侧弹出
+lpop mylist  //左侧弹出
+lrange mylist 0 -1  //输出列表中所有元素
+llen mylist  //列表中元素个数
+4, Set
+value的值为集合, 与List不同, 集合的元素无序且唯一;
+sadd myset a b a c  //给集合添加元素
+smembers  //查看集合中所有元素
+sinter set1 set2  //交集
+sunion set1 set2  //并集
+sdiff set1 set2  //差集
+sismember myset a  //判断元素是否在集合中
+5, Zset(Sort Set, 有序集合)
+value的值为有序集合, 其中的元素由权和值来表示;
+zadd myzset 20 a 10 b 30 c  //给有序集合添加元素
+zrange myzset 0 -1 [withscores]  //查看有序集合中所有元素, 可选的withscores表示显示权
+zrangebyscore myzset 10 20  //查看权在指定区间的元素
 
 
 >>redis常用配置
@@ -109,7 +118,38 @@ logfile ""  //日志文件, 保存redis底层的输出信息; 例如设置成 "r
 databases 16  //默认容量16个数据库(0-15), redis数据库的名称就是0-15中的数字, 通过 select n 来切换数据库;
 requirepass 12345  //设置redis的密码, 默认该项禁止; 在客户端通过密码认证: auth 12345;
 dir ./   //数据文件的保存目录, 数据持久化, dump.rdb 就是保存在硬盘的备份文件;
+protected-mode yes  //保护模式, 默认为yes, 如果其他主机需要连接redis, 需要修改该参数为no;
+bind 127.0.0.1  //可以访问redis的主机ip, 默认为仅本机可访问, 修改为 0.0.0.0 表示所有主机都可访问;
 
+
+>>Java中使用Redis(Jedis)
+1, 需要在maven工程中添加jedis依赖;
+<dependency>
+	<groupId>redis.clients</groupId>
+	<artifactId>jedis</artifactId>
+	<version>2.9.0</version>
+</dependency>
+2, 通过jedis来操作redis
+jedis中操作redis的函数与redis本身的命令基本一致;
+//连接redis
+Jedis jedis = new Jedis("localhost", 6379);
+jedis.select(1);
+//操作String
+jedis.set("name", "zhao");
+String name = jedis.get("name");
+jedis.mset(new String[]{"name", "zhao", "age", "30});
+List<String> list = jedis.mget(new String[]{"name", "age"});
+//操作Hash
+jedis.hset("emp:101", "name", "zhao");
+String name = jedis.hget("emp:101", "name");
+Map<String, String> emp = new HashMap<>();
+emp.put("name", "zhao");
+emp.put("age", 30);
+jedis.hset("emp:101", emp);
+Map<String, String> emp = jedis.hgetall("emp:101");
+//操作List
+jedis.rpush("emps", new String[]{"zhao", "qian", "sun"});
+List<String> list = jedis.lrange("emps", 0, -1);
 
 
 
