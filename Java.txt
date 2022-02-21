@@ -2826,6 +2826,79 @@ sqlSession.commit();
 sqlSession.delete("goods.delete", 1206);
 sqlSession.commit();
 7, 预防SQL注入攻击
+1)MyBatis的两种传参方式
+${}: 未经任何处理的文本替换;
+#{}: 使用预编译传值, 可以预防SQL注入;
+8, MyBatis日志管理
+常用的日志组件有 log4j, logback等, 以logback为例:
+//在pom.xml中引入logback依赖
+<dependency>
+	<groupId>ch.qos.logback</groupId>
+	<artifactId>logback-classic</artifactId>
+	<version>1.2.3</version>
+</dependency>
+//resources/logback.xml, 定义logback的配置
+<configuration>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.sss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!--
+        日志输出级别(优先级高到低):
+        error: 错误 - 系统的故障日志
+        warn: 警告 - 存在风险或使用不当
+        info: 一般性消息
+        debug: 程序内部用于调试信息
+        trace: 程序运行的跟踪信息
+    -->
+    <root level="debug">
+        <appender-ref ref="console" />
+    </root>
+</configuration>
+注: 开发阶段一般将level设置为debug, 而程序上线后应将level设置成info或更高级别;
+9, MyBatis动态SQL
+动态SQL是指根据参数数据来动态组织SQL;
+<select id="dynamicSQL" parameterType="java.util.Map" resultType="com.imooc.mybatis.entity.Goods">
+	select * from t_goods
+	<where>
+		<if test="categoryId != null">
+			and category_id = #{categoryId}
+		</if>
+		<if test="currentPrice != null">
+			and current_price &lt; #{currentPrice}
+		</if>
+	</where>
+</select>
+注: 也可以将<where>标签换成 where 1=1, 保证后面紧跟的and不会导致语法错误;
+10, MyBatis缓存
+1, 一级缓存默认开启, 缓存范围为SqlSession会话, 二级缓存手动开启, 缓存范围为 mapper namespace;
+缓存开启后, 默认所有查询操作均使用缓存, 写操作commit提交时会强制清空一二级缓存;
+2, 开启二级缓存
+//goods.xml
+<mapper namespace="goods">
+	<cache eviction="LRU" flushInterval="600000" size="512" readOnly="true" />
+	<select .....>
+</mapper>
+cache标签中各个元素的作用:
+1)eviction
+缓存的清除策略, 当缓存对象数量达到上限或者到达缓存清除时间, 自动触发对应算法对缓存对象清除;
+LRU: 最近最久未使用, 先移除, 默认
+FIFO: 先进先出
+SOFT: 软引用
+WEAK: 弱引用
+2)flushInterval
+代表间隔多长时间清除缓存, 单位毫秒;
+3)size
+缓存对象或集合(1个集合算1个)的数量上限;
+4)readOnly
+设置为true表示每次从缓存中取出的是缓存对象本身, 这种执行效率较高;
+3, useCache和flushCache属性
+<select ... useCache="false"> 表示该查询不使用缓存;
+<select/insert/update/delete ... flushCache="true">  表示执行完该SQL后(无需等到commit)马上强制清空缓存;
+11, 
+
+
 
 
 
