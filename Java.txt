@@ -2643,6 +2643,7 @@ f:\mtest>mvn package
 </dependencies>
 3, MyBatis环境配置
 //mybatis-config.xml, 该配置文件放在main/resources目录下
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE configuration
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
@@ -2739,39 +2740,7 @@ map.put("max", 1000);
 map.put("limit", 10);
 List<Goods> list = sqlSession.selectList("goods.selectByPriceRange", map);
 MyBatisUtils.closeSession(sqlSession);
-6, 多表关联查询
-有两种使用方式:
-1)使用Map保存关联查询结果
-//goods.xml
-<mapper namespace"goods">
-	<!--参数类型用LinkedHashMap使查询结果与数据库的字段顺序保持一致-->
-	<select id="selectGoodsMap" resultType="java.util.LinkedHashMap">
-		select g.*, c.category_name from t_goods g left join t_category c on g.category_id = c.category_id;
-	</select>
-</mapper>
-//java
-List<Map> list = sqlSession.selectList("goods.selectGoodsMap");
-2)使用ResultMap将查询结果映射为Java对象
-//定义Java对象
-public class GoodsDto{
-	private Goods goods = new Goods();  //使用前面已经定义好的实体类
-	private String categoryName;
-	//省略constructor, getter, setter
-}
-//定义resultMap
-<resultMap id="rmGoods" type="com.imooc.mybatis.dto.GoodsDTO">
-	<!--设置主键字段与属性映射-->
-	<id property="goods.goodsId" column="goods_id" />
-	<!--设置非主键字段与属性映射-->
-	<result property="goods.title" column="title" />
-	<result property="categoryName" column="category_name" />
-</resultMap>
-<select id="selectGoodsDTO" resultMap="rmGoods">
-	select g.*, c.category_name from t_goods g left join t_category c on g.category_id = c.category_id;
-</select>
-//java
-List<GoodsDTO> list = sqlSession.selectList("goods.selectGoodsDTO");
-7, 数据写操作
+6, 数据写操作
 事务: 客户端 -> 事务日志 ->(commit) ->数据库
 数据的写入操作要使用commit()来进行提交;
 1)插入<insert>
@@ -2820,7 +2789,7 @@ sqlSession.commit();
 3)删除<delete>
 //goods.xml
 <delete id="delete" parameterType="Integer">
-	delete from t_goods where goods_id=#{goodsId}
+	delete from t_goods where goods_id=#{id}
 </delete>
 //java
 sqlSession.delete("goods.delete", 1206);
@@ -2896,7 +2865,173 @@ WEAK: 弱引用
 3, useCache和flushCache属性
 <select ... useCache="false"> 表示该查询不使用缓存;
 <select/insert/update/delete ... flushCache="true">  表示执行完该SQL后(无需等到commit)马上强制清空缓存;
-11, 
+11, 多表关联查询
+有两种使用方式:
+1)使用Map保存关联查询结果
+//goods.xml
+<mapper namespace="goods">
+	<!--参数类型用LinkedHashMap使查询结果与数据库的字段顺序保持一致-->
+	<select id="selectGoodsMap" resultType="java.util.LinkedHashMap">
+		select g.*, c.category_name from t_goods g left join t_category c on g.category_id = c.category_id;
+	</select>
+</mapper>
+//java
+List<Map> list = sqlSession.selectList("goods.selectGoodsMap");
+2)使用ResultMap将查询结果映射为Java对象
+//定义Java对象
+public class GoodsDto{
+	private Goods goods = new Goods();  //使用前面已经定义好的实体类
+	private String categoryName;
+	//省略constructor, getter, setter
+}
+//定义resultMap
+<resultMap id="rmGoods" type="com.imooc.mybatis.dto.GoodsDTO">
+	<!--设置主键字段与属性映射-->
+	<id property="goods.goodsId" column="goods_id" />
+	<!--设置非主键字段与属性映射-->
+	<result property="goods.title" column="title" />
+	<result property="categoryName" column="category_name" />
+</resultMap>
+<select id="selectGoodsDTO" resultMap="rmGoods">
+	select g.*, c.category_name from t_goods g left join t_category c on g.category_id = c.category_id
+</select>
+//java
+List<GoodsDTO> list = sqlSession.selectList("goods.selectGoodsDTO");
+12, 多表级联查询
+t_goods - t_goods_detail(一对多关系)
+//Goods.java
+public class Goods{
+	private Integer goodsId;
+	//其他t_goods表的属性
+	List<GoodsDetail> goodsDetails;  //一个商品对应多个商品详情
+}
+//GoodsDetail.java
+public class GoodsDetail{
+	private Integer gdId;
+	//其他t_goods_details表的属性
+	private Goods goods;  //一个商品详情对应一个商品
+}
+1)OneToMany级联查询
+//goods.xml
+<resultMap id="rmGoodsDetail" type="com.imooc.mybatis.entity.Goods">
+	<id property="goodsId" column="goods_id" />
+	<collection property="goodsDetails" select="goodsDetail.selectByGoodsId" column="goods_id" />
+</resultMap>
+<select id="selectOneToMany" resultMap="rmGoodsDetail">
+	select * from t_goods
+</select>
+2)ManyToOne级联查询
+//goods_detail.xml
+<resultMap id="rmDetailGoods" type="com.imooc.mybatis.entity.GoodsDetail">
+	<id property="gdId" column="gd_id" />
+	<result property="goods_id" column="goods_id" />
+	<association property="goods" select="goods.selectById" column="goods_id" />
+</resultMap>
+<select id="selectManyToOne" resultMap="rmDetailGoods">
+	select * from t_goods_detail
+</select>
+13, PageHelper分页插件
+1)mavan引入PageHelper与jsplparser依赖
+<!--pagehelper-->
+<dependency>
+	<groupId>com.github.pagehelper</groupId>
+	<artifactId>pagehelper</artifactId>
+	<version>5.1.10</version>
+</dependency>
+<!--jsqlparser-->
+<dependency>
+	<groupId>com.github.jsqlparser</groupId>
+	<artifactId>jsqlparser</artifactId>
+	<version>2.0</version>
+</dependency>
+2)mybatis-config.xml增加Plugin配置
+<plugins>
+	<!--启用PageHelper分页插件-->
+	<plugin interceptor="com.github.pagehelper.PageInterceptor">
+		<property name="helperdialect" value="mysql"/>
+		<property name="reasonable" value="true"/>
+	</plugin>
+</plugins>
+3)代码中使用PageHelper.startPage()自动分页
+//goods.xml
+<!--分页查询-->
+<select id="selectPage" resultType="com.imooc.mybatis.entity.Goods">
+	select * from t_goods where current_price &lt; 1000
+</select>
+//java
+SqlSession sqlSession = MyBatisUtil.openSession();
+PageHelper.startPage(2, 10);
+Page<Goods> page= (Page) sqlSession.selectList("goods.selectPage");
+System.out.println("总页数: " + page.getPages());
+System.out.println("总记录数: " + page.getTotal());
+System.out.println("开始行号: " + page.getStartRow());
+System.out.println("结束行号: " + page.getEndRow());
+System.out.println("当前页码: " + page.getPageNum());
+List<Goods> data = page.getResult();  //当前页数据
+for(Goods g : data) {
+	System.out.println(g);
+}
+MyBatisUtil.closeSession(sqlSession);
+14, MyBatis批处理
+//goods.xml
+<!--批处理插入-->
+<insert id="batchInsert" parameterType="java.util.List">
+	insert into t_goods(title, sub_title, ...) values 
+	<forearh collection="list" item="item" index="index" separator=",">
+		(#{item.title, item.subTitle, ...}
+	</foreach>
+</insert>
+<!--批处理删除-->
+<delete id="batchDelete" parameterType="java.util.List">
+	delete from t_goods where goods_id in
+	<foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+		#{item}
+	</foreach>
+</delete>
+//java
+List<Goods> list = new ArrayList<>();
+for(int i = 1; i <= 10000; i++){
+	Goods goods = new Goods();
+	goods.setTitle("测试商品" + i);
+	//setter其他字段
+	list.add(goods);
+}
+sqlSession.insert("goods.batchInsert", list);
+sqlSession.commit();
+注: 批量插入的局限:
+1)无法获得插入数据的id;
+2)批量生成的SQL太长, 可能会被服务器拒绝;
+15, MyBatis注解开发
+1)定义接口, 将SQL通过注解写在接口方法上
+pacakge com.imooc.mybatis.dao;
+public interface GoodsDAO{
+	@Select("select * from t_goods where goods_id = #{id}")
+	public Goods selectById(@Param("id") int id);
+}
+2)在mybatis-config.xml中增添mapper配置
+<mappers>
+	<mapper class="com.imooc.mybatis.dao.GoodsDAO" />
+	<!--或配置整个dao包-->
+	<pacakge name="com.imooc.mybatis.dao" />
+</mappers>
+3)java
+GoodsDAO goodsDAO = sqlSession.getMapper(GoodsDAO.class);
+Goods goods = goodsDAO.selectById(1001);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
