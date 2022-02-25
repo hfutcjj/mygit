@@ -1,0 +1,131 @@
+>>Spring IoC
+1, Spring框架的核心是IoC和AOP; 
+IoC(Inverse of Control)控制反转, 由IoC容器来创建与管理对象, 使用者从IoC容器获取对象;
+DI(Dependency Injection)依赖注入是具体技术实现, 在java中利用反射来实现对象注入;
+2, 管理bean对象的三种配置方式
+1)基于XML配置bean
+2)基于注解配置bean
+3)基于java代码配置bean
+3, 基于XML配置bean
+1)引入Spring依赖 - pom.xml
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-context</artifactId>
+	<version>5.2.6.RELEASE</version>
+</dependency>
+2)xml配置bean对象 - resources/applicationContext.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--利用构造函数实例化对象: 默认构造函数-->
+    <bean id="apple1" class="com.imooc.spring.ioc.entity.Apple" />
+	<!--利用构造函数实例化对象: 带参构造函数-->
+	<bean id="apple2" class="com.imooc.spring.ioc.entity.Apple">
+		<constructor-arg name="title" value="红富士" />
+		<constructor-arg name="origin" value="欧洲" />
+		<constructor-arg name="color" value="红色" />
+	</bean>
+	<!--利用setter给对象赋值(会首先调用默认构造函数)-->
+	<bean id="sweetApple" class="com.imooc.spring.ioc.entity.Apple">
+        <property name="title" value="红富士" />
+        <property name="color"  value="红色" />
+        <property name="origin" value="欧洲" />
+    </bean>
+	<!--利用工厂获取对象: 工厂的静态方法(实际中使用较少)-->
+	<bean id="apple3" class="com.imooc.spring.ioc.factory.AppleFactory" factory-method="createSweetApple" />
+	<!--利用工厂获取对象: 工厂的实例方法(实际中使用较少)-->
+	<bean id="factory" class="com.imooc.spring.ioc.factory.AppleFactory" />
+	<bean id="apple4" factory-bean="factory" factory-method="createSoftApple" />
+	<!--注入对象: 利用构造函数-->
+	<bean id="andy" class="com.imooc.spring.ioc.entity.Child">
+		<constructor-arg name="name" value="安迪" />
+		<constructor-arg name="apple" ref="sweetApple" />
+	</bean>
+	<!--注入对象: 利用setter-->
+	<bean id="lily" class="com.imooc.spring.ioc.entity.Child">
+        <property name="name" value="莉莉" />
+        <property name="apple" ref="sweetApple" />
+    </bean>
+</beans>
+注: <bean>标签里的id也可以写成name, id只支持一个标识, 而name可支持多个标识, 如 name="apple1 fruit1";
+注: id和name都允许在不同配置文件中出现重复, 后加载的覆盖前加载的;
+3)java: 从IoC容器获取bean
+//加载单个配置文件
+ApplicationContext context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");  //ApplicationContext对象就表示IoC容器
+Apple sweetApple = context.getBean("sweetApple", Apple.class);
+//Apple sweetApple = (Apple)context.getBean("sweetApple");
+//加载多个配置文件
+String[] configLocations = new String[]{"classPath:applicationContext-1.xml", "classPath:applicationContext-2.xml"};
+ApplicationContext context = new ClassPathXmlApplicationContext(configLocations);
+4)路径表达式
+classpath:config.xml  //加载classpath(即target/classes)下的指定文件
+classpath:com/imooc/config.xml  //classpath下(不包含jar)的指定包中的文件
+classpath*:com/imooc.config.xml  //classpath下(包含jar)的指定包中的文件
+classpath:comfig-*.xml  //classpath下以config开头的文件
+classpath:com/**/config.xml  //classPath下com包下包含任何子包里面的config.xml
+file:c:/config.xml  //c盘根路径的config.xml
+5)注入集合类型
+//注入List/Set
+<bean id="..." class="...">
+	<property name="someList">
+		<list>
+			<value>具体值</value> <!--List元素为基本类型-->
+			<ref bean="beanId"></ref> <!--List元素为对象-->
+		</list>
+	</property>
+</bean>
+注: 注入Set只需把list改成set;
+//注入Map
+<bean id="..." class="...">
+	<property name="someMap">
+		<map>
+			<entry key="k1" value="v1" /> <!--value为基本类型-->
+			<entry key="k2" value-ref="beanId" /> <!--value为对象: 引用外部bean-->
+			<entry key="k3">
+				<bean class="...">
+					...
+				</bean>
+			</entry> <!--value为对象: 内部bean-->
+		</map> 
+	</property>
+</bean>
+//注入Properties
+<bean id="..." class="...">
+	<property name="someProperties">
+		<props>
+			<prop key="k1">v1</prop>
+		</props>
+	</property>
+</bean>
+注: properties的key和value都必须是字符串类型;
+在java中获取property的值使用getProperty()函数: 
+context.getBean("company", Company.class).getInfo().getProperty("address");
+6)查看容器内对象
+String[] beanNames = context.getBeanDefinitionNames();
+for(String beanName: beanNames){
+	//名称: beanName
+	//内容: context.getBean(beanName)
+	//类型: context.getBean(beanName).getClass().getName()
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
