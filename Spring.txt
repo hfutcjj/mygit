@@ -109,9 +109,32 @@ for(String beanName: beanNames){
 	//内容: context.getBean(beanName)
 	//类型: context.getBean(beanName).getClass().getName()
 }
-
-
-
+7)IoC容器的销毁
+((ClassPathXmlApplicationContext)context).registerShutdownHook();
+4, bean对象的作用域及生命周期
+<bean id="..." class=".." scope="..." />
+1)scope属性清单
+singleton  //单例(默认值), 每个容器内全局唯一
+prototype  //多例, 每次使用都会创建一个实例
+request  //web环境下, 每一次独立请求存在唯一实例
+session  //web环境下, 每一个session存在唯一实例
+websocket  //每一次WebSocket连接存在唯一实例
+2)单例与多例的区别
+-----------------------------------------------------------
+				singleton			prototype
+对象数量	   	全局唯一			存在多个
+实例化时机		IoC容器启动时		getBean()或对象注入时
+线程安全问题	存在多个			不存在
+执行效率		高					低
+------------------------------------------------------------
+注: 实际使用中dao、service及controller对象一般都默认为单例;
+3)bean的生命周期
+<bean id="..." class="..." init-method="init" destroy-method="destroy">
+	//...
+</bean>
+生命周期:
+(容器初始化解析XML) -> 对象实例化 -> (为对象注入属性) -> 调用init-method初始化方法 -> (容器初始化完毕) 
+	-> 执行业务代码 -> (容器销毁) -> 调用destroy-method方法释放资源 -> (容器销毁完毕)
 
 
 
