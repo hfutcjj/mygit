@@ -27,7 +27,7 @@ DI(Dependency Injection)依赖注入是具体技术实现, 在java中利用反�
 		<constructor-arg name="origin" value="欧洲" />
 		<constructor-arg name="color" value="红色" />
 	</bean>
-	<!--利用setter给对象赋值(会首先调用默认构造函数)-->
+	<!--利用setter给对象赋值(注入静态属性)(会首先调用默认构造函数)-->
 	<bean id="sweetApple" class="com.imooc.spring.ioc.entity.Apple">
         <property name="title" value="红富士" />
         <property name="color"  value="红色" />
@@ -124,7 +124,7 @@ websocket  //每一次WebSocket连接存在唯一实例
 				singleton			prototype
 对象数量	   	全局唯一			存在多个
 实例化时机		IoC容器启动时		getBean()或对象注入时
-线程安全问题	存在多个			不存在
+线程安全问题	存在			不存在
 执行效率		高					低
 ------------------------------------------------------------
 注: 实际使用中dao、service及controller对象一般都默认为单例;
@@ -136,17 +136,22 @@ websocket  //每一次WebSocket连接存在唯一实例
 (容器初始化解析XML) -> 对象实例化 -> (为对象注入属性) -> 调用init-method初始化方法 -> (容器初始化完毕) 
 	-> 执行业务代码 -> (容器销毁) -> 调用destroy-method方法释放资源 -> (容器销毁完毕)
 5, 基于注解实现IoC
-注解是将配置信息写在源代码里, 适合轻量级的应用项目;
+注解是将配置信息写在源代码中, 适合轻量级的应用项目;
 1)Spring中三类注解
 组件类型注解: 声明当前类的功能;
 自动装配注解: 根据属性特征自动注入对象;
 元数据注解: 更细化的辅助IoC容器管理对象的注解;
-2)四种组件类型注解
+2)组件类型注解
 @Component: 通用注解, 该注解描述的类将被IoC容器管理并实例化;
 @Controller: 语义注解, 说明当前类是MVC应用中的控制器类;
 @Service: 语义注解, 说明当前类是Service业务服务类;
 @Repository: 语义注解, 说明当前类用于业务持久层, 通常描述对应Dao类;
 注: 四种组件类型注解直接放在类名上;
+括号内为bean的id, id可省略, 默认为首字母小写的类名;
+@Repository("userDao")
+public class UserDao{
+	//...
+}
 3)XML配置开启组件扫描
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -160,6 +165,93 @@ websocket  //每一次WebSocket连接存在唯一实例
         <context:component-scan base-package="com.imooc" />
 </beans>
 4)自动装配注解
+按类型装配(不推荐): @Autowired, @Inject;
+按名称装配: @Resource(优先按名称, 再按类型只能匹配);
+注: 自动装配注解放在属性或setter方法上, 如果放在属性上, 则底层直接给属性赋值, 不再执行setter方法;
+@Resource(name="userDao")  //name属性可省略
+如果设置了name属性, 则按name在IoC容器中将bean注入;
+如果未设置name属性, 则
+以属性名作为bean name在IoC容器中匹配bean, 如有匹配则注入;
+若按属性名未匹配, 则按类型匹配, 同@Autowired;
+使用建议: 在使用@Resource对象时推荐设置name或保持属性名与bean名称一致;
+5)元数据注解
+为IoC容器管理bean对象提供辅助功能的注解;
+@Primary  //按类型装配时出现多个相同类型对象, 拥有此注解对象优先被注入
+@PostConstruct  //描述方法, init-method配置的注解版本
+@PreDestroy  //描述方法, destroy-method配置的注解版本
+@Scope  //设置对象的scope属性
+@Value  //为属性注入静态数据
+注: @Value的使用:
+@Service
+public class UserService{
+	@Value("imooc.com")
+	private String metaData;
+}
+实际项目中经常把数据写在配置文件中, 分为以下三步:
+//添加配置文件: resources/config.properties
+metaData=imooc.com
+connection.driver=jdbc
+connection.user=root
+connection.password=123456
+//在applicationContext.xml中添加配置用来加载config.properties
+<context:property-placeholder location="classpath:config.properties" />
+//java程序中使用注解@Value
+@Value("${metaData}")
+private String metaData;
+@Value("${connection.password}")
+private String password;
+6, 基于Java Config实现IoC
+1)优势
+完全摆脱XML的束缚, 使用独立java类管理对象与依赖;
+可对配置进行集中管理, 避免注解配置的分散化;
+可以在编译时进行依赖检查;
+2)java config核心注解
+@Configuration  //描述类, 说明当前类是配置类, 完全替代xml
+@Bean  //描述方法, 方法返回对象将被IoC容器管理, beanId默认为方法名;
+@ImportResource  //描述类, 加载静态文件, 可使用@Value注解获取
+@ComponentScan  //描述类, 同xml的<context:component-scan>标签
+3)实例
+//Config.java
+@Configuration
+@ComponentScan(basePackages="com.imooc")  //扫描其他的组件注解
+public class Config {  //当前类是配置类, 用于替代applicationContext.xml
+	@Bean
+	public UserDao userDao(){  //利用方法创建对象, beanId=方法名
+		UserDao userDao = new UserDao();
+		return userDao;
+	}
+	@Bean
+	@Scope("prototype")  //可与注解配置搭配使用, 如设置为多例
+	@Primary
+	public UserService userService(UserDao userDao){  //依赖注入, 先按name注入, name不存在则按类型注入
+		UserService userService = new UserService();
+		userService.setUserDao(userDao);
+		return userService;
+	}
+}
+//ApplicationContext.java
+ApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
+7, Spring Test测试模块
+1)Spring Test可对JUnit进行整合, 通过Spring Test可在JUnit在单元测试时自动初始化IoC容器;
+2)整合过程
+maven工程依赖spring-test;
+利用@RunWith与@ContextConfiguration描述测试用例类;
+3)实例
+@RunWith(SpringJUnit4ClassRunner.class)  //将junit4的执行权交由Spring Test, 在测试用例执行前自动初始化IoC容器
+@ContextConfiguration(locations = {"classpath:applicationContext.xml"})  //说明要加载的配置文件
+public class SpringTestor {
+	@Resource
+	private UserService userService;
+	@Test
+	public void testUserService(){
+		userService.createUser();
+	}
+}
+
+
+>>Spring AOP
+
+
 
 
 
