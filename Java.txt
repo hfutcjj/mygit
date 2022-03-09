@@ -925,6 +925,7 @@ public class English implements Human{
 		System.out.println("Hello, world");
 	}
 }
+3, 代理模式
 
 
 >>反射(reflect)

@@ -229,7 +229,7 @@ public class Config {  //当前类是配置类, 用于替代applicationContext.x
 		return userService;
 	}
 }
-//ApplicationContext.java
+//SpringApplication.java
 ApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
 7, Spring Test测试模块
 1)Spring Test可对JUnit进行整合, 通过Spring Test可在JUnit在单元测试时自动初始化IoC容器;
@@ -250,8 +250,217 @@ public class SpringTestor {
 
 
 >>Spring AOP
+1, 基本概念
+AOP(Aspect Oriented Programming)面向切面编程, 将通用的、与业务无关的功能抽象封装为切面类, 
+切面可配置在目标方法的执行前或执行后运行, 做到即插即用;
+2, aop的使用步骤
+1)在pom.xml中引入ioc与aop依赖
+<dependencies>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-context</artifactId>
+		<version>5.2.6.RELEASE</version>
+	</dependency>
+	<!--aspectjweaver是spring aop的底层依赖-->
+	<dependency>
+		<groupId>org.aspectj</groupId>
+		<artifactId>aspectjweaver</artifactId>
+		<version>1.9.5</version>
+	</dependency>
+</dependencies>
+2)编写切面类与切面方法
+public class MethodAspect{  //切面类
+	public void printTime(JoinPoint joinPoint){  //切面方法, 必须包含JoinPoint连接点参数
+		SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss sss");
+		String time = sdf.format(new Date());
+		String className = joinPoint.getTarget().getClass().getName();  //获取目标类的名称
+		String methodName = joinPoint.getSignature().getName();  //获取目标方法的名称
+		System.out.println("--->" + time + ":" + className + "." + methodName);
+	}
+}
+3)在applicationContext.xml中进行aop配置
+<!--ioc配置-->
+<bean id="methodAspect" class="com.imooc.spring.aop.aspect.MethodAspect"/>
+<!--aop配置-->
+<aop:config>
+	<!--PointCut 切点, 使用execution表达式描述切面的作用范围-->
+	<aop:pointcut id="pointcut" expression="execution(public * com.imooc..*.*(..))"></aop:pointcut>
+	<!--定义切面类-->
+	<aop:aspect ref="methodAspect">
+		<aop:before method="printExecutionTime" pointcut-ref="pointcut"/>
+	</aop:aspect>
+</aop:config>
+3, 关键概念
+1)Aspect 
+切面, 具体的可插拔组件功能类, 通常一个切面只实现一个通用功能;
+2)Target Class/Method
+目标类、目标方法, 指真正要执行与业务相关的方法;
+3)PointCut
+切点, 使用execution表达式说明切面要作用在系统的哪些类上;
+4)JoinPoint
+连接点, 切面运行过程中是包含了目标类/方法元数据的对象;
+5)Advice 
+通知, 说明具体的切面的执行时机, Spring包含了五种不同类型通知;
+4, JoinPoint核心方法
+1)getTarget()
+获取IoC容器内目标对象;
+2)getSignature()
+获取目标方法;
+3)getArgs()
+获取目标方法参数;
+Object[] args = joinPoint.getArgs();
+System.out.println("--->参数个数: " + args.length);
+for(Object arg : args){
+	System.out.print(arg + "  ");
+}
+5, PointCut切点表达式
+1)切点表达式描述切面的作用范围;
+execution(public * com.imooc..*.*(..)),  可匹配如下具体的方法:
+public void com.imooc.spring.ioc.service.UserService.createUser(形参1, 形参2);
+public * com.imooc..*Service.*(..)可匹配如UserService等以Service结尾的类的任意方法;
+void com.imooc..*.*(..)可匹配没有返回值的方法;
+* com.imooc..*.*()可匹配没有参数的方法;
+* com.imooc..*.*(String, *)可匹配只有两个参数并且第一个参数为String类型的方法;
+* com.imooc..*Service.create*(..)可匹配以Service结尾的类并且以create开头的方法;
+其中, * - 通配符, .. - 包通配符, (..) - 参数通配符; 
+public可省略, 默认为public;
+6, AOP通知
+AOP有五种通知类型
+1)Before Advice  //前置通知, 目标方法运行前执行;
+<aop:before method="doBefore" pointcut-ref="pointcut"/>
+2)After Advice  //后置通知, 目标方法运行后执行, 类似于finally;
+<aop:after method="doAfter" pointcut-ref="pointcut"/>
+注: 后置通知无法获取目标方法的返回值或内部抛出的异常, 如果需要必须使用下面两种通知类型;
+3)After Returning Advice  //返回后通知, 目标方法返回数据后执行;
+//切面方法
+public String doAfterReturning(JoinPoint joinPoint, Object ret){
+	System.out.println("<---触发返回后通知, 返回值: " + ret);
+}
+//配置
+<aop:after-returning method="doAfterReturning" pointcut-ref="pointcut" returning="ret"/>
+注: 返回后通知, 切面方法需提供第二个参数用来接收目标方法的返回值;
+4)After Throwing Advice  //异常通知, 目标方法抛出异常后执行;
+//切面方法
+public void doAfterThrowing(JoinPoint joinPoint, Throwable th){
+	System.out.println("<---触发异常通知, 异常: " + th.getMessage());
+}
+//目标方法
+public void createUser(String username){
+	if(username.equals("zhao")){
+		throw new RuntimeException("用户已存在");
+	}
+}
+//配置
+<aop:after-throwing method="doAfterThrowing" pointcut-ref="pointcut" throwing="th"/>
+5)Around Advice  //环绕通知, 自定义通知执行时机, 可决定目标方法是否运行;
+//切面方法
+public Object check(ProceedingJoinPoint pjp){  //ProceedingJoinPoint是JoinPoint的升级版, 在原有功能外, 还可以控制目标方法是否执行
+	//方法执行前的操作
+	long stime = new Date().getTime();
+	//执行目标方法, 返回目标方法的返回值
+	Object ret = pjp.proceed();
+	//方法执行后的操作
+	long etime = new Date().getTime();
+	System.out.println("方法的执行时间: " + (etime-stime) + "毫秒");
+	return ret;
+}
+//配置
+<aop:around method="check" pointcut-ref="pointcut"/>
+注: 环绕通知的功能最强大, 可完成前面四种基本通知的操作;
+7, aop的注解形式
+1)pom.xml中增加相关依赖
+2)applicationContext.xml中开启IoC组件扫描以及启用AOP注解模式
+<context:component-scan base-package="com.imooc" />
+<aop:aspectj-autoproxy />
+3)在切面类和切面方法中使用注解
+@Component  //标记切面类为组件
+@Aspect  //切面类的注解
+public class MethodChecker{
+	@Around("execution(* com.imooc..*Service.*(..))")  //环绕通知的注解, 参数为切点表达式
+	public Object check(ProceedingJoinPoint pjp){
+		//....
+	}
+}
+注: 其他几种通知的注解分别为: @Before, @After, @AfterReturning, @AfterThrowing;
+8, aop的实现原理
+1)代理模式-静态代理
+代理模式是指通过代理对象来对原有对象(委托类的对象)的功能进行扩展;
+静态代理是值必须手动创建代理类的代理模式;
+//UserService(接口)
+public interface UserService{
+	public void createUser();
+}
+//UserServiceImpl(实现类)
+public class UserServiceImpl implements UserService{
+	public void createUser(){
+		System.out.println("执行创建用户业务逻辑");
+	}
+}
+//UserServiceProxy(代理类)
+public class UserServiceProxy implements UserService{
+	private UserService userService;  //持有委托类的对象
+	public UserServiceProxy(UserService userService){	//通过带参构造函数实例化委托类对象
+		this.userService = userService;
+	}
+	public void createUser(){  //对委托类的目标方法进行功能扩展
+		System.out.println("当前时间: " + new Date());
+		userService.createUser();
+	}
+}
+注: 可以嵌套使用代理模式;
+2)JDK动态代理
+根据接口的结构自动生成代理类, 来对目标方法进行扩展;
+3)Spring AOP基于代理类实现功能动态扩展, 有两种形式:
+目标类实现了某接口, 通过JDK动态代理实现功能扩展;
+目标类没有实现接口, 通过CGLib组件实现功能扩展;
 
 
+>>Spring JDBC
+1, JdbcTemplate是Spring JDBC的核心类, 提供数据CRUD方法;
+Spring JDBC是对JDBC轻量级的封装, 比Mybatis的执行效率要高;
+2, Spring JDBC的使用步骤
+1)maven工程引入spring-jdbc依赖;
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-context</artifactId>
+	<version>5.2.6.RELEASE</version>
+</dependency>
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-jdbc</artifactId>
+	<version>5.2.6.RELEASE</version>
+</dependency>
+<dependency>
+	<groupId>mysql</groupId>
+	<artifactId>mysql-connector-java</artifactId>
+	<version>8.0.27</version>
+</dependency>
+2)applicationContext.xml中配置DataSource数据源;
+<!--(Datasource)数据源-->
+<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	<property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+	<property name="url" value="jdbc:mysql://localhost:3306/imooc?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf-8&amp;serverTimezone=Asia/Shanghai&amp;allowPublicKeyRetrieval=true"/>
+	<property name="username" value="root"/>
+	<property name="password" value="123456"/>
+</bean>
+<!--JdbcTemplate提供数据CRUD的API-->
+<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+	<property name="dataSource" ref="dataSource"/>
+</bean>
+<!--dao对象的配置-->
+<bean id="employeeDao" class="com.imooc.spring.jdbc.dao.EmployeeDao">
+	<property name="jdbcTemplate" ref="jdbcTemplate"/>
+</bean>
+3)在Dao注入JdbcTemplate对象, 实现数据CRUD;
+public class EmployeeDao{
+	private JdbcTemplate jdbcTemplate;
+	//省略getter/setter
+	public Employee findById(int eno){
+		String sql = "select * from employee where eno = ?";
+        Employee employee = jdbcTemplate.queryForObject(sql, new Object[]{eno}, new BeanPropertyRowMapper<Employee>(Employee.class));
+        return employee;
+	}
+}
 
 
 
