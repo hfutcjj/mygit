@@ -63,7 +63,7 @@ ApplicationContext context = new ClassPathXmlApplicationContext(configLocations)
 classpath:config.xml  //加载classpath(即target/classes)下的指定文件
 classpath:com/imooc/config.xml  //classpath下(不包含jar)的指定包中的文件
 classpath*:com/imooc.config.xml  //classpath下(包含jar)的指定包中的文件
-classpath:comfig-*.xml  //classpath下以config开头的文件
+classpath:config-*.xml  //classpath下以config开头的文件
 classpath:com/**/config.xml  //classPath下com包下包含任何子包里面的config.xml
 file:c:/config.xml  //c盘根路径的config.xml
 5)注入集合类型
@@ -232,7 +232,7 @@ public class Config {  //当前类是配置类, 用于替代applicationContext.x
 //SpringApplication.java
 ApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
 7, Spring Test测试模块
-1)Spring Test可对JUnit进行整合, 通过Spring Test可在JUnit在单元测试时自动初始化IoC容器;
+1)Spring Test可对JUnit进行整合, 通过Spring Test可在JUnit单元测试时自动初始化IoC容器;
 2)整合过程
 maven工程依赖spring-test;
 利用@RunWith与@ContextConfiguration描述测试用例类;
@@ -443,15 +443,15 @@ Spring JDBC是对JDBC轻量级的封装, 比Mybatis的执行效率要高;
 	<property name="username" value="root"/>
 	<property name="password" value="123456"/>
 </bean>
-<!--JdbcTemplate提供数据CRUD的API-->
+<!--IoC: JdbcTemplate-->
 <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 	<property name="dataSource" ref="dataSource"/>
 </bean>
-<!--dao对象的配置-->
+<!--IoC: Dao-->
 <bean id="employeeDao" class="com.imooc.spring.jdbc.dao.EmployeeDao">
 	<property name="jdbcTemplate" ref="jdbcTemplate"/>
 </bean>
-3)在Dao注入JdbcTemplate对象, 实现数据CRUD;
+3)在dao中注入JdbcTemplate对象, 实现数据CRUD;
 public class EmployeeDao{
 	private JdbcTemplate jdbcTemplate;
 	//省略getter/setter
@@ -461,6 +461,66 @@ public class EmployeeDao{
         return employee;
 	}
 }
+3, JdbcTemplate的数据查询方法
+1)queryForObject()  //查询单条数据
+String sql = "select * from employee where eno = ?";
+Employee employee = jdbcTemplate.queryForObject(sql, new Object[]{1001}, new BeanPropertyRowMapper<Employee>(Employee.class));
+2)query()  //查询多条数据
+String sql = "select * from employee where dname = ?";
+List<Employee> list = jdbcTemplate.query(sql, new Object[]{"研发部"}, new BeanPropertyRowMapper<Employee>(Employee.class));
+3)queryForList()  //将查询结果作为Map进行封装
+String sql = "select eno as empno, salary as sal from employee where dname = ?";
+List<Map<String, Object>> map = jdbcTemplate.queryForList(sql, new Object[]{"研发部"});
+4, JdbcTemplate的数据写入方法
+数据的插入、更新、删除等写操作统一使用update()函数;
+1)数据插入
+String sql = "insert into employee(eno, ename) values (?, ?)";
+jdbcTemplate.upadte(sql, new Object[]{1001, "zhao"});
+2)数据更新
+String sql = "update employee set salary = salary + ? where eno = ?";
+int count = jdbcTemplate.update(sql, new Object[]{500, 1001});  //返回更新的数据条数
+3)数据删除
+String sql = "delete from employee where eno = ?";
+int count = jdbcTemplate.update(sql, new Object[]{1001});  //返回删除的数据条数
+5, 编程式事务
+1)编程式事务是指通过代码手动提交与回滚事务;
+SpringJDBC通过TransactionManager事务管理器实现事务控制, commit/rollback;
+2)编程时事务的步骤
+//applicationContext.xml
+<!--IoC: 事务管理器-->
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	<property name="dataSource" ref="dataSource" />
+</bean>
+<!--IoC: service中注入事务管理器属性-->
+<bean id="employeeService" class="com.imooc.spring.jdbc.service.EmployeeService">
+	<property name="employeeDao" ref="employeeDao"/>
+	<property name="transactionManager" ref="transactionManager"/>
+</bean>
+//EmployeeService.java
+public EmployeeService{
+	private EmployeeDao employeeDao;
+	private DataSourceTransactionManager transactionManager;
+	//省略getter/setter
+	public void fn(){
+        //事务默认的标准配置
+        TransactionDefinition definition = new DefaultTransactionDefinition();
+        //开始一个事务
+        TransactionStatus status = transactionManager.getTransaction(definition);
+        try {
+            //....
+            transactionManager.commit(status); //事务提交
+        } catch (Exception e) {
+            transactionManager.rollback(status); //事务回滚
+            e.printStackTrace();
+        }
+    }
+}
+6, 声明式事务
+1)声明式事务是指通过配置形式自动实现事务控制, 本质就是AOP环绕通知;
+当目标方法执行成功时, 自动提交事务; 当目标方法抛出运行时异常时, 自动回滚事务;
+2)声明式事务的步骤
+//pom.xml中加入aop的依赖
+//applicationContext.xml中的配置
 
 
 
