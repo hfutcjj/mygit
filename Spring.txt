@@ -501,7 +501,7 @@ public EmployeeService{
 	private EmployeeDao employeeDao;
 	private DataSourceTransactionManager transactionManager;
 	//省略getter/setter
-	public void fn(){
+	public void batchImport(){
         //事务默认的标准配置
         TransactionDefinition definition = new DefaultTransactionDefinition();
         //开始一个事务
@@ -521,6 +521,99 @@ public EmployeeService{
 2)声明式事务的步骤
 //pom.xml中加入aop的依赖
 //applicationContext.xml中的配置
+配置声明式事务需要三个步骤, 完整的applicationContext.xml如下:
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        https://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!--数据源-->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="url"
+                  value="jdbc:mysql://localhost:3306/imooc?useSSL=false&amp;useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=Asia/Shanghai&amp;allowPublicKeyRetrieval=true"/>
+        <property name="username" value="root"/>
+        <property name="password" value="123456"/>
+    </bean>
+    <!--IoC: JdbcTemplate-->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+	<!--IoC: Dao-->
+    <bean id="employeeDao" class="com.imooc.spring.jdbc.dao.EmployeeDao">
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    </bean>
+	<!--IoC: Service-->
+    <bean id="employeeService" class="com.imooc.spring.jdbc.service.EmployeeService">
+        <property name="employeeDao" ref="employeeDao"/>
+    </bean>
+    <!--第一步: IoC: 事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--第二步: 事务通知配置-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="batchImport" propagation="REQUIRED"/>
+			<tx:method name="batch*" propagation="REQUIRED"/>  <!--使用通配符*来匹配多个方法-->
+			<tx:method name="find*" propagation="NOT-SUPPORTED" read-only="true"/> <!--表示对该类方法不使用事务-->
+			<tx:method name="*" propagation="REQUIRED"/> <!--其他方法-->
+        </tx:attributes>
+    </tx:advice>
+    <!--第三步: 定义声明式事务的作用范围-->
+    <aop:config>
+        <aop:pointcut id="pointcut" expression="execution(* com.imooc..*Service.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut"/>
+    </aop:config>
+</beans>
+7, 事务传播方式
+1)事务传播行为是指多个拥有事务的方法在嵌套调用时的事务控制方式;
+2)配置方式
+XML: <tx:method name="..." propagation="REQUIRED"/>
+注解: @Transactional(propagation=Propagation.REQUIRED)
+3)事务传播的七种类型
+事务传播有七种类型, 80%以上的场景都使用默认的"REQUIRED";
+REQUIRED(默认): f1(f2, f3), 以f1的事务来运行, f2和f3要么都完成, 要么都不完成;
+REQUIRES_NEW: f1(f2, f3), f2和f3的事务独立运行;
+NOT_SUPPORTED: 以非事务方式运行, 一般用于查询操作;
+8, 注解配置声明式事务
+//applicationContext.xml中的配置
+<!--省略: DataSource数据源、IoC:jdbcTemplate, IoC:事务管理器-->
+<Context:component-scan base-package="com.imooc"/>  <!--开启组件扫描-->
+<tx:annotation-driven transaction-manager="transactionManager"/>  <!--启用注解形式声明式事务-->
+//Service
+@Service
+@Transactional
+public class EmployeeService{
+	@Resource
+	private EmployeeDao employeeDao;
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void importJob1(){
+		//....
+	}
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void importJob2(){
+		//....
+	}
+}
+注: @Transactional注解放在类上, 表示将声明式事务应用于该类的所有方法, 默认事务传播为REQUIRED;
+放在方法上, 表示仅适用于该方法; 方法注解覆盖类注解;
+
+
+>>Spring MVC
+
+
+
+
 
 
 
