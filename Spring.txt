@@ -610,7 +610,41 @@ public class EmployeeService{
 
 
 >>Spring MVC
+1, idea中将普通maven工程配置成web工程的步骤
+1)File -> Project Structure -> Facets -> + -> 在右边的配置面板将两个目录设置为: 
+	E:\java\workspace\test\src\main\webapp\WEB-INF\web.xml 与
+	E:\java\workspace\test\src\main\webapp;
+2)Edit Configuration -> + -> Tomcat Server -> 右边的配置面板进行相关配置;
+2, Spring MVC的配置步骤
+1)maven中引入spring-webmvc依赖
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-webmvc</artifactId>
+	<version>5.1.9.RELEASE</version>
+</dependency>
+2)web.xml配置DispatcherServlet
+<servlet>
+	<servlet-name>springmvc</servlet-name>
+	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+	<!--在IoC容器启动时要加载的配置文件-->
+	<init-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:applicationContext.xml</param-value>
+	</init-param>
+	<load-on-startup>0</load-on-startup> 
+</servlet>
+<servlet-mapping>
+	<servlet-name>springmvc</servlet-name>
+	<url-pattern>/</url-pattern>
+</servlet-mapping>
+注: DispatcherServlet是Spring MVC最核心的对象, 用于拦截http请求, 并根据请求的url调用与之对应的controller方法;
+配置load-on-startup是在web应用启动时自动创建Spring IoC容器, 并初始化DispatcherServlet, 如果不设置load-on-startup, 则在第一次请求url时初始化DispatcherServlet;
+<url-pattern>/</url-pattern>会匹配到/login这样的路径型url, 不会匹配到*.jsp这样的后缀型url;
+<url-pattern>/*</url-pattern>会匹配到当前文件夹下所有的路径型url与后缀型url;
+一般情况下DispatcherServlet只需要处理后台服务器的请求, 不需要处理静态页面, 所以, 建议使用/;
+3)applictionContext配置mvc标记
 
+4)开发Controller控制器
 
 
 
