@@ -713,7 +713,7 @@ out
 public String test(String ename, @RequestParam("depart_name") String dname){
 	return "ename: " + ename + ", dname: " + dname;
 }
-注: 参数名必须与请求名一致, 如果请求名包含下划线, 则参数必须使用@RequestParam注解来将参数名与参数名进行关联;
+注: 参数名必须与请求名一致, 如果请求名包含下划线, 则参数必须使用@RequestParam注解来将参数名与请求名进行关联;
 @RequestParam(value="username", defaultValue="zhao") String name 表示使用接收username的请求名, 并且如果没有username的请求, 则设置一个默认值;
 //使用Java Bean接收数据
 public String test(User user){
@@ -730,6 +730,73 @@ public String test(@RequestParam List<String> likes){
 	//...
 }
 注: 使用List来接收复合请求, 必须加@RequestParam注解, 而使用数组则不需要;
+3)使用关联对象来接收嵌套表单的数据
+//index.html
+username: <input type="text" name="username"/>
+password: <input type="password" name="password"/>
+<div class="delivery">
+	name: <input type="text" name="delivery.name"/>
+	address: <input type="text" name="delivery.address"/>
+	mobile: <input type="text" name="delivery.mobile"/>
+</div>
+//com.imooc.springmvc.entity
+public class User{
+	private String username;
+	private String password;
+	private Delivery delivery = new Delivery();
+	//...
+}
+public class Delivery{
+	//...
+}
+注: 前台嵌套的表单中name必须使用如delivery.address形式, 才能使用关联对象来接收值;
+7, 日期类型转换
+当前台输入日期字符串, 后台需要转换为日期类型, 有两种方式:
+1)每次单独转换, 使用@DateTimeFormat(pattern="")注解
+public String postTest(@DateTimeFormat(pattern="yyyy-MM-dd") date){
+	//...
+}
+或
+public class User{
+	private String name;
+	@DateTimeFormat(pattern="yyyy-MM-dd")
+	private Date date;
+}
+2)定义转换器类, 全局转换
+//定义转换器类, com.imooc.springmvc.converter.MyDateConverter
+public class MyDateConverter implements Converter<String, Date>{
+	public Date convert(String s){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); //实际中一般要根据输入的日期格式进行判断
+        try {
+            Date date = sdf.parse(s);
+            return date;
+        } catch (ParseException e) {
+            return null;
+        }
+	}
+}
+//在applicationContext.xml中进行配置
+<mvc:annotation-driven conversion-service="conversionService"/> <!--在原有的mvc注解上面添加conversion-service属性-->
+<!--配置转换服务-->
+<bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+	<property name="converters">
+		<set>
+			<bean class="com.imooc.springmvc.converter.MyDateConverter"/>
+		</set>
+	</property>
+</bean>
+8, 请求和响应中的中文乱码
+
+
+
+
+
+
+
+
+
+
+
 
 
 
