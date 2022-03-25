@@ -67,6 +67,7 @@ File -> Project Structure -> Modules -> Dependencies -> + -> JARS, 将jar包引�
 
 >>外网的jar包网页打不开的解决方案
 通过阿里云的文件仓库下载: maven.aliyun.com
+注: apache的核心maven仓库: search.maven.org
 
 
 >>基本语法
@@ -1398,26 +1399,6 @@ public class CalculatorTest{
 
 
 
->>跨域
-1, 什么是跨域
-http://www.abc.com:8080/scripts/jquery.js
-协议: http
-子域名: www
-主域名: abc.com
-端口号: 8080
-请求资源路径: scripts/jquery
-当协议、子域名、主域名、端口号中任意一个不相同时，都算跨域；
-注: js同源策略的限制，js不能跨域调用;
-2, 处理跨域的方法
-1)js不能跨域，但后端可以跨域处理
-比如在北京服务器的后台(www.beijing.com/proxy.php)来调用上海服务器
-(www.shanghai.com/sevice.php)的服务，然后再把响应结果返回给前端；
-2)通过JSONP的方式，但JSONP只适用于GET请求；
-3)在服务器端添加两个头文件：
-header('Access-Control-Allow-Origin:*');
-header('Access-Control-Allow-Methods:POST,GET');
-
-
 >>XML(可扩展标记语言)
 1, XML文档结构
 1)XML与HTML
@@ -1870,8 +1851,8 @@ response.setContentType("text/html;charset=utf-8");
 10, 请求转发与响应重定向
 页面的跳转有两种方式: 请求转发与响应重定向;
 1)请求转发
-request.getRequestDispatcher("/info").forward(request. response);  //转发给另一个Servlet
-request.getRequestDispatcher("/success.jsp").forward(request. response);  //转发给jsp页面
+request.getRequestDispatcher("/info").forward(request, response);  //转发给另一个Servlet
+request.getRequestDispatcher("/success.jsp").forward(request, response);  //转发给jsp页面
 2)响应重定向
 response.sendRedirect("/test/info");
 3)两者的区别

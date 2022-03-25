@@ -786,10 +786,284 @@ public class MyDateConverter implements Converter<String, Date>{
 	</property>
 </bean>
 8, 请求和响应中的中文乱码
+1)Get请求乱码
+在server.xml中设置URIEncoding(tomcat8以后的版本不需要设置);
+//tomcat: server.xml
+<Connector ... URIEncoding="UTF-8"/> //只需增加URIEncoding属性
+2)Post请求乱码
+在web.xml中配置CharacterEncodingFilter过滤器;
+//web.xml
+<filter>
+	<filter-name>characterEncodingFilter</filter-name>
+	<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+	<init-param>
+		<param-name>encoding</param-name>
+		<param-value>UTF-8</param-value>
+	</init-param>
+</filter>
+<filter-mapping>
+	<filter-name>characterEncodingFilter</filter-name>
+	<url-pattern>/*</url-pattern>
+</filter-mapping>
+3)响应的乱码
+在applicationContext.xml中配置StringHttpMessageConverter;
+//applicationContext.xml
+<mvc:annotation-driven>
+	<mvc:message-converters>
+		<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+			<property name="supportedMediaTypes">
+				<list>
+					<value>text/html;charset=utf-8</value>
+				</list>
+			</property>
+		</bean>
+	</mvc:message-converters>
+</mvc:annotation-driven>
+9, 响应输出
+1)@ResponseBody
+直接产生响应数据, 不涉及视图, 可产生字符串、json、xml等各种数据;
+2)ModelAndView
+可将Model产生的数据与View进行绑定, 默认的View是jsp, 也可以配置其他模板引擎;
+//Controller
+@GetMapping("/show")
+public ModelAndView show(int id){
+	ModelAndView mv = new ModelAndView("/view.jsp");
+	User user = userService.findById(id);
+	mv.addObject("user", user);
+	return mv;
+}
+//view.jsp
+<div>
+	用户名: ${user.username}
+	年龄: ${user.age}
+</div>
+注: 创建ModelAndView也可以使用如下方式:
+ModelAndView mv = new ModelAndView();
+mv.setViewName("/view.jsp");
+10, ModelAndView
+1)mv.addObject()方法设置的属性默认存放在当前请求中;
+2)ModelAndView默认使用请求转发(forward)来跳转页面, 
+而new ModelAndView("redirect:/view.jsp")使用重定向;
+11, 使用String与ModelMap替代ModelAndView(这种方式很常用)
+@GetMapping("/show")
+public String show(int id, ModelMap modelMap){
+	String view = "/view.jsp";
+	User user = userService.findById(id);
+	modelMap.addAttribute("user", user);
+	return view;
+}
+注: 当有@ResponseBody注解时, 表示返回字符串, 而当没有@ResponseBody注解时, 表示返回视图;
+当不需要给视图绑定数据时, ModelMap可以省略; 
+12, Spring MVC整合FreeMarker
+1)pom.xml中引入相关依赖
+<dependency>
+	<groupId>org.freemarker</groupId>
+	<artifactId>freemarker</artifactId>
+	<version>2.3.28</version>
+</dependency>
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-context-support</artifactId>
+	<version>5.1.19.RELEASE</version>
+</dependency>
+注: 每次新增依赖后, 在运行程序之前都要通过Edit Configurations将引入的依赖包放入/WEB-INF/lib中;
+2)applicationContext.xml中启用freemarker以及配置freemarker参数
+<!--启用freemarker-->
+<bean id="ViewResolver" class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">
+	<!--设置响应输出, 并解决中文乱码-->
+	<property name="contentType" value="text/html;charset=utf-8"/>
+	<!--指定freemarker模板文件扩展名-->
+	<property name="suffix" value=".ftl"/>
+</bean>
+<!--配置freemarker参数-->
+<bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+	<!--设置模板保存的目录-->
+	<property name="templateLoaderPath" value="/WEB-INF/ftl"/>
+	<!--其他模板引擎设置-->
+	<property name="freemarkerSettings">
+		<props>
+			<!--设置freemarker脚本与数据渲染时使用的字符集-->
+			<prop key="defaultEncoding">UTF-8</prop>
+		</props>
+	</property>
+</bean>
+注: tomcat无法直接解析freemarker的模板引擎, 为了安全, 将freemarker模板文件放在/WEB-INF/ftl目录下;
+设置模板存放的目录后, 根目录就不再是webapp, 而是/WEB-INF/ftl;
+3)Controller
+@Controller
+@RequestMapping("/fm")
+public class FreemarkerController {
+    @GetMapping("/test")
+    public ModelAndView show(String username){
+        ModelAndView mv = new ModelAndView("/test");
+        Form form = new Form();
+        form.setUsername(username);
+        mv.addObject("f", form);
+        return mv;
+    }
+}
+4)ftl
+//test.ftl
+<h1>freemarker: ${f.username}</h1>
 
 
+>>Restful风格
+1, restful开发规范:
+1)使用URL作为用户交互入口;
+2)明确的语义规范(get/post/put/delete);
+3)只返回数据(json/xml), 不包含任何展现;
+restful命名要求: URI必须具有语义、URI必须使用名词、URI不超两级、URI名词区分单复数, 如
+GET /articles?au=lily (√)
+GET /a/1 (×) -> GET /student/1
+POST /createArticle/1 (×) -> POST article/1
+GET /articles/author/1 (×) -> GET articles/author?id=1
+DELETE /articles/a (×) -> GET articles?au=lily 或 DELETE /article/1
+2, controller
+@RestController
+@RequestMapping("/restful")
+public class RestfulController {
+    @GetMapping("/request")
+    public String doGetRequest(){
+        return "{\"message\":\"返回查询结果\"}";
+    }
+	@PostMapping("/request/{id}")
+    public String doPostRequest(@PathVariable("id") int requestId){
+        return "{\"message\":\"返回查询结果\", \"id\":" + requestId + "}";
+    }
+}
+注: 1)需要修改applicationContext.xml中解决响应的中文乱码的某一处:
+<value>application/json;charset=utf-8</value>
+2)与请求get/post/put/delete对应的注解分别为@requestMapping/@postMapping/@putMapping/@deleteMapping;
+不同请求的url可以相同, 比如@requestMapping("/request")与@postMapping("/request")可以同时存在;
+3)@RestController注解用来替换@Controller和@ResponseBody;
+4)路径变量: 包含在url请求中的变量(如/employee/5), 成为路径变量, 使用路径变量需要在方法参数中添加@PathVariable注解;
+3, 简单请求与非简单请求
+1)简单请求是指标准结构的http请求, 对应get/post请求;
+非简单请求是复杂要求的http请求, 指put/delete请求、和扩展的标准请求;
+两者的区别是非简单请求发送前需要先发送预检请求;
+2)spring mvc默认不支持非简单请求的参数接收, 需要在web.xml中配置过滤器:
+//web.xml
+<!--FormContentFilter过滤器: 处理非简单请求-->
+<filter>
+	<filter-name>formContentFilter</filter-name>
+	<filter-class>org.springframework.web.filter.FormContentFilter</filter-class>
+</filter>
+<filter-mapping>
+	<filter-name>formContentFilter</filter-name>
+	<url-pattern>/*</url-pattern>
+</filter-mapping>
+4, JSON序列化
+1)常用的JSON序列化组件:
+Jackson(国外常用的json组件),
+Gson(Google开源json组件),
+FastJSON(阿里巴巴开源json组件);
+2)Jackson的使用
+//pom.xml中引入jackson依赖
+<dependency>
+	<groupId>com.fasterxml.jackson.core</groupId>
+	<artifactId>jackson-core</artifactId>
+	<version>2.9.9</version>
+</dependency>
+<dependency>
+	<groupId>com.fasterxml.jackson.core</groupId>
+	<artifactId>jackson-databind</artifactId>
+	<version>2.9.9</version>
+</dependency>
+<dependency>
+	<groupId>com.fasterxml.jackson.core</groupId>
+	<artifactId>jackson-annotations</artifactId>
+	<version>2.9.9</version>
+</dependency>
+//controller
+@GetMapping("/persons")
+public List<Person> findPersons(){
+	List<Person> list = new ArrayList<Person>();
+	list.add(new Person("zhao", 20, new Date()));
+	list.add(new Person("qian", 40, new Date()));
+	list.add(new Person("sun", 30, new Date()));
+	return list;
+}
+注: 引入了jackson依赖后, 控制器方法可以直接返回对象, jackson自动进行序列化;
+注: 如果使用fastjson组件, 控制器方法需要返回JSON.toJSONString()后的字符串;
+//实体类对日期类型的注解
+public class Person {
+    private String name;
+    private int age;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date birthday;
+}
+注: 日期类型转换为json后默认为时间戳, 需要使用注解指定格式;
 
 
+>>跨域(CORS)
+1, 什么是跨域
+http://www.abc.com:8080/scripts/jquery.js
+协议: http, 子域名: www, 主域名: abc.com, 端口号: 8080,
+请求资源路径(URI): /scripts/jquery
+当协议、子域名、主域名、端口号中任意一个不相同时，都算跨域；
+注: 由于浏览器同源策略的限制，js不能跨域调用;
+注: 浏览器console看到Access-Control-Allow-Origin就代表跨域了;
+2, HTML中允许跨域的标签
+<img>, <script>, <link>;
+3, SpringMVC解决跨域访问
+1)CORS是一种机制, 使用额外的http头通知浏览器可以访问其他域;
+URL响应头包含Access-control-*指明请求可以跨域;
+Spring MVC解决跨域有两种方式:
+2)方式一: @CrossOrigin - Controller跨域注解
+@RestController
+@CrossOrigin(origins = {"http://localhost:8080", "http://www.imooc.com"})
+public class TestController{
+	//...
+}
+注: 也可以设置所有域名都可以访问，@CrossOrigin(origins="*"), 但不推荐;
+3)方式二: <mvc:cors> - Spring MVC全局跨域配置
+<mvc:cors>
+	<mvc:mapping path="/test/**" allowed-origins="http://domain1.com, http://domain2.com" allowed-method="get, post" max-age="3600"/>
+	<mvc:mapping path="/**"/> <!--"/**"表示所有的方法-->
+</mvc:cors>
+注: max-age代表预检请求的缓存时间;
+
+
+>>拦截器Interceptor
+1, 基本概念
+拦截器用于对URL请求进行前置/后置过滤, 与Filter用途相似;
+Interceptor是SPring MVC的标准组件, 而Filter是J2EE的标准组件;
+Interceptor底层是基于Spring AOP面向切面编程;
+2, 开发流程
+1)maven依赖servlet-api
+<dependency>
+	<groupId>javax.servlet</groupId>
+	<artifactId>javax.servlet-api</artifactId>
+	<version>3.1.0</version>
+	<!--scope表示仅在开发时使用该jar包, 打包时丢弃, 防止与tomcat自带的servlet冲突-->
+	<scope>provided</scope> 
+</dependency>
+2)实现HandlerInterceptor接口
+public class MyInterceptor implements HandlerInterceptor {
+    //请求到达controller之前, 返回值为true表示请求继续传递, false表示立即返回
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        System.out.println(request.getRequestURL() + "-准备执行");
+        return true;
+    }
+    //controller处理完请求, 但还未生成响应文本
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        System.out.println(request.getRequestURL() + "-目标执行成功");
+    }
+    //响应文本产生以后
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        System.out.println(request.getRequestURL() + "-响应内容已产生");
+    }
+}
+3)applicationContext配置过滤地址
+<mvc:interceptors>
+	<mvc:interceptor>
+		<mvc:mapping path="/**"/>  <!--"/**"表示对所有请求进行拦截-->
+		<mvc:exclude-mapping path="/resources/**"/>  <!--表示将/resources目录下的资源排除在过滤地址以外-->
+		<bean class="com.imooc.restful.interceptor.MyInterceptor"/>
+	</mvc:interceptor>
+</mvc:interceptors>
+注: 一般将js、css、image等静态资源放在 webapp/resources目录下;
+注: 可以开发多个拦截器, 按配置的顺序依次对请求进行拦截;
 
 
 
