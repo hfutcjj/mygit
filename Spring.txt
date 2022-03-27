@@ -639,8 +639,6 @@ public class EmployeeService{
 </servlet-mapping>
 注: DispatcherServlet是Spring MVC最核心的对象, 用于拦截http请求, 并根据请求的url调用与之对应的controller方法;
 配置load-on-startup是在web应用启动时自动创建Spring IoC容器, 并初始化DispatcherServlet, 如果不设置load-on-startup, 则在第一次请求url时初始化DispatcherServlet;
-<url-pattern>/</url-pattern>会匹配到/login这样的路径型url, 不会匹配到*.jsp这样的后缀型url;
-<url-pattern>/*</url-pattern>会匹配到当前文件夹下所有的路径型url与后缀型url;
 一般情况下DispatcherServlet只需要处理后台服务器的请求, 不需要处理静态页面, 所以, 建议使用/;
 3)applictionContext配置mvc标记
 <?xml version="1.0" encoding="UTF-8"?>
@@ -905,6 +903,10 @@ public class FreemarkerController {
 4)ftl
 //test.ftl
 <h1>freemarker: ${f.username}</h1>
+13, /, /*, /**的区别
+1)/与/*一般用于配置<url-pattern>, /会匹配到如/login这样的路径型url, 不会匹配到如*.jsp这样的后缀型url,
+而/*会匹配包括路径型url与后缀型url的所有url;
+2)/*与/*一般用于配置mvc的拦截器, /*仅匹配一级如/add, /**可匹配多级如/add/user等;
 
 
 >>Restful风格
