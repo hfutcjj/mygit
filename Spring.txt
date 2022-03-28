@@ -1,3 +1,446 @@
+>>MyBatis
+1, MyBatis开发流程
+1)引入MyBatis依赖;
+2)创建核心配置文件;
+3)创建实体类(Entity);
+4)创建Mapper映射文件;
+5)初始化SqlSessionFactory;
+6)利用SqlSession对象操作数据;
+2, 引入MyBatis依赖
+//pom.xml
+<dependencies>
+	<dependency> <!--MyBatis依赖-->
+		<groupId>org.mybatis</groupId>
+		<artifactId>mybatis</artifactId>
+		<version>3.5.1</version>
+	</dependency>
+	<dependency> <!--jdbc依赖-->
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<version>5.1.47</version>
+	</dependency>
+</dependencies>
+3, MyBatis环境配置
+//mybatis-config.xml, 该配置文件放在main/resources目录下
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <environments default="dev"> <!--默认指向的环境id-->
+        <!--开发环境-->
+        <environment id="dev">
+            <!--采用JDBC方式对数据库事务进行commit/rollback-->
+            <transactionManager type="jdbc"></transactionManager>
+            <!--采用连接池方式管理数据库连接-->
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/babytun?useUnicode=true&amp;characterEncoding=UTF-8"/>
+                <property name="root" value="root"/>
+                <property name="password" value="123456"/>
+            </dataSource>
+        </environment>
+        <!--生产环境-->
+        <environment id="prod">
+            <transactionManager type="jdbc"></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://192.168.1.155:3306/babytun?useUnicode=true&amp;characterEncoding=UTF-8"/>
+                <property name="username" value="root"/>
+                <property name="password" value="123456"/>
+            </dataSource>
+        </environment>
+    </environments>
+</configuration>
+4, SqlSessionFactory 与 SqlSession
+是MyBatis的核心对象, 用来加载配置文件从而初始化MyBatis框架, 并且创建SqlSession对象; SqlSessionFactory在应用中要全局唯一;
+而对数据库表的具体操作由SqlSession对象来完成, SqlSession使用JDBC方式与数据库交互;
+为了保证SqlSessionFactory全局唯一, 可以自定义个工具类, 如下:
+public class MyBatisUtils {
+	private static SqlSessionFactory sqlSessionFactory = null;
+	static { //静态块保证了只在类加载时初始化SqlSessionFactory对象一次
+		Reader reader = Resources.getResourceAsReader("mybatis-config.xml");
+		sqlSessionFactory = new SqlSessionFactory().build(reader);
+	}
+	public static SqlSession openSession(){
+		return sqlSessionFactory.openSession();
+	}
+	public static void closeSession(SqlSession sqlSession){
+		if(sqlSession != null){
+			sqlSession.close();
+		}
+	}
+}
+5, MyBatis数据查询
+1)创建实体类(Entity)
+新建com.imooc.mybatis.entity.Goods实体类, 对应 t_goods 数据表;
+Goods类的属性GoodsId 与 t_goods数据表的goods_id字段对应;
+要开启这种驼峰命名自动转换, 需要在 mybatis-config.xml 中添加配置:
+//mybatis-config.xml
+<settings>
+	<setting name="mapUnderscoreToCamelCase" value="true" />
+</setting>
+2)创建Mapper XML, 编写SQL语句
+在main/resources目录下新建mapper目录, 并在mapper目录下新建 goods.xml 配置文件;
+//goods.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="goods">
+	<!--无参查询-->
+    <select id="selectAll" resultType="com.imooc.mybatis.entity.Goods">
+        select * from t_goods order by goods_id desc limit 10
+    </select>
+	<!--单参数查询-->
+	<select id="selectById" parameterType="Integer" resultType="com.imooc.mybatis.entity.Goods">
+		select * from t_goods where goods_id = #{value}
+	</select>
+	<!--多参数查询, 参数类型指定为Map-->
+	<select id="selectByPriceRange" parameter="java.util.Map" resultType="com.imooc.mybatis.entity.Goods">
+		select * from t_goods where current_price between #{min} and #{max} limit #{limit}
+	</select>
+</mapper>
+需要在mybatis-config.xml文件中声明该mapper:
+//mybatis-config.xml
+<mappers>
+	<mapper resource="mappers/goods.xml"></mapper>
+</mappers>
+3)SqlSession执行SQL语句
+SqlSession sqlSession = MyBatisUtils.openSession();
+//无参查询
+List<Goods> list = sqlSession.selectList("goods.selectAll"); //如果"selectAll"全局唯一, 那么可以省略命名空间goods
+//单参数查询
+Goods goods = sqlSession.selectOne("goods.selectById", 1001);
+//多参数查询
+Map map = new HashMap();
+map.put("min", 500);
+map.put("max", 1000);
+map.put("limit", 10);
+List<Goods> list = sqlSession.selectList("goods.selectByPriceRange", map);
+MyBatisUtils.closeSession(sqlSession);
+6, 数据写操作
+事务: 客户端 -> 事务日志 ->(commit) ->数据库
+数据的写入操作要使用commit()来进行提交;
+1)插入<insert>
+//goods.xml
+<insert id="insert" parameterType="com.imooc.mybatis.entity.Goods">
+	insert into t_goods(title, sub_title, original_cost, current_price, discount, is_free_delivery, category_id)
+		values (#{title}, #{subTitle}, #{originalCost}, #{currentPrice}, #{discount}, #{isFreeDelivery}, #{categoryId})
+	<!--当插入成功后, 将新的主键id回添到java对象-->
+	<selectKey resultType="Integer" keyProperty="goodsId" order="AFTER">
+		select last_insert_id()
+	</selectKey>
+</insert>
+注: 也可以使用 useGeneratedKeys 属性来代替 <selectKey>元素, 如下: 
+<insert id="insert" parameterType="com.imooc.mybatis.entity.Goods"
+	useGeneratedKeys="true" keyProperty="goodsId" keyColulmn="goods_id">
+	insert into ***
+</insert>
+注: useGeneratedKeys属性与<selectKey>元素的区别:
+前者隐式将主键id回舔到java对象, 但仅支持"自增主键"的数据库;
+后者需要显示调用mysql的函数, 但支持所有关系型数据库;
+//java
+SqlSession sqlSession = null;
+try{
+	sqlSession = MyBatisUtils.openSession();
+	Goods goods = new Goods();
+	goods.setTitle("测试商品");
+	int num = sqlSession.insert("goods.insert", goods);
+	sqlSession.commit();
+}catch(Exception e){
+	e.printStackTrace();
+	sqlSession.rollback();
+}finally{
+	MyBatisUtils.closeSession(sqlSession);
+}
+2)更新<update>
+//goods.xml
+<update id="update" parameterType="com.imooc.mybatis.entity.Goods">
+	update t_goods set title=#{title}, category_id=#{categoryId} where goods_id=#{goodsId}
+</update>
+//java
+Goods goods = sqlSession.selectOne("goods.selectById", 1206);  //先获取到指定id的商品
+goods.setTitle("苹果");
+goods.setCatetoryId(5);
+sqlSession.update("goods.update", goods);
+sqlSession.commit();
+3)删除<delete>
+//goods.xml
+<delete id="delete" parameterType="Integer">
+	delete from t_goods where goods_id=#{id}
+</delete>
+//java
+sqlSession.delete("goods.delete", 1206);
+sqlSession.commit();
+7, 预防SQL注入攻击
+1)MyBatis的两种传参方式
+${}: 未经任何处理的文本替换;
+#{}: 使用预编译传值, 可以预防SQL注入;
+8, MyBatis动态SQL
+动态SQL是指根据参数数据来动态组织SQL;
+<select id="dynamicSQL" parameterType="java.util.Map" resultType="com.imooc.mybatis.entity.Goods">
+	select * from t_goods
+	<where>
+		<if test="categoryId != null">
+			and category_id = #{categoryId}
+		</if>
+		<if test="currentPrice != null">
+			and current_price &lt; #{currentPrice}
+		</if>
+	</where>
+</select>
+注: 也可以将<where>标签换成 where 1=1, 保证后面紧跟的and不会导致语法错误;
+9, MyBatis缓存
+1, 一级缓存默认开启, 缓存范围为SqlSession会话, 二级缓存手动开启, 缓存范围为 mapper namespace;
+缓存开启后, 默认所有查询操作均使用缓存, 写操作commit提交时会强制清空一二级缓存;
+2, 开启二级缓存
+//goods.xml
+<mapper namespace="goods">
+	<cache eviction="LRU" flushInterval="600000" size="512" readOnly="true" />
+	<select .....>
+</mapper>
+cache标签中各个元素的作用:
+1)eviction
+缓存的清除策略, 当缓存对象数量达到上限或者到达缓存清除时间, 自动触发对应算法对缓存对象清除;
+LRU: 最近最久未使用, 先移除, 默认
+FIFO: 先进先出
+SOFT: 软引用
+WEAK: 弱引用
+2)flushInterval
+代表间隔多长时间清除缓存, 单位毫秒;
+3)size
+缓存对象或集合(1个集合算1个)的数量上限;
+4)readOnly
+设置为true表示每次从缓存中取出的是缓存对象本身, 这种执行效率较高;
+3, useCache和flushCache属性
+<select ... useCache="false"> 表示该查询不使用缓存;
+<select/insert/update/delete ... flushCache="true">  表示执行完该SQL后(无需等到commit)马上强制清空缓存;
+10, 多表关联查询
+有两种使用方式:
+1)使用Map保存关联查询结果
+//goods.xml
+<mapper namespace="goods">
+	<!--参数类型用LinkedHashMap使查询结果与数据库的字段顺序保持一致-->
+	<select id="selectGoodsMap" resultType="java.util.LinkedHashMap">
+		select g.*, c.category_name from t_goods g left join t_category c on g.category_id = c.category_id;
+	</select>
+</mapper>
+//java
+List<Map> list = sqlSession.selectList("goods.selectGoodsMap");
+2)使用ResultMap将查询结果映射为Java对象
+//定义Java对象
+public class GoodsDto{
+	private Goods goods = new Goods();  //使用前面已经定义好的实体类
+	private String categoryName;
+	//省略constructor, getter, setter
+}
+//定义resultMap
+<resultMap id="rmGoods" type="com.imooc.mybatis.dto.GoodsDTO">
+	<!--设置主键字段与属性映射-->
+	<id property="goods.goodsId" column="goods_id" />
+	<!--设置非主键字段与属性映射-->
+	<result property="goods.title" column="title" />
+	<result property="categoryName" column="category_name" />
+</resultMap>
+<select id="selectGoodsDTO" resultMap="rmGoods">
+	select g.*, c.category_name from t_goods g left join t_category c on g.category_id = c.category_id
+</select>
+//java
+List<GoodsDTO> list = sqlSession.selectList("goods.selectGoodsDTO");
+11, 多表级联查询
+t_goods - t_goods_detail(一对多关系)
+//Goods.java
+public class Goods{
+	private Integer goodsId;
+	//其他t_goods表的属性
+	List<GoodsDetail> goodsDetails;  //一个商品对应多个商品详情
+}
+//GoodsDetail.java
+public class GoodsDetail{
+	private Integer gdId;
+	//其他t_goods_details表的属性
+	private Goods goods;  //一个商品详情对应一个商品
+}
+1)OneToMany级联查询
+//goods.xml
+<resultMap id="rmGoodsDetail" type="com.imooc.mybatis.entity.Goods">
+	<id property="goodsId" column="goods_id" />
+	<collection property="goodsDetails" select="goodsDetail.selectByGoodsId" column="goods_id" />
+</resultMap>
+<select id="selectOneToMany" resultMap="rmGoodsDetail">
+	select * from t_goods
+</select>
+2)ManyToOne级联查询
+//goods_detail.xml
+<resultMap id="rmDetailGoods" type="com.imooc.mybatis.entity.GoodsDetail">
+	<id property="gdId" column="gd_id" />
+	<result property="goods_id" column="goods_id" />
+	<association property="goods" select="goods.selectById" column="goods_id" />
+</resultMap>
+<select id="selectManyToOne" resultMap="rmDetailGoods">
+	select * from t_goods_detail
+</select>
+12, PageHelper分页插件
+1)mavan引入PageHelper与jsplparser依赖
+<!--pagehelper-->
+<dependency>
+	<groupId>com.github.pagehelper</groupId>
+	<artifactId>pagehelper</artifactId>
+	<version>5.1.10</version>
+</dependency>
+<!--jsqlparser-->
+<dependency>
+	<groupId>com.github.jsqlparser</groupId>
+	<artifactId>jsqlparser</artifactId>
+	<version>2.0</version>
+</dependency>
+2)mybatis-config.xml增加Plugin配置
+<plugins>
+	<!--启用PageHelper分页插件-->
+	<plugin interceptor="com.github.pagehelper.PageInterceptor">
+		<property name="helperdialect" value="mysql"/>
+		<property name="reasonable" value="true"/>
+	</plugin>
+</plugins>
+3)代码中使用PageHelper.startPage()自动分页
+//goods.xml
+<!--分页查询-->
+<select id="selectPage" resultType="com.imooc.mybatis.entity.Goods">
+	select * from t_goods where current_price &lt; 1000
+</select>
+//java
+SqlSession sqlSession = MyBatisUtil.openSession();
+PageHelper.startPage(2, 10);
+Page<Goods> page= (Page) sqlSession.selectList("goods.selectPage");
+System.out.println("总页数: " + page.getPages());
+System.out.println("总记录数: " + page.getTotal());
+System.out.println("开始行号: " + page.getStartRow());
+System.out.println("结束行号: " + page.getEndRow());
+System.out.println("当前页码: " + page.getPageNum());
+List<Goods> data = page.getResult();  //当前页数据
+for(Goods g : data) {
+	System.out.println(g);
+}
+MyBatisUtil.closeSession(sqlSession);
+13, MyBatis批处理
+//goods.xml
+<!--批处理插入-->
+<insert id="batchInsert" parameterType="java.util.List">
+	insert into t_goods(title, sub_title, ...) values 
+	<forearh collection="list" item="item" index="index" separator=",">
+		(#{item.title, item.subTitle, ...}
+	</foreach>
+</insert>
+<!--批处理删除-->
+<delete id="batchDelete" parameterType="java.util.List">
+	delete from t_goods where goods_id in
+	<foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+		#{item}
+	</foreach>
+</delete>
+//java
+List<Goods> list = new ArrayList<>();
+for(int i = 1; i <= 10000; i++){
+	Goods goods = new Goods();
+	goods.setTitle("测试商品" + i);
+	//setter其他字段
+	list.add(goods);
+}
+sqlSession.insert("goods.batchInsert", list);
+sqlSession.commit();
+注: 批量插入的局限:
+1)无法获得插入数据的id;
+2)批量生成的SQL太长, 可能会被服务器拒绝;
+15, MyBatis注解开发
+1)定义接口, 将SQL通过注解写在接口方法上
+pacakge com.imooc.mybatis.dao;
+public interface GoodsDAO{
+	@Select("select * from t_goods where goods_id = #{id}")
+	public Goods selectById(@Param("id") int id);
+}
+2)在mybatis-config.xml中增添mapper配置
+<mappers>
+	<mapper class="com.imooc.mybatis.dao.GoodsDAO" />
+	<!--或配置整个dao包-->
+	<pacakge name="com.imooc.mybatis.dao" />
+</mappers>
+3)java
+GoodsDAO goodsDAO = sqlSession.getMapper(GoodsDAO.class);
+Goods goods = goodsDAO.selectById(1001);
+
+
+>>日志管理
+1, 常用的日志组件有 log4j, logback等, 以logback为例:
+//在pom.xml中引入logback依赖
+<dependency>
+	<groupId>ch.qos.logback</groupId>
+	<artifactId>logback-classic</artifactId>
+	<version>1.2.3</version>
+</dependency>
+//resources/logback.xml, 定义logback的配置
+<configuration>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.sss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!--
+        日志输出级别(优先级高到低):
+        error: 错误 - 系统的故障日志
+        warn: 警告 - 存在风险或使用不当
+        info: 一般性消息
+        debug: 程序内部用于调试信息
+        trace: 程序运行的跟踪信息
+    -->
+    <root level="debug">
+        <appender-ref ref="console" />
+    </root>
+</configuration>
+注: 开发阶段一般将level设置为debug, 而程序上线后应将level设置成info或更高级别;
+2, 将日志记录到文件
+//resources/logback.xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%thread] %d %level %logger{10} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="log" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>F:/logs/history.%d.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>[%thread] %d %level %logger{10} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="debug">
+        <appender-ref ref="console" />
+    </root>
+    <logger name="com.imooc.restful.interceptor.MyInterceptor" level="info" additivity="false">
+		<appender-ref ref="log"/>
+	</logger>
+</configuration>
+注: RollingFileAppender表示产生按天滚动的日志文件;
+additivity属性为false表示只向文件而不向控制台输出;
+//使用拦截器将用户的访问信息输出到文件
+public class MyInterceptor implements HandlerInterceptor{
+	private Logger logger = LoggerFactory.getLogger(MyInterceptor.class);
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append(request.getRemoteAddr());
+        sb.append(" | ");
+        sb.append(request.getRequestURL());
+        sb.append(" | ");
+        sb.append(request.getHeader("user-agent"));
+        sb.append(" | ");
+        logger.info(sb.toString());  //输出info级别的日志
+        return true;
+    }
+}
+
+
 >>Spring IoC
 1, Spring框架的核心是IoC和AOP; 
 IoC(Inverse of Control)控制反转, 由IoC容器来创建与管理对象, 使用者从IoC容器获取对象;
@@ -1068,12 +1511,97 @@ public class MyInterceptor implements HandlerInterceptor {
 注: 可以开发多个拦截器, 按配置的顺序依次对请求进行拦截;
 
 
+>>Spring Boot
+1, 工程结构
+test
+	src	
+		main
+			java
+				com.imooc.springboot
+					SpringBootTestApplication  //主启动类
+					controller
+						MyController
+					dao
+					service
+			resources
+				static
+				templates
+				application.properties  //配置文件
+	test
+	pom.xml
+1)pom.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.2.1.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.imooc</groupId>
+    <artifactId>spring-boot-test</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>spring-boot-test</name>
+    <description>Demo project for Spring Boot</description>
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+2)SpringBootTestApplication.java
+@SpringBootApplication
+public class SpringBootTestApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(SpringBootTestApplication.class, args);
+    }
+}
+2, 配置文件的写法
+配置文件的两种形式: 
+1).properties
+my.url=http://imooc.com
+my.name=imooc
+2).yml
+my:
+url: http://imooc.com  //中间要有一个空格
+name: imooc
+3)自定义配置
+//application.properties
+school.grade=3
+school.classnum=5
+//TestController.java
+@RestController
+public class TestController{
+	@Value("${school.grade}")
+	private int g;
+	@Value("${school.classnum}")
+	private int c;
+	@GetMapping("/info"){
+		return "年级: " + g + ", 班级: " + c;
+	}
+}
 
 
-
-
-
-
+>>线程池
 
 
 
