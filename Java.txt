@@ -1056,210 +1056,6 @@ List<Integer> list = stream.distinct().filter(n -> n%2==1)
 	.sorted((a,b) -> b-a).collect(Collectors.toList());
 
 
->>多线程
-1, 进程(process)与线程(thread)
-进程是操作系统分配资源的最小单位，线程是程度执行与调度的最小单位，
-一个进程一般包含多个线程;
-2, Thread类
-1)构造方法
-Thread();
-Thread(String name);
-Thread(Runnable target);
-Thread(Runnable target, String name);
-2)常用方法
-run(); //线程执行体, 需要被重写
-start(); //启动线程
-sleep(long m); //让自己休眠, Thread.sleep(), 使当前线程休眠m毫秒，属于静态方法，并且需要进行异常处理
-join()/join(m); //别的线程抢先执行, 调用join()的线程抢占执行, 需要进行异常处理
-wait()/wait(m); //让自己等待，需要处理异常
-notify(); //唤醒某个正在等待的线程
-notifyAll(); //常用, 唤醒所有正在等待的线程
-注: 在A线程中调用B.join()方法，只能保证B插队在A之前，而B会和其他线程并发执行;
-A: B.join(m)的意思是，A等待B执行m毫秒后再执行;
-3, 创建线程的三种方式
-1)继承Thread类
-class MyThread extends Thread{
-	@Override
-	public void run(){ //... }
-}
-MyThread t = new MyThread("java");
-t.start();
-2)实现Runnable接口
-class MyThread implements Runnable{
-	private int i = 10;
-	@Override
-	public void run(){
-		while(i > 0){
-			System.out.println(Thread.currentThread().getName() + "-" + i);
-			i--;
-		}
-	}
-}
-MyThread m = new MyThread();
-Thread t1 = new Thread(m, "java");
-Thread t2 = new Thread(m, "c++");
-t1.start();
-t2.start();
-注: 此时两个线程共享变量i;
-Thread.currentThread()返回当前线程;
-3)实现Callable接口
-此方式的优点是具有返回值，且可以声明并抛出异常;
-4, 线程的状态和生命周期
-1)五种状态
-新建(NEW)、可运行/就绪(RUNNABLE)、正在运行(RUNNING)、阻塞(BLOCKED)、终止(TERMINATED);
-2)生命周期
-线程的生命周期，就是线程在这五种状态之间的转换过程;
-新建: new Thread();
-可运行: start();
-可运行->正在运行: 获得CPU使用权;
-正在运行->可运行: CPU时间片用完/yield();
-正在运行->阻塞: join()/wait()/sleep()/IO请求;
-阻塞->可运行: 等待调用join()的线程执行完毕/notify()或notifyAll()/sleep时间超时/IO请求完成;
-正在运行->终止: 线程执行完毕/异常终止/stop();
-5, 线程的优先级
-1)优先级分为10个级别, 由低到高用数字1-10表示, 默认为5;
-2)常用方法
-t.getPriority(); //获取优先级
-t.setPriority(n); //设置优先级
-注: 优先级高并不能保证一定会优先执行，因为会受到操作系统调度的影响;
-6, 线程同步
-1)synchronized可以保证共享对象在同一时刻只能被一个线程访问;
-2)synchronized关键字可以用在如下地方:
-//方法
-public synchronized void saveAccount(){}
-//语句块
-synchronized(obj){}
-3)案例: 银行账户存取款线程同步问题
-class Bank{ //银行账户类
-	private String account;
-	private int balance;
-	//构造方法、getter/setter、toString方法省略
-	public synchronized void save(){ //存钱方法, 用第一种方式同步
-		int balance = getBalance();
-		balance += 100;
-		Thread.sleep(1000); //休眠，省略异常处理
-		setBalance(balance);
-		System.out.println("存钱后账户余额为: " + balance);
-	}
-	public void withdraw(){ //取钱方法, 用第二种方式同步
-		synchronized(this){
-			int balance = getBalance();
-			balance -= 200;
-			Thread.sleep(1000); //休眠，省略异常处理
-			setBalance(balance);
-			System.out.println("取钱后账户余额为: " + balance);
-		}
-	}
-}
-class SaveAccount implements Runnable{ //存款线程
-	Bank bank;
-	public SaveAccount(Bank bank){ this.bank = bank; }
-	@Override
-	public void run(){
-		bank.save();
-	}
-}
-class WithdrawAccount implements Runnable{	//取款线程
-	Bank bank;
-	public WithdrawAccount(Bank bank){ this.bank = bank; }
-	@Override
-	public void run(){
-		bank.withdraw();
-	}
-}
-public class Test{
-	public static void main(String[] args){
-		Bank bank = new Bank("1001", 1000);
-		Thread t1 = new Thread(new SaveAccount(bank));
-		Thread t2 = new Thread(new WithdrawAccount(bank));
-		t1.start();
-		t2.start();
-		try{
-			t1.join();
-			t2.join();
-		}catch(InterruptedException e){
-			e.printStackTrace();
-		}
-		System.out.println("账户余额为: " + bank.getBalance());
-	}
-}
-7, 线程间通信
-1)通过wait()和notifyAll()/notify()来实现进程间通信;
-2)案例: 生产者消费者线程通信
-class Box{ //商品容器类, 容器里只放一件商品
-	private int n; //商品的序号
-	private boolean flag = false; //false表示无商品，true表示有商品
-	public synchronized int get(){ //消费
-		if(!flag){ //容器空则等待
-			try{
-				wait();
-			}catch(InterruptedException e){
-				e.printStackTrace();
-			}
-		}
-		System.out.println("消费: " + n);
-		this.flag = false;
-		notifyAll(); //唤醒等待的其他进程(如生产者进程)
-		return n;
-	}
-	public synchronized void set(int n){ //生产
-		if(flag){ //容器满则等待
-			try{
-				wait();
-			}catch(InterruptedException e){
-				e.printStackTrace();
-			}
-		}
-		System.out.println("生产: " + n);
-		this.n = n;
-		this.flag = true;
-		notifyAll(); //唤醒等待的其他进程(如消费者进程)
-	}
-}
-class Producer implements Runnable{ //生产者进程
-	Box box;
-	public Producer(Box box){ this.box = box; }
-	@Override
-	public void run(){
-		int i = 1;
-		while(true){
-			box.set(i++);
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-}
-class Consumer implements Runnable{ //消费者进程
-	Box box;
-	public Consumer(Box box) {
-		this.box = box;
-	}
-	@Override
-	public void run() {
-		while(true) {
-			box.get();
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-}
-public class Test{
-	public static void main(String[] args){
-		Box box = new Box();
-		Thread t1 = new Thread(new Producer(box));
-		Thread t2 = new Thread(new Consumer(box));
-		t1.start();
-		t2.start();
-	}
-}
-
-
 >>输入输出流
 1, File类
 1)常用方法
@@ -2599,6 +2395,2075 @@ f:>mvn archetype:generate
 f:>cd mtest
 f:\mtest>mvn compile
 f:\mtest>mvn package
+
+
+>>MyBatis
+1, MyBatis开发流程
+1)引入MyBatis依赖;
+2)创建核心配置文件;
+3)创建实体类(Entity);
+4)创建Mapper映射文件;
+5)初始化SqlSessionFactory;
+6)利用SqlSession对象操作数据;
+2, 引入MyBatis依赖
+//pom.xml
+<dependencies>
+	<dependency> <!--MyBatis依赖-->
+		<groupId>org.mybatis</groupId>
+		<artifactId>mybatis</artifactId>
+		<version>3.5.1</version>
+	</dependency>
+	<dependency> <!--jdbc依赖-->
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<version>5.1.47</version>
+	</dependency>
+</dependencies>
+3, MyBatis环境配置
+//mybatis-config.xml, 该配置文件放在main/resources目录下
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <environments default="dev"> <!--默认指向的环境id-->
+        <!--开发环境-->
+        <environment id="dev">
+            <!--采用JDBC方式对数据库事务进行commit/rollback-->
+            <transactionManager type="jdbc"></transactionManager>
+            <!--采用连接池方式管理数据库连接-->
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/babytun?useUnicode=true&amp;characterEncoding=UTF-8"/>
+                <property name="root" value="root"/>
+                <property name="password" value="123456"/>
+            </dataSource>
+        </environment>
+        <!--生产环境-->
+        <environment id="prod">
+            <transactionManager type="jdbc"></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://192.168.1.155:3306/babytun?useUnicode=true&amp;characterEncoding=UTF-8"/>
+                <property name="username" value="root"/>
+                <property name="password" value="123456"/>
+            </dataSource>
+        </environment>
+    </environments>
+</configuration>
+4, SqlSessionFactory 与 SqlSession
+是MyBatis的核心对象, 用来加载配置文件从而初始化MyBatis框架, 并且创建SqlSession对象; SqlSessionFactory在应用中要全局唯一;
+而对数据库表的具体操作由SqlSession对象来完成, SqlSession使用JDBC方式与数据库交互;
+为了保证SqlSessionFactory全局唯一, 可以自定义个工具类, 如下:
+public class MyBatisUtils {
+	private static SqlSessionFactory sqlSessionFactory = null;
+	static { //静态块保证了只在类加载时初始化SqlSessionFactory对象一次
+		Reader reader = Resources.getResourceAsReader("mybatis-config.xml");
+		sqlSessionFactory = new SqlSessionFactory().build(reader);
+	}
+	public static SqlSession openSession(){
+		return sqlSessionFactory.openSession();
+	}
+	public static void closeSession(SqlSession sqlSession){
+		if(sqlSession != null){
+			sqlSession.close();
+		}
+	}
+}
+5, MyBatis数据查询
+1)创建实体类(Entity)
+新建com.imooc.mybatis.entity.Goods实体类, 对应 t_goods 数据表;
+Goods类的属性GoodsId 与 t_goods数据表的goods_id字段对应;
+要开启这种驼峰命名自动转换, 需要在 mybatis-config.xml 中添加配置:
+//mybatis-config.xml
+<settings>
+	<setting name="mapUnderscoreToCamelCase" value="true" />
+</setting>
+2)创建Mapper XML, 编写SQL语句
+在main/resources目录下新建mapper目录, 并在mapper目录下新建 goods.xml 配置文件;
+//goods.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="goods">
+	<!--无参查询-->
+    <select id="selectAll" resultType="com.imooc.mybatis.entity.Goods">
+        select * from t_goods order by goods_id desc limit 10
+    </select>
+	<!--单参数查询-->
+	<select id="selectById" parameterType="Integer" resultType="com.imooc.mybatis.entity.Goods">
+		select * from t_goods where goods_id = #{value}
+	</select>
+	<!--多参数查询, 参数类型指定为Map-->
+	<select id="selectByPriceRange" parameter="java.util.Map" resultType="com.imooc.mybatis.entity.Goods">
+		select * from t_goods where current_price between #{min} and #{max} limit #{limit}
+	</select>
+</mapper>
+需要在mybatis-config.xml文件中声明该mapper:
+//mybatis-config.xml
+<mappers>
+	<mapper resource="mappers/goods.xml"></mapper>
+</mappers>
+3)SqlSession执行SQL语句
+SqlSession sqlSession = MyBatisUtils.openSession();
+//无参查询
+List<Goods> list = sqlSession.selectList("goods.selectAll"); //如果"selectAll"全局唯一, 那么可以省略命名空间goods
+//单参数查询
+Goods goods = sqlSession.selectOne("goods.selectById", 1001);
+//多参数查询
+Map map = new HashMap();
+map.put("min", 500);
+map.put("max", 1000);
+map.put("limit", 10);
+List<Goods> list = sqlSession.selectList("goods.selectByPriceRange", map);
+MyBatisUtils.closeSession(sqlSession);
+6, 数据写操作
+事务: 客户端 -> 事务日志 ->(commit) ->数据库
+数据的写入操作要使用commit()来进行提交;
+1)插入<insert>
+//goods.xml
+<insert id="insert" parameterType="com.imooc.mybatis.entity.Goods">
+	insert into t_goods(title, sub_title, original_cost, current_price, discount, is_free_delivery, category_id)
+		values (#{title}, #{subTitle}, #{originalCost}, #{currentPrice}, #{discount}, #{isFreeDelivery}, #{categoryId})
+	<!--当插入成功后, 将新的主键id回添到java对象-->
+	<selectKey resultType="Integer" keyProperty="goodsId" order="AFTER">
+		select last_insert_id()
+	</selectKey>
+</insert>
+注: 也可以使用 useGeneratedKeys 属性来代替 <selectKey>元素, 如下: 
+<insert id="insert" parameterType="com.imooc.mybatis.entity.Goods"
+	useGeneratedKeys="true" keyProperty="goodsId" keyColulmn="goods_id">
+	insert into ***
+</insert>
+注: useGeneratedKeys属性与<selectKey>元素的区别:
+前者隐式将主键id回舔到java对象, 但仅支持"自增主键"的数据库;
+后者需要显示调用mysql的函数, 但支持所有关系型数据库;
+//java
+SqlSession sqlSession = null;
+try{
+	sqlSession = MyBatisUtils.openSession();
+	Goods goods = new Goods();
+	goods.setTitle("测试商品");
+	int num = sqlSession.insert("goods.insert", goods);
+	sqlSession.commit();
+}catch(Exception e){
+	e.printStackTrace();
+	sqlSession.rollback();
+}finally{
+	MyBatisUtils.closeSession(sqlSession);
+}
+2)更新<update>
+//goods.xml
+<update id="update" parameterType="com.imooc.mybatis.entity.Goods">
+	update t_goods set title=#{title}, category_id=#{categoryId} where goods_id=#{goodsId}
+</update>
+//java
+Goods goods = sqlSession.selectOne("goods.selectById", 1206);  //先获取到指定id的商品
+goods.setTitle("苹果");
+goods.setCatetoryId(5);
+sqlSession.update("goods.update", goods);
+sqlSession.commit();
+3)删除<delete>
+//goods.xml
+<delete id="delete" parameterType="Integer">
+	delete from t_goods where goods_id=#{id}
+</delete>
+//java
+sqlSession.delete("goods.delete", 1206);
+sqlSession.commit();
+7, 预防SQL注入攻击
+1)MyBatis的两种传参方式
+${}: 未经任何处理的文本替换;
+#{}: 使用预编译传值, 可以预防SQL注入;
+8, MyBatis动态SQL
+动态SQL是指根据参数数据来动态组织SQL;
+<select id="dynamicSQL" parameterType="java.util.Map" resultType="com.imooc.mybatis.entity.Goods">
+	select * from t_goods
+	<where>
+		<if test="categoryId != null">
+			and category_id = #{categoryId}
+		</if>
+		<if test="currentPrice != null">
+			and current_price &lt; #{currentPrice}
+		</if>
+	</where>
+</select>
+注: 也可以将<where>标签换成 where 1=1, 保证后面紧跟的and不会导致语法错误;
+9, MyBatis缓存
+1, 一级缓存默认开启, 缓存范围为SqlSession会话, 二级缓存手动开启, 缓存范围为 mapper namespace;
+缓存开启后, 默认所有查询操作均使用缓存, 写操作commit提交时会强制清空一二级缓存;
+2, 开启二级缓存
+//goods.xml
+<mapper namespace="goods">
+	<cache eviction="LRU" flushInterval="600000" size="512" readOnly="true" />
+	<select .....>
+</mapper>
+cache标签中各个元素的作用:
+1)eviction
+缓存的清除策略, 当缓存对象数量达到上限或者到达缓存清除时间, 自动触发对应算法对缓存对象清除;
+LRU: 最近最久未使用, 先移除, 默认
+FIFO: 先进先出
+SOFT: 软引用
+WEAK: 弱引用
+2)flushInterval
+代表间隔多长时间清除缓存, 单位毫秒;
+3)size
+缓存对象或集合(1个集合算1个)的数量上限;
+4)readOnly
+设置为true表示每次从缓存中取出的是缓存对象本身, 这种执行效率较高;
+3, useCache和flushCache属性
+<select ... useCache="false"> 表示该查询不使用缓存;
+<select/insert/update/delete ... flushCache="true">  表示执行完该SQL后(无需等到commit)马上强制清空缓存;
+10, 多表关联查询
+有两种使用方式:
+1)使用Map保存关联查询结果
+//goods.xml
+<mapper namespace="goods">
+	<!--参数类型用LinkedHashMap使查询结果与数据库的字段顺序保持一致-->
+	<select id="selectGoodsMap" resultType="java.util.LinkedHashMap">
+		select g.*, c.category_name from t_goods g left join t_category c on g.category_id = c.category_id;
+	</select>
+</mapper>
+//java
+List<Map> list = sqlSession.selectList("goods.selectGoodsMap");
+2)使用ResultMap将查询结果映射为Java对象
+//定义Java对象
+public class GoodsDto{
+	private Goods goods = new Goods();  //使用前面已经定义好的实体类
+	private String categoryName;
+	//省略constructor, getter, setter
+}
+//定义resultMap
+<resultMap id="rmGoods" type="com.imooc.mybatis.dto.GoodsDTO">
+	<!--设置主键字段与属性映射-->
+	<id property="goods.goodsId" column="goods_id" />
+	<!--设置非主键字段与属性映射-->
+	<result property="goods.title" column="title" />
+	<result property="categoryName" column="category_name" />
+</resultMap>
+<select id="selectGoodsDTO" resultMap="rmGoods">
+	select g.*, c.category_name from t_goods g left join t_category c on g.category_id = c.category_id
+</select>
+//java
+List<GoodsDTO> list = sqlSession.selectList("goods.selectGoodsDTO");
+11, 多表级联查询
+t_goods - t_goods_detail(一对多关系)
+//Goods.java
+public class Goods{
+	private Integer goodsId;
+	//其他t_goods表的属性
+	List<GoodsDetail> goodsDetails;  //一个商品对应多个商品详情
+}
+//GoodsDetail.java
+public class GoodsDetail{
+	private Integer gdId;
+	//其他t_goods_details表的属性
+	private Goods goods;  //一个商品详情对应一个商品
+}
+1)OneToMany级联查询
+//goods.xml
+<resultMap id="rmGoodsDetail" type="com.imooc.mybatis.entity.Goods">
+	<id property="goodsId" column="goods_id" />
+	<collection property="goodsDetails" select="goodsDetail.selectByGoodsId" column="goods_id" />
+</resultMap>
+<select id="selectOneToMany" resultMap="rmGoodsDetail">
+	select * from t_goods
+</select>
+2)ManyToOne级联查询
+//goods_detail.xml
+<resultMap id="rmDetailGoods" type="com.imooc.mybatis.entity.GoodsDetail">
+	<id property="gdId" column="gd_id" />
+	<result property="goods_id" column="goods_id" />
+	<association property="goods" select="goods.selectById" column="goods_id" />
+</resultMap>
+<select id="selectManyToOne" resultMap="rmDetailGoods">
+	select * from t_goods_detail
+</select>
+12, PageHelper分页插件
+1)mavan引入PageHelper与jsplparser依赖
+<!--pagehelper-->
+<dependency>
+	<groupId>com.github.pagehelper</groupId>
+	<artifactId>pagehelper</artifactId>
+	<version>5.1.10</version>
+</dependency>
+<!--jsqlparser-->
+<dependency>
+	<groupId>com.github.jsqlparser</groupId>
+	<artifactId>jsqlparser</artifactId>
+	<version>2.0</version>
+</dependency>
+2)mybatis-config.xml增加Plugin配置
+<plugins>
+	<!--启用PageHelper分页插件-->
+	<plugin interceptor="com.github.pagehelper.PageInterceptor">
+		<property name="helperdialect" value="mysql"/>
+		<property name="reasonable" value="true"/>
+	</plugin>
+</plugins>
+3)代码中使用PageHelper.startPage()自动分页
+//goods.xml
+<!--分页查询-->
+<select id="selectPage" resultType="com.imooc.mybatis.entity.Goods">
+	select * from t_goods where current_price &lt; 1000
+</select>
+//java
+SqlSession sqlSession = MyBatisUtil.openSession();
+PageHelper.startPage(2, 10);
+Page<Goods> page= (Page) sqlSession.selectList("goods.selectPage");
+System.out.println("总页数: " + page.getPages());
+System.out.println("总记录数: " + page.getTotal());
+System.out.println("开始行号: " + page.getStartRow());
+System.out.println("结束行号: " + page.getEndRow());
+System.out.println("当前页码: " + page.getPageNum());
+List<Goods> data = page.getResult();  //当前页数据
+for(Goods g : data) {
+	System.out.println(g);
+}
+MyBatisUtil.closeSession(sqlSession);
+13, MyBatis批处理
+//goods.xml
+<!--批处理插入-->
+<insert id="batchInsert" parameterType="java.util.List">
+	insert into t_goods(title, sub_title, ...) values 
+	<forearh collection="list" item="item" index="index" separator=",">
+		(#{item.title, item.subTitle, ...}
+	</foreach>
+</insert>
+<!--批处理删除-->
+<delete id="batchDelete" parameterType="java.util.List">
+	delete from t_goods where goods_id in
+	<foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+		#{item}
+	</foreach>
+</delete>
+//java
+List<Goods> list = new ArrayList<>();
+for(int i = 1; i <= 10000; i++){
+	Goods goods = new Goods();
+	goods.setTitle("测试商品" + i);
+	//setter其他字段
+	list.add(goods);
+}
+sqlSession.insert("goods.batchInsert", list);
+sqlSession.commit();
+注: 批量插入的局限:
+1)无法获得插入数据的id;
+2)批量生成的SQL太长, 可能会被服务器拒绝;
+15, MyBatis注解开发
+1)定义接口, 将SQL通过注解写在接口方法上
+pacakge com.imooc.mybatis.dao;
+public interface GoodsDAO{
+	@Select("select * from t_goods where goods_id = #{id}")
+	public Goods selectById(@Param("id") int id);
+}
+2)在mybatis-config.xml中增添mapper配置
+<mappers>
+	<mapper class="com.imooc.mybatis.dao.GoodsDAO" />
+	<!--或配置整个dao包-->
+	<pacakge name="com.imooc.mybatis.dao" />
+</mappers>
+3)java
+GoodsDAO goodsDAO = sqlSession.getMapper(GoodsDAO.class);
+Goods goods = goodsDAO.selectById(1001);
+
+
+>>日志管理
+1, 常用的日志组件有 log4j, logback等, 以logback为例:
+//在pom.xml中引入logback依赖
+<dependency>
+	<groupId>ch.qos.logback</groupId>
+	<artifactId>logback-classic</artifactId>
+	<version>1.2.3</version>
+</dependency>
+//resources/logback.xml, 定义logback的配置
+<configuration>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.sss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!--
+        日志输出级别(优先级高到低):
+        error: 错误 - 系统的故障日志
+        warn: 警告 - 存在风险或使用不当
+        info: 一般性消息
+        debug: 程序内部用于调试信息
+        trace: 程序运行的跟踪信息
+    -->
+    <root level="debug">
+        <appender-ref ref="console" />
+    </root>
+</configuration>
+注: 开发阶段一般将level设置为debug, 而程序上线后应将level设置成info或更高级别;
+2, 将日志记录到文件
+//resources/logback.xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%thread] %d %level %logger{10} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="log" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>F:/logs/history.%d.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>[%thread] %d %level %logger{10} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="debug">
+        <appender-ref ref="console" />
+    </root>
+    <logger name="com.imooc.restful.interceptor.MyInterceptor" level="info" additivity="false">
+		<appender-ref ref="log"/>
+	</logger>
+</configuration>
+注: RollingFileAppender表示产生按天滚动的日志文件;
+additivity属性为false表示只向文件而不向控制台输出;
+//使用拦截器将用户的访问信息输出到文件
+public class MyInterceptor implements HandlerInterceptor{
+	private Logger logger = LoggerFactory.getLogger(MyInterceptor.class);
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append(request.getRemoteAddr());
+        sb.append(" | ");
+        sb.append(request.getRequestURL());
+        sb.append(" | ");
+        sb.append(request.getHeader("user-agent"));
+        sb.append(" | ");
+        logger.info(sb.toString());  //输出info级别的日志
+        return true;
+    }
+}
+
+
+>>Spring IoC
+1, Spring框架的核心是IoC和AOP; 
+IoC(Inverse of Control)控制反转, 由IoC容器来创建与管理对象, 使用者从IoC容器获取对象;
+DI(Dependency Injection)依赖注入是具体技术实现, 在java中利用反射来实现对象注入;
+2, 管理bean对象的三种配置方式
+1)基于XML配置bean
+2)基于注解配置bean
+3)基于java代码配置bean
+3, 基于XML实现IoC
+1)引入Spring依赖 - pom.xml
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-context</artifactId>
+	<version>5.2.6.RELEASE</version>
+</dependency>
+2)xml配置bean对象 - resources/applicationContext.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--利用构造函数实例化对象: 默认构造函数-->
+    <bean id="apple1" class="com.imooc.spring.ioc.entity.Apple" />
+	<!--利用构造函数实例化对象: 带参构造函数-->
+	<bean id="apple2" class="com.imooc.spring.ioc.entity.Apple">
+		<constructor-arg name="title" value="红富士" />
+		<constructor-arg name="origin" value="欧洲" />
+		<constructor-arg name="color" value="红色" />
+	</bean>
+	<!--利用setter给对象赋值(注入静态属性)(会首先调用默认构造函数)-->
+	<bean id="sweetApple" class="com.imooc.spring.ioc.entity.Apple">
+        <property name="title" value="红富士" />
+        <property name="color"  value="红色" />
+        <property name="origin" value="欧洲" />
+    </bean>
+	<!--利用工厂获取对象: 工厂的静态方法(实际中使用较少)-->
+	<bean id="apple3" class="com.imooc.spring.ioc.factory.AppleFactory" factory-method="createSweetApple" />
+	<!--利用工厂获取对象: 工厂的实例方法(实际中使用较少)-->
+	<bean id="factory" class="com.imooc.spring.ioc.factory.AppleFactory" />
+	<bean id="apple4" factory-bean="factory" factory-method="createSoftApple" />
+	<!--注入对象: 利用构造函数-->
+	<bean id="andy" class="com.imooc.spring.ioc.entity.Child">
+		<constructor-arg name="name" value="安迪" />
+		<constructor-arg name="apple" ref="sweetApple" />
+	</bean>
+	<!--注入对象: 利用setter-->
+	<bean id="lily" class="com.imooc.spring.ioc.entity.Child">
+        <property name="name" value="莉莉" />
+        <property name="apple" ref="sweetApple" />
+    </bean>
+</beans>
+注: <bean>标签里的id也可以写成name, id只支持一个标识, 而name可支持多个标识, 如 name="apple1 fruit1";
+注: id和name都允许在不同配置文件中出现重复, 后加载的覆盖前加载的;
+3)java: 从IoC容器获取bean
+//加载单个配置文件
+ApplicationContext context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");  //ApplicationContext对象就表示IoC容器
+Apple sweetApple = context.getBean("sweetApple", Apple.class);
+//Apple sweetApple = (Apple)context.getBean("sweetApple");
+//加载多个配置文件
+String[] configLocations = new String[]{"classPath:applicationContext-1.xml", "classPath:applicationContext-2.xml"};
+ApplicationContext context = new ClassPathXmlApplicationContext(configLocations);
+4)路径表达式
+classpath:config.xml  //加载classpath(即target/classes)下的指定文件
+classpath:com/imooc/config.xml  //classpath下(不包含jar)的指定包中的文件
+classpath*:com/imooc.config.xml  //classpath下(包含jar)的指定包中的文件
+classpath:config-*.xml  //classpath下以config开头的文件
+classpath:com/**/config.xml  //classPath下com包下包含任何子包里面的config.xml
+file:c:/config.xml  //c盘根路径的config.xml
+5)注入集合类型
+//注入List/Set
+<bean id="..." class="...">
+	<property name="someList">
+		<list>
+			<value>具体值</value> <!--List元素为基本类型-->
+			<ref bean="beanId"></ref> <!--List元素为对象-->
+		</list>
+	</property>
+</bean>
+注: 注入Set只需把list改成set;
+//注入Map
+<bean id="..." class="...">
+	<property name="someMap">
+		<map>
+			<entry key="k1" value="v1" /> <!--value为基本类型-->
+			<entry key="k2" value-ref="beanId" /> <!--value为对象: 引用外部bean-->
+			<entry key="k3">
+				<bean class="...">
+					...
+				</bean>
+			</entry> <!--value为对象: 内部bean-->
+		</map> 
+	</property>
+</bean>
+//注入Properties
+<bean id="..." class="...">
+	<property name="someProperties">
+		<props>
+			<prop key="k1">v1</prop>
+		</props>
+	</property>
+</bean>
+注: properties的key和value都必须是字符串类型;
+在java中获取property的值使用getProperty()函数: 
+context.getBean("company", Company.class).getInfo().getProperty("address");
+6)查看容器内对象
+String[] beanNames = context.getBeanDefinitionNames();
+for(String beanName: beanNames){
+	//名称: beanName
+	//内容: context.getBean(beanName)
+	//类型: context.getBean(beanName).getClass().getName()
+}
+7)IoC容器的销毁
+((ClassPathXmlApplicationContext)context).registerShutdownHook();
+4, bean对象的作用域及生命周期
+<bean id="..." class=".." scope="..." />
+1)scope属性清单
+singleton  //单例(默认值), 每个容器内全局唯一
+prototype  //多例, 每次使用都会创建一个实例
+request  //web环境下, 每一次独立请求存在唯一实例
+session  //web环境下, 每一个session存在唯一实例
+websocket  //每一次WebSocket连接存在唯一实例
+2)单例与多例的区别
+-----------------------------------------------------------
+				singleton			prototype
+对象数量	   	全局唯一			存在多个
+实例化时机		IoC容器启动时		getBean()或对象注入时
+线程安全问题	存在			不存在
+执行效率		高					低
+------------------------------------------------------------
+注: 实际使用中dao、service及controller对象一般都默认为单例;
+3)bean的生命周期
+<bean id="..." class="..." init-method="init" destroy-method="destroy">
+	//...
+</bean>
+生命周期:
+(容器初始化解析XML) -> 对象实例化 -> (为对象注入属性) -> 调用init-method初始化方法 -> (容器初始化完毕) 
+	-> 执行业务代码 -> (容器销毁) -> 调用destroy-method方法释放资源 -> (容器销毁完毕)
+5, 基于注解实现IoC
+注解是将配置信息写在源代码中, 适合轻量级的应用项目;
+1)Spring中三类注解
+组件类型注解: 声明当前类的功能;
+自动装配注解: 根据属性特征自动注入对象;
+元数据注解: 更细化的辅助IoC容器管理对象的注解;
+2)组件类型注解
+@Component: 通用注解, 该注解描述的类将被IoC容器管理并实例化;
+@Controller: 语义注解, 说明当前类是MVC应用中的控制器类;
+@Service: 语义注解, 说明当前类是Service业务服务类;
+@Repository: 语义注解, 说明当前类用于业务持久层, 通常描述对应Dao类;
+注: 四种组件类型注解直接放在类名上;
+括号内为bean的id, id可省略, 默认为首字母小写的类名;
+@Repository("userDao")
+public class UserDao{
+	//...
+}
+3)XML配置开启组件扫描
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+        <!--在IoC容器初始化时自动扫描四种组件注解并完成实例化-->
+        <context:component-scan base-package="com.imooc" />
+</beans>
+4)自动装配注解
+按类型装配(不推荐): @Autowired, @Inject;
+按名称装配: @Resource(优先按名称, 再按类型只能匹配);
+注: 自动装配注解放在属性或setter方法上, 如果放在属性上, 则底层直接给属性赋值, 不再执行setter方法;
+@Resource(name="userDao")  //name属性可省略
+如果设置了name属性, 则按name在IoC容器中将bean注入;
+如果未设置name属性, 则
+以属性名作为bean name在IoC容器中匹配bean, 如有匹配则注入;
+若按属性名未匹配, 则按类型匹配, 同@Autowired;
+使用建议: 在使用@Resource对象时推荐设置name或保持属性名与bean名称一致;
+5)元数据注解
+为IoC容器管理bean对象提供辅助功能的注解;
+@Primary  //按类型装配时出现多个相同类型对象, 拥有此注解对象优先被注入
+@PostConstruct  //描述方法, init-method配置的注解版本
+@PreDestroy  //描述方法, destroy-method配置的注解版本
+@Scope  //设置对象的scope属性
+@Value  //为属性注入静态数据
+注: @Value的使用:
+@Service
+public class UserService{
+	@Value("imooc.com")
+	private String metaData;
+}
+实际项目中经常把数据写在配置文件中, 分为以下三步:
+//添加配置文件: resources/config.properties
+metaData=imooc.com
+connection.driver=jdbc
+connection.user=root
+connection.password=123456
+//在applicationContext.xml中添加配置用来加载config.properties
+<context:property-placeholder location="classpath:config.properties" />
+//java程序中使用注解@Value
+@Value("${metaData}")
+private String metaData;
+@Value("${connection.password}")
+private String password;
+6, 基于Java Config实现IoC
+1)优势
+完全摆脱XML的束缚, 使用独立java类管理对象与依赖;
+可对配置进行集中管理, 避免注解配置的分散化;
+可以在编译时进行依赖检查;
+2)java config核心注解
+@Configuration  //描述类, 说明当前类是配置类, 完全替代xml
+@Bean  //描述方法, 方法返回对象将被IoC容器管理, beanId默认为方法名;
+@ImportResource  //描述类, 加载静态文件, 可使用@Value注解获取
+@ComponentScan  //描述类, 同xml的<context:component-scan>标签
+3)实例
+//Config.java
+@Configuration
+@ComponentScan(basePackages="com.imooc")  //扫描其他的组件注解
+public class Config {  //当前类是配置类, 用于替代applicationContext.xml
+	@Bean
+	public UserDao userDao(){  //利用方法创建对象, beanId=方法名
+		UserDao userDao = new UserDao();
+		return userDao;
+	}
+	@Bean
+	@Scope("prototype")  //可与注解配置搭配使用, 如设置为多例
+	@Primary
+	public UserService userService(UserDao userDao){  //依赖注入, 先按name注入, name不存在则按类型注入
+		UserService userService = new UserService();
+		userService.setUserDao(userDao);
+		return userService;
+	}
+}
+//SpringApplication.java
+ApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
+7, Spring Test测试模块
+1)Spring Test可对JUnit进行整合, 通过Spring Test可在JUnit单元测试时自动初始化IoC容器;
+2)整合过程
+maven工程依赖spring-test;
+利用@RunWith与@ContextConfiguration描述测试用例类;
+3)实例
+@RunWith(SpringJUnit4ClassRunner.class)  //将junit4的执行权交由Spring Test, 在测试用例执行前自动初始化IoC容器
+@ContextConfiguration(locations = {"classpath:applicationContext.xml"})  //说明要加载的配置文件
+public class SpringTestor {
+	@Resource
+	private UserService userService;
+	@Test
+	public void testUserService(){
+		userService.createUser();
+	}
+}
+
+
+>>Spring AOP
+1, 基本概念
+AOP(Aspect Oriented Programming)面向切面编程, 将通用的、与业务无关的功能抽象封装为切面类, 
+切面可配置在目标方法的执行前或执行后运行, 做到即插即用;
+2, aop的使用步骤
+1)在pom.xml中引入ioc与aop依赖
+<dependencies>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-context</artifactId>
+		<version>5.2.6.RELEASE</version>
+	</dependency>
+	<!--aspectjweaver是spring aop的底层依赖-->
+	<dependency>
+		<groupId>org.aspectj</groupId>
+		<artifactId>aspectjweaver</artifactId>
+		<version>1.9.5</version>
+	</dependency>
+</dependencies>
+2)编写切面类与切面方法
+public class MethodAspect{  //切面类
+	public void printTime(JoinPoint joinPoint){  //切面方法, 必须包含JoinPoint连接点参数
+		SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss sss");
+		String time = sdf.format(new Date());
+		String className = joinPoint.getTarget().getClass().getName();  //获取目标类的名称
+		String methodName = joinPoint.getSignature().getName();  //获取目标方法的名称
+		System.out.println("--->" + time + ":" + className + "." + methodName);
+	}
+}
+3)在applicationContext.xml中进行aop配置
+<!--ioc配置-->
+<bean id="methodAspect" class="com.imooc.spring.aop.aspect.MethodAspect"/>
+<!--aop配置-->
+<aop:config>
+	<!--PointCut 切点, 使用execution表达式描述切面的作用范围-->
+	<aop:pointcut id="pointcut" expression="execution(public * com.imooc..*.*(..))"></aop:pointcut>
+	<!--定义切面类-->
+	<aop:aspect ref="methodAspect">
+		<aop:before method="printExecutionTime" pointcut-ref="pointcut"/>
+	</aop:aspect>
+</aop:config>
+3, 关键概念
+1)Aspect 
+切面, 具体的可插拔组件功能类, 通常一个切面只实现一个通用功能;
+2)Target Class/Method
+目标类、目标方法, 指真正要执行与业务相关的方法;
+3)PointCut
+切点, 使用execution表达式说明切面要作用在系统的哪些类上;
+4)JoinPoint
+连接点, 切面运行过程中是包含了目标类/方法元数据的对象;
+5)Advice 
+通知, 说明具体的切面的执行时机, Spring包含了五种不同类型通知;
+4, JoinPoint核心方法
+1)getTarget()
+获取IoC容器内目标对象;
+2)getSignature()
+获取目标方法;
+3)getArgs()
+获取目标方法参数;
+Object[] args = joinPoint.getArgs();
+System.out.println("--->参数个数: " + args.length);
+for(Object arg : args){
+	System.out.print(arg + "  ");
+}
+5, PointCut切点表达式
+1)切点表达式描述切面的作用范围;
+execution(public * com.imooc..*.*(..)),  可匹配如下具体的方法:
+public void com.imooc.spring.ioc.service.UserService.createUser(形参1, 形参2);
+public * com.imooc..*Service.*(..)可匹配如UserService等以Service结尾的类的任意方法;
+void com.imooc..*.*(..)可匹配没有返回值的方法;
+* com.imooc..*.*()可匹配没有参数的方法;
+* com.imooc..*.*(String, *)可匹配只有两个参数并且第一个参数为String类型的方法;
+* com.imooc..*Service.create*(..)可匹配以Service结尾的类并且以create开头的方法;
+其中, * - 通配符, .. - 包通配符, (..) - 参数通配符; 
+public可省略, 默认为public;
+6, AOP通知
+AOP有五种通知类型
+1)Before Advice  //前置通知, 目标方法运行前执行;
+<aop:before method="doBefore" pointcut-ref="pointcut"/>
+2)After Advice  //后置通知, 目标方法运行后执行, 类似于finally;
+<aop:after method="doAfter" pointcut-ref="pointcut"/>
+注: 后置通知无法获取目标方法的返回值或内部抛出的异常, 如果需要必须使用下面两种通知类型;
+3)After Returning Advice  //返回后通知, 目标方法返回数据后执行;
+//切面方法
+public String doAfterReturning(JoinPoint joinPoint, Object ret){
+	System.out.println("<---触发返回后通知, 返回值: " + ret);
+}
+//配置
+<aop:after-returning method="doAfterReturning" pointcut-ref="pointcut" returning="ret"/>
+注: 返回后通知, 切面方法需提供第二个参数用来接收目标方法的返回值;
+4)After Throwing Advice  //异常通知, 目标方法抛出异常后执行;
+//切面方法
+public void doAfterThrowing(JoinPoint joinPoint, Throwable th){
+	System.out.println("<---触发异常通知, 异常: " + th.getMessage());
+}
+//目标方法
+public void createUser(String username){
+	if(username.equals("zhao")){
+		throw new RuntimeException("用户已存在");
+	}
+}
+//配置
+<aop:after-throwing method="doAfterThrowing" pointcut-ref="pointcut" throwing="th"/>
+5)Around Advice  //环绕通知, 自定义通知执行时机, 可决定目标方法是否运行;
+//切面方法
+public Object check(ProceedingJoinPoint pjp){  //ProceedingJoinPoint是JoinPoint的升级版, 在原有功能外, 还可以控制目标方法是否执行
+	//方法执行前的操作
+	long stime = new Date().getTime();
+	//执行目标方法, 返回目标方法的返回值
+	Object ret = pjp.proceed();
+	//方法执行后的操作
+	long etime = new Date().getTime();
+	System.out.println("方法的执行时间: " + (etime-stime) + "毫秒");
+	return ret;
+}
+//配置
+<aop:around method="check" pointcut-ref="pointcut"/>
+注: 环绕通知的功能最强大, 可完成前面四种基本通知的操作;
+7, aop的注解形式
+1)pom.xml中增加相关依赖
+2)applicationContext.xml中开启IoC组件扫描以及启用AOP注解模式
+<context:component-scan base-package="com.imooc" />
+<aop:aspectj-autoproxy />
+3)在切面类和切面方法中使用注解
+@Component  //标记切面类为组件
+@Aspect  //切面类的注解
+public class MethodChecker{
+	@Around("execution(* com.imooc..*Service.*(..))")  //环绕通知的注解, 参数为切点表达式
+	public Object check(ProceedingJoinPoint pjp){
+		//....
+	}
+}
+注: 其他几种通知的注解分别为: @Before, @After, @AfterReturning, @AfterThrowing;
+8, aop的实现原理
+1)代理模式-静态代理
+代理模式是指通过代理对象来对原有对象(委托类的对象)的功能进行扩展;
+静态代理是值必须手动创建代理类的代理模式;
+//UserService(接口)
+public interface UserService{
+	public void createUser();
+}
+//UserServiceImpl(实现类)
+public class UserServiceImpl implements UserService{
+	public void createUser(){
+		System.out.println("执行创建用户业务逻辑");
+	}
+}
+//UserServiceProxy(代理类)
+public class UserServiceProxy implements UserService{
+	private UserService userService;  //持有委托类的对象
+	public UserServiceProxy(UserService userService){	//通过带参构造函数实例化委托类对象
+		this.userService = userService;
+	}
+	public void createUser(){  //对委托类的目标方法进行功能扩展
+		System.out.println("当前时间: " + new Date());
+		userService.createUser();
+	}
+}
+注: 可以嵌套使用代理模式;
+2)JDK动态代理
+根据接口的结构自动生成代理类, 来对目标方法进行扩展;
+3)Spring AOP基于代理类实现功能动态扩展, 有两种形式:
+目标类实现了某接口, 通过JDK动态代理实现功能扩展;
+目标类没有实现接口, 通过CGLib组件实现功能扩展;
+
+
+>>Spring JDBC
+1, JdbcTemplate是Spring JDBC的核心类, 提供数据CRUD方法;
+Spring JDBC是对JDBC轻量级的封装, 比Mybatis的执行效率要高;
+2, Spring JDBC的使用步骤
+1)maven工程引入spring-jdbc依赖;
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-context</artifactId>
+	<version>5.2.6.RELEASE</version>
+</dependency>
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-jdbc</artifactId>
+	<version>5.2.6.RELEASE</version>
+</dependency>
+<dependency>
+	<groupId>mysql</groupId>
+	<artifactId>mysql-connector-java</artifactId>
+	<version>8.0.27</version>
+</dependency>
+2)applicationContext.xml中配置DataSource数据源;
+<!--(Datasource)数据源-->
+<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	<property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+	<property name="url" value="jdbc:mysql://localhost:3306/imooc?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf-8&amp;serverTimezone=Asia/Shanghai&amp;allowPublicKeyRetrieval=true"/>
+	<property name="username" value="root"/>
+	<property name="password" value="123456"/>
+</bean>
+<!--IoC: JdbcTemplate-->
+<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+	<property name="dataSource" ref="dataSource"/>
+</bean>
+<!--IoC: Dao-->
+<bean id="employeeDao" class="com.imooc.spring.jdbc.dao.EmployeeDao">
+	<property name="jdbcTemplate" ref="jdbcTemplate"/>
+</bean>
+3)在dao中注入JdbcTemplate对象, 实现数据CRUD;
+public class EmployeeDao{
+	private JdbcTemplate jdbcTemplate;
+	//省略getter/setter
+	public Employee findById(int eno){
+		String sql = "select * from employee where eno = ?";
+        Employee employee = jdbcTemplate.queryForObject(sql, new Object[]{eno}, new BeanPropertyRowMapper<Employee>(Employee.class));
+        return employee;
+	}
+}
+3, JdbcTemplate的数据查询方法
+1)queryForObject()  //查询单条数据
+String sql = "select * from employee where eno = ?";
+Employee employee = jdbcTemplate.queryForObject(sql, new Object[]{1001}, new BeanPropertyRowMapper<Employee>(Employee.class));
+2)query()  //查询多条数据
+String sql = "select * from employee where dname = ?";
+List<Employee> list = jdbcTemplate.query(sql, new Object[]{"研发部"}, new BeanPropertyRowMapper<Employee>(Employee.class));
+3)queryForList()  //将查询结果作为Map进行封装
+String sql = "select eno as empno, salary as sal from employee where dname = ?";
+List<Map<String, Object>> map = jdbcTemplate.queryForList(sql, new Object[]{"研发部"});
+4, JdbcTemplate的数据写入方法
+数据的插入、更新、删除等写操作统一使用update()函数;
+1)数据插入
+String sql = "insert into employee(eno, ename) values (?, ?)";
+jdbcTemplate.upadte(sql, new Object[]{1001, "zhao"});
+2)数据更新
+String sql = "update employee set salary = salary + ? where eno = ?";
+int count = jdbcTemplate.update(sql, new Object[]{500, 1001});  //返回更新的数据条数
+3)数据删除
+String sql = "delete from employee where eno = ?";
+int count = jdbcTemplate.update(sql, new Object[]{1001});  //返回删除的数据条数
+5, 编程式事务
+1)编程式事务是指通过代码手动提交与回滚事务;
+SpringJDBC通过TransactionManager事务管理器实现事务控制, commit/rollback;
+2)编程时事务的步骤
+//applicationContext.xml
+<!--IoC: 事务管理器-->
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	<property name="dataSource" ref="dataSource" />
+</bean>
+<!--IoC: service中注入事务管理器属性-->
+<bean id="employeeService" class="com.imooc.spring.jdbc.service.EmployeeService">
+	<property name="employeeDao" ref="employeeDao"/>
+	<property name="transactionManager" ref="transactionManager"/>
+</bean>
+//EmployeeService.java
+public EmployeeService{
+	private EmployeeDao employeeDao;
+	private DataSourceTransactionManager transactionManager;
+	//省略getter/setter
+	public void batchImport(){
+        //事务默认的标准配置
+        TransactionDefinition definition = new DefaultTransactionDefinition();
+        //开始一个事务
+        TransactionStatus status = transactionManager.getTransaction(definition);
+        try {
+            //....
+            transactionManager.commit(status); //事务提交
+        } catch (Exception e) {
+            transactionManager.rollback(status); //事务回滚
+            e.printStackTrace();
+        }
+    }
+}
+6, 声明式事务
+1)声明式事务是指通过配置形式自动实现事务控制, 本质就是AOP环绕通知;
+当目标方法执行成功时, 自动提交事务; 当目标方法抛出运行时异常时, 自动回滚事务;
+2)声明式事务的步骤
+//pom.xml中加入aop的依赖
+//applicationContext.xml中的配置
+配置声明式事务需要三个步骤, 完整的applicationContext.xml如下:
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        https://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!--数据源-->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="url"
+                  value="jdbc:mysql://localhost:3306/imooc?useSSL=false&amp;useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=Asia/Shanghai&amp;allowPublicKeyRetrieval=true"/>
+        <property name="username" value="root"/>
+        <property name="password" value="123456"/>
+    </bean>
+    <!--IoC: JdbcTemplate-->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+	<!--IoC: Dao-->
+    <bean id="employeeDao" class="com.imooc.spring.jdbc.dao.EmployeeDao">
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    </bean>
+	<!--IoC: Service-->
+    <bean id="employeeService" class="com.imooc.spring.jdbc.service.EmployeeService">
+        <property name="employeeDao" ref="employeeDao"/>
+    </bean>
+    <!--第一步: IoC: 事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--第二步: 事务通知配置-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="batchImport" propagation="REQUIRED"/>
+			<tx:method name="batch*" propagation="REQUIRED"/>  <!--使用通配符*来匹配多个方法-->
+			<tx:method name="find*" propagation="NOT-SUPPORTED" read-only="true"/> <!--表示对该类方法不使用事务-->
+			<tx:method name="*" propagation="REQUIRED"/> <!--其他方法-->
+        </tx:attributes>
+    </tx:advice>
+    <!--第三步: 定义声明式事务的作用范围-->
+    <aop:config>
+        <aop:pointcut id="pointcut" expression="execution(* com.imooc..*Service.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut"/>
+    </aop:config>
+</beans>
+7, 事务传播方式
+1)事务传播行为是指多个拥有事务的方法在嵌套调用时的事务控制方式;
+2)配置方式
+XML: <tx:method name="..." propagation="REQUIRED"/>
+注解: @Transactional(propagation=Propagation.REQUIRED)
+3)事务传播的七种类型
+事务传播有七种类型, 80%以上的场景都使用默认的"REQUIRED";
+REQUIRED(默认): f1(f2, f3), 以f1的事务来运行, f2和f3要么都完成, 要么都不完成;
+REQUIRES_NEW: f1(f2, f3), f2和f3的事务独立运行;
+NOT_SUPPORTED: 以非事务方式运行, 一般用于查询操作;
+8, 注解配置声明式事务
+//applicationContext.xml中的配置
+<!--省略: DataSource数据源、IoC:jdbcTemplate, IoC:事务管理器-->
+<Context:component-scan base-package="com.imooc"/>  <!--开启组件扫描-->
+<tx:annotation-driven transaction-manager="transactionManager"/>  <!--启用注解形式声明式事务-->
+//Service
+@Service
+@Transactional
+public class EmployeeService{
+	@Resource
+	private EmployeeDao employeeDao;
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void importJob1(){
+		//....
+	}
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void importJob2(){
+		//....
+	}
+}
+注: @Transactional注解放在类上, 表示将声明式事务应用于该类的所有方法, 默认事务传播为REQUIRED;
+放在方法上, 表示仅适用于该方法; 方法注解覆盖类注解;
+
+
+>>Spring MVC
+1, idea中将普通maven工程配置成web工程的步骤
+1)File -> Project Structure -> Facets -> + -> 在右边的配置面板将两个目录设置为: 
+	E:\java\workspace\test\src\main\webapp\WEB-INF\web.xml 与
+	E:\java\workspace\test\src\main\webapp;
+2)Edit Configuration -> + -> Tomcat Server -> 右边的配置面板进行相关配置;
+2, Spring MVC的配置步骤
+1)maven中引入spring-webmvc依赖
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-webmvc</artifactId>
+	<version>5.1.9.RELEASE</version>
+</dependency>
+2)web.xml配置DispatcherServlet
+<servlet>
+	<servlet-name>springmvc</servlet-name>
+	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+	<!--在IoC容器启动时要加载的配置文件-->
+	<init-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:applicationContext.xml</param-value>
+	</init-param>
+	<load-on-startup>0</load-on-startup> 
+</servlet>
+<servlet-mapping>
+	<servlet-name>springmvc</servlet-name>
+	<url-pattern>/</url-pattern>
+</servlet-mapping>
+注: DispatcherServlet是Spring MVC最核心的对象, 用于拦截http请求, 并根据请求的url调用与之对应的controller方法;
+配置load-on-startup是在web应用启动时自动创建Spring IoC容器, 并初始化DispatcherServlet, 如果不设置load-on-startup, 则在第一次请求url时初始化DispatcherServlet;
+一般情况下DispatcherServlet只需要处理后台服务器的请求, 不需要处理静态页面, 所以, 建议使用/;
+3)applictionContext配置mvc标记
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mv="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/mvc
+            http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+    <!--开启组件扫描-->
+    <context:component-scan base-package="com.imooc.springmvc"/>
+    <!--启用Spring MVC的注解开发模式-->
+    <mvc:annotation-driven/>
+    <!--将图片/JS/CSS等静态资源排除在外, 可提高执行效率-->
+    <mvc:default-servlet-handler/>
+</beans>
+4)开发Controller控制器
+@Controller
+public class TestController {
+    @GetMapping("/t")
+    @ResponseBody //直接向响应输出字符串数据, 不跳转页面
+    public String test(){
+        return "hello mvc";
+    }
+}
+注: 运行时还要先点击 File -> Project Structure -> Artifacts, 将面板工程名下面的所有依赖包全部放入左边的lib目录下;
+3, 工程结构
+1)源代码目录结构:
+src
+	main
+		java
+			com.imooc.springmvc.controller
+				TestController
+		resources
+			applicationContext.xml
+		webapp
+			WEB-INF
+				web.xml
+			index.html
+2)运行后out的目录结构:
+out
+	artifacts
+		test
+			META-INF
+				MANIFEST.MF
+			WEB-INF
+				classes
+					com.imooc.springmvc.controller
+						TestController.java
+				lib
+					...(各种spring.jar)
+				web.xml
+			index.html
+注: index.html与TestController.java可当作是同一级相对路径;
+4, Spring MVC的处理流程
+请求 -> DispatcherServlet("/") -> TestController.test()("/t") -> DispatcherServlet -> 响应;
+5, URL Mapping
+1)URL Mapping是指将URL与Controller方法绑定;
+2)URL Mapping注解
+@RequestMapping("/r")  //通用绑定
+@GetMapping("/g")  //绑定Get请求, 等价于@RequestMapping(value="/g", method=RequestMethod.GET)
+@PostMapping("/p")  //绑定Post请求, 等价于@RequestMapping(value="/p", method=RequestMethod.POST)
+6, 请求参数
+1)接收请求参数的三种方式:
+//使用Controller方法参数接收
+public String test(String ename, @RequestParam("depart_name") String dname){
+	return "ename: " + ename + ", dname: " + dname;
+}
+注: 参数名必须与请求名一致, 如果请求名包含下划线, 则参数必须使用@RequestParam注解来将参数名与请求名进行关联;
+@RequestParam(value="username", defaultValue="zhao") String name 表示使用接收username的请求名, 并且如果没有username的请求, 则设置一个默认值;
+//使用Java Bean接收数据
+public String test(User user){
+	return user.getUsername() + ": " + user.getPassword();
+}
+注: User实体类的字段名必须与请求名保持一致;
+//使用Map接收数据
+public String test(@RequestParam Map map){
+	return "ename: " + map.get("ename") + ", dname: " + map.get("dname");
+}
+注: 使用Map接收数据需要注意两点: 一是参数前必须添加@RequestParam注解, 二是Map不能接收复合请求的参数;
+2)使用List或数组来接收复合请求(checkbox表单)
+public String test(@RequestParam List<String> likes){
+	//...
+}
+注: 使用List来接收复合请求, 必须加@RequestParam注解, 而使用数组则不需要;
+3)使用关联对象来接收嵌套表单的数据
+//index.html
+username: <input type="text" name="username"/>
+password: <input type="password" name="password"/>
+<div class="delivery">
+	name: <input type="text" name="delivery.name"/>
+	address: <input type="text" name="delivery.address"/>
+	mobile: <input type="text" name="delivery.mobile"/>
+</div>
+//com.imooc.springmvc.entity
+public class User{
+	private String username;
+	private String password;
+	private Delivery delivery = new Delivery();
+	//...
+}
+public class Delivery{
+	//...
+}
+注: 前台嵌套的表单中name必须使用如delivery.address形式, 才能使用关联对象来接收值;
+7, 日期类型转换
+当前台输入日期字符串, 后台需要转换为日期类型, 有两种方式:
+1)每次单独转换, 使用@DateTimeFormat(pattern="")注解
+public String postTest(@DateTimeFormat(pattern="yyyy-MM-dd") date){
+	//...
+}
+或
+public class User{
+	private String name;
+	@DateTimeFormat(pattern="yyyy-MM-dd")
+	private Date date;
+}
+2)定义转换器类, 全局转换
+//定义转换器类, com.imooc.springmvc.converter.MyDateConverter
+public class MyDateConverter implements Converter<String, Date>{
+	public Date convert(String s){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); //实际中一般要根据输入的日期格式进行判断
+        try {
+            Date date = sdf.parse(s);
+            return date;
+        } catch (ParseException e) {
+            return null;
+        }
+	}
+}
+//在applicationContext.xml中进行配置
+<mvc:annotation-driven conversion-service="conversionService"/> <!--在原有的mvc注解上面添加conversion-service属性-->
+<!--配置转换服务-->
+<bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+	<property name="converters">
+		<set>
+			<bean class="com.imooc.springmvc.converter.MyDateConverter"/>
+		</set>
+	</property>
+</bean>
+8, 请求和响应中的中文乱码
+1)Get请求乱码
+在server.xml中设置URIEncoding(tomcat8以后的版本不需要设置);
+//tomcat: server.xml
+<Connector ... URIEncoding="UTF-8"/> //只需增加URIEncoding属性
+2)Post请求乱码
+在web.xml中配置CharacterEncodingFilter过滤器;
+//web.xml
+<filter>
+	<filter-name>characterEncodingFilter</filter-name>
+	<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+	<init-param>
+		<param-name>encoding</param-name>
+		<param-value>UTF-8</param-value>
+	</init-param>
+</filter>
+<filter-mapping>
+	<filter-name>characterEncodingFilter</filter-name>
+	<url-pattern>/*</url-pattern>
+</filter-mapping>
+3)响应的乱码
+在applicationContext.xml中配置StringHttpMessageConverter;
+//applicationContext.xml
+<mvc:annotation-driven>
+	<mvc:message-converters>
+		<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+			<property name="supportedMediaTypes">
+				<list>
+					<value>text/html;charset=utf-8</value>
+				</list>
+			</property>
+		</bean>
+	</mvc:message-converters>
+</mvc:annotation-driven>
+9, 响应输出
+1)@ResponseBody
+直接产生响应数据, 不涉及视图, 可产生字符串、json、xml等各种数据;
+2)ModelAndView
+可将Model产生的数据与View进行绑定, 默认的View是jsp, 也可以配置其他模板引擎;
+//Controller
+@GetMapping("/show")
+public ModelAndView show(int id){
+	ModelAndView mv = new ModelAndView("/view.jsp");
+	User user = userService.findById(id);
+	mv.addObject("user", user);
+	return mv;
+}
+//view.jsp
+<div>
+	用户名: ${user.username}
+	年龄: ${user.age}
+</div>
+注: 创建ModelAndView也可以使用如下方式:
+ModelAndView mv = new ModelAndView();
+mv.setViewName("/view.jsp");
+10, ModelAndView
+1)mv.addObject()方法设置的属性默认存放在当前请求中;
+2)ModelAndView默认使用请求转发(forward)来跳转页面, 
+而new ModelAndView("redirect:/view.jsp")使用重定向;
+11, 使用String与ModelMap替代ModelAndView(这种方式很常用)
+@GetMapping("/show")
+public String show(int id, ModelMap modelMap){
+	String view = "/view.jsp";
+	User user = userService.findById(id);
+	modelMap.addAttribute("user", user);
+	return view;
+}
+注: 当有@ResponseBody注解时, 表示返回字符串, 而当没有@ResponseBody注解时, 表示返回视图;
+当不需要给视图绑定数据时, ModelMap可以省略; 
+12, Spring MVC整合FreeMarker
+1)pom.xml中引入相关依赖
+<dependency>
+	<groupId>org.freemarker</groupId>
+	<artifactId>freemarker</artifactId>
+	<version>2.3.28</version>
+</dependency>
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-context-support</artifactId>
+	<version>5.1.19.RELEASE</version>
+</dependency>
+注: 每次新增依赖后, 在运行程序之前都要通过Edit Configurations将引入的依赖包放入/WEB-INF/lib中;
+2)applicationContext.xml中启用freemarker以及配置freemarker参数
+<!--启用freemarker-->
+<bean id="ViewResolver" class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">
+	<!--设置响应输出, 并解决中文乱码-->
+	<property name="contentType" value="text/html;charset=utf-8"/>
+	<!--指定freemarker模板文件扩展名-->
+	<property name="suffix" value=".ftl"/>
+</bean>
+<!--配置freemarker参数-->
+<bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+	<!--设置模板保存的目录-->
+	<property name="templateLoaderPath" value="/WEB-INF/ftl"/>
+	<!--其他模板引擎设置-->
+	<property name="freemarkerSettings">
+		<props>
+			<!--设置freemarker脚本与数据渲染时使用的字符集-->
+			<prop key="defaultEncoding">UTF-8</prop>
+		</props>
+	</property>
+</bean>
+注: tomcat无法直接解析freemarker的模板引擎, 为了安全, 将freemarker模板文件放在/WEB-INF/ftl目录下;
+设置模板存放的目录后, 根目录就不再是webapp, 而是/WEB-INF/ftl;
+3)Controller
+@Controller
+@RequestMapping("/fm")
+public class FreemarkerController {
+    @GetMapping("/test")
+    public ModelAndView show(String username){
+        ModelAndView mv = new ModelAndView("/test");
+        Form form = new Form();
+        form.setUsername(username);
+        mv.addObject("f", form);
+        return mv;
+    }
+}
+4)ftl
+//test.ftl
+<h1>freemarker: ${f.username}</h1>
+13, /, /*, /**的区别
+1)/与/*一般用于配置<url-pattern>, /会匹配到如/login这样的路径型url, 不会匹配到如*.jsp这样的后缀型url,
+而/*会匹配包括路径型url与后缀型url的所有url;
+2)/*与/*一般用于配置mvc的拦截器, /*仅匹配一级如/add, /**可匹配多级如/add/user等;
+
+
+>>Restful风格
+1, restful开发规范:
+1)使用URL作为用户交互入口;
+2)明确的语义规范(get/post/put/delete);
+3)只返回数据(json/xml), 不包含任何展现;
+restful命名要求: URI必须具有语义、URI必须使用名词、URI不超两级、URI名词区分单复数, 如
+GET /articles?au=lily (√)
+GET /a/1 (×) -> GET /student/1
+POST /createArticle/1 (×) -> POST article/1
+GET /articles/author/1 (×) -> GET articles/author?id=1
+DELETE /articles/a (×) -> GET articles?au=lily 或 DELETE /article/1
+2, controller
+@RestController
+@RequestMapping("/restful")
+public class RestfulController {
+    @GetMapping("/request")
+    public String doGetRequest(){
+        return "{\"message\":\"返回查询结果\"}";
+    }
+	@PostMapping("/request/{id}")
+    public String doPostRequest(@PathVariable("id") int requestId){
+        return "{\"message\":\"返回查询结果\", \"id\":" + requestId + "}";
+    }
+}
+注: 1)需要修改applicationContext.xml中解决响应的中文乱码的某一处:
+<value>application/json;charset=utf-8</value>
+2)与请求get/post/put/delete对应的注解分别为@requestMapping/@postMapping/@putMapping/@deleteMapping;
+不同请求的url可以相同, 比如@requestMapping("/request")与@postMapping("/request")可以同时存在;
+3)@RestController注解用来替换@Controller和@ResponseBody;
+4)路径变量: 包含在url请求中的变量(如/employee/5), 成为路径变量, 使用路径变量需要在方法参数中添加@PathVariable注解;
+3, 简单请求与非简单请求
+1)简单请求是指标准结构的http请求, 对应get/post请求;
+非简单请求是复杂要求的http请求, 指put/delete请求、和扩展的标准请求;
+两者的区别是非简单请求发送前需要先发送预检请求;
+2)spring mvc默认不支持非简单请求的参数接收, 需要在web.xml中配置过滤器:
+//web.xml
+<!--FormContentFilter过滤器: 处理非简单请求-->
+<filter>
+	<filter-name>formContentFilter</filter-name>
+	<filter-class>org.springframework.web.filter.FormContentFilter</filter-class>
+</filter>
+<filter-mapping>
+	<filter-name>formContentFilter</filter-name>
+	<url-pattern>/*</url-pattern>
+</filter-mapping>
+4, JSON序列化
+1)常用的JSON序列化组件:
+Jackson(国外常用的json组件),
+Gson(Google开源json组件),
+FastJSON(阿里巴巴开源json组件);
+2)Jackson的使用
+//pom.xml中引入jackson依赖
+<dependency>
+	<groupId>com.fasterxml.jackson.core</groupId>
+	<artifactId>jackson-core</artifactId>
+	<version>2.9.9</version>
+</dependency>
+<dependency>
+	<groupId>com.fasterxml.jackson.core</groupId>
+	<artifactId>jackson-databind</artifactId>
+	<version>2.9.9</version>
+</dependency>
+<dependency>
+	<groupId>com.fasterxml.jackson.core</groupId>
+	<artifactId>jackson-annotations</artifactId>
+	<version>2.9.9</version>
+</dependency>
+//controller
+@GetMapping("/persons")
+public List<Person> findPersons(){
+	List<Person> list = new ArrayList<Person>();
+	list.add(new Person("zhao", 20, new Date()));
+	list.add(new Person("qian", 40, new Date()));
+	list.add(new Person("sun", 30, new Date()));
+	return list;
+}
+注: 引入了jackson依赖后, 控制器方法可以直接返回对象, jackson自动进行序列化;
+注: 如果使用fastjson组件, 控制器方法需要返回JSON.toJSONString()后的字符串;
+//实体类对日期类型的注解
+public class Person {
+    private String name;
+    private int age;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date birthday;
+}
+注: 日期类型转换为json后默认为时间戳, 需要使用注解指定格式;
+
+
+>>跨域(CORS)
+1, 什么是跨域
+http://www.abc.com:8080/scripts/jquery.js
+协议: http, 子域名: www, 主域名: abc.com, 端口号: 8080,
+请求资源路径(URI): /scripts/jquery
+当协议、子域名、主域名、端口号中任意一个不相同时，都算跨域；
+注: 由于浏览器同源策略的限制，js不能跨域调用;
+注: 浏览器console看到Access-Control-Allow-Origin就代表跨域了;
+2, HTML中允许跨域的标签
+<img>, <script>, <link>;
+3, SpringMVC解决跨域访问
+1)CORS是一种机制, 使用额外的http头通知浏览器可以访问其他域;
+URL响应头包含Access-control-*指明请求可以跨域;
+Spring MVC解决跨域有两种方式:
+2)方式一: @CrossOrigin - Controller跨域注解
+@RestController
+@CrossOrigin(origins = {"http://localhost:8080", "http://www.imooc.com"})
+public class TestController{
+	//...
+}
+注: 也可以设置所有域名都可以访问，@CrossOrigin(origins="*"), 但不推荐;
+3)方式二: <mvc:cors> - Spring MVC全局跨域配置
+<mvc:cors>
+	<mvc:mapping path="/test/**" allowed-origins="http://domain1.com, http://domain2.com" allowed-method="get, post" max-age="3600"/>
+	<mvc:mapping path="/**"/> <!--"/**"表示所有的方法-->
+</mvc:cors>
+注: max-age代表预检请求的缓存时间;
+
+
+>>拦截器Interceptor
+1, 基本概念
+拦截器用于对URL请求进行前置/后置过滤, 与Filter用途相似;
+Interceptor是SPring MVC的标准组件, 而Filter是J2EE的标准组件;
+Interceptor底层是基于Spring AOP面向切面编程;
+2, 开发流程
+1)maven依赖servlet-api
+<dependency>
+	<groupId>javax.servlet</groupId>
+	<artifactId>javax.servlet-api</artifactId>
+	<version>3.1.0</version>
+	<!--scope表示仅在开发时使用该jar包, 打包时丢弃, 防止与tomcat自带的servlet冲突-->
+	<scope>provided</scope> 
+</dependency>
+2)实现HandlerInterceptor接口
+public class MyInterceptor implements HandlerInterceptor {
+    //请求到达controller之前, 返回值为true表示请求继续传递, false表示立即返回
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        System.out.println(request.getRequestURL() + "-准备执行");
+        return true;
+    }
+    //controller处理完请求, 但还未生成响应文本
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        System.out.println(request.getRequestURL() + "-目标执行成功");
+    }
+    //响应文本产生以后
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        System.out.println(request.getRequestURL() + "-响应内容已产生");
+    }
+}
+3)applicationContext配置过滤地址
+<mvc:interceptors>
+	<mvc:interceptor>
+		<mvc:mapping path="/**"/>  <!--"/**"表示对所有请求进行拦截-->
+		<mvc:exclude-mapping path="/resources/**"/>  <!--表示将/resources目录下的资源排除在过滤地址以外-->
+		<bean class="com.imooc.restful.interceptor.MyInterceptor"/>
+	</mvc:interceptor>
+</mvc:interceptors>
+注: 一般将js、css、image等静态资源放在 webapp/resources目录下;
+注: 可以开发多个拦截器, 按配置的顺序依次对请求进行拦截;
+
+
+>>Spring Boot
+1, idea创建springboot工程
+Project -> Spring Initializr -> 进入配置页面进行工程的设置;
+2, 工程结构
+test
+	src	
+		main
+			java
+				com.imooc.springboot
+					SpringBootTestApplication  //主启动类
+					controller
+						MyController
+					dao
+					service
+			resources
+				static
+				templates
+				application.properties  //配置文件
+	test
+	pom.xml
+1)pom.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.2.1.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.imooc</groupId>
+    <artifactId>spring-boot-test</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>spring-boot-test</name>
+    <description>Demo project for Spring Boot</description>
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+2)SpringBootTestApplication.java
+@SpringBootApplication
+public class SpringBootTestApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(SpringBootTestApplication.class, args);
+    }
+}
+3, 配置文件的写法
+配置文件的两种形式: 
+1).properties
+my.url=http://imooc.com
+my.name=imooc
+2).yml
+my:
+url: http://imooc.com  //中间要有一个空格
+name: imooc
+3)自定义配置
+//application.properties
+school.grade=3
+school.classnum=5
+//TestController.java
+@RestController
+public class TestController{
+	@Value("${school.grade}")
+	private int g;
+	@Value("${school.classnum}")
+	private int c;
+	@GetMapping("/info"){
+		return "年级: " + g + ", 班级: " + c;
+	}
+}
+
+
+>>多线程
+1, 进程(process)与线程(thread)
+进程是操作系统分配资源的最小单位，线程是程度执行与调度的最小单位，
+一个进程一般包含多个线程;
+2, Thread类
+1)构造方法
+Thread();
+Thread(String name);
+Thread(Runnable target);
+Thread(Runnable target, String name);
+2)常用方法
+run(); //线程执行体, 需要被重写
+start(); //启动线程
+sleep(long m); //让自己休眠, Thread.sleep(), 使当前线程休眠m毫秒，属于静态方法，并且需要进行异常处理
+join()/join(m); //别的线程抢先执行, 调用join()的线程抢占执行, 需要进行异常处理
+wait()/wait(m); //让自己等待，需要处理异常
+notify(); //唤醒某个正在等待的线程
+notifyAll(); //常用, 唤醒所有正在等待的线程
+注: 在A线程中调用B.join()方法，只能保证B插队在A之前，而B会和其他线程并发执行;
+A: B.join(m)的意思是，A等待B执行m毫秒后再执行;
+3, 创建线程的三种方式
+1)继承Thread类
+class MyThread extends Thread{
+	@Override
+	public void run(){ //... }
+}
+MyThread t = new MyThread("java");
+t.start();
+2)实现Runnable接口
+class MyThread implements Runnable{
+	private int i = 10;
+	@Override
+	public void run(){
+		while(i > 0){
+			System.out.println(Thread.currentThread().getName() + "-" + i);
+			i--;
+		}
+	}
+}
+MyThread m = new MyThread();
+Thread t1 = new Thread(m, "java");
+Thread t2 = new Thread(m, "c++");
+t1.start();
+t2.start();
+注: 此时两个线程共享变量i;
+Thread.currentThread()返回当前线程;
+3)实现Callable接口
+此方式的优点是具有返回值，且可以声明并抛出异常;
+4, 线程的状态和生命周期
+1)五种状态
+新建(NEW)、可运行/就绪(RUNNABLE)、正在运行(RUNNING)、阻塞(BLOCKED)、终止(TERMINATED);
+2)生命周期
+线程的生命周期，就是线程在这五种状态之间的转换过程;
+新建: new Thread();
+可运行: start();
+可运行->正在运行: 获得CPU使用权;
+正在运行->可运行: CPU时间片用完/yield();
+正在运行->阻塞: join()/wait()/sleep()/IO请求;
+阻塞->可运行: 等待调用join()的线程执行完毕/notify()或notifyAll()/sleep时间超时/IO请求完成;
+正在运行->终止: 线程执行完毕/异常终止/stop();
+5, 线程的优先级
+1)优先级分为10个级别, 由低到高用数字1-10表示, 默认为5;
+2)常用方法
+t.getPriority(); //获取优先级
+t.setPriority(n); //设置优先级
+注: 优先级高并不能保证一定会优先执行，因为会受到操作系统调度的影响;
+6, 线程同步
+1)synchronized可以保证共享对象在同一时刻只能被一个线程访问;
+2)synchronized关键字可以用在如下地方:
+//方法
+public synchronized void saveAccount(){}
+//语句块
+synchronized(obj){}
+3)案例: 银行账户存取款线程同步问题
+class Bank{ //银行账户类
+	private String account;
+	private int balance;
+	//构造方法、getter/setter、toString方法省略
+	public synchronized void save(){ //存钱方法, 用第一种方式同步
+		int balance = getBalance();
+		balance += 100;
+		Thread.sleep(1000); //休眠，省略异常处理
+		setBalance(balance);
+		System.out.println("存钱后账户余额为: " + balance);
+	}
+	public void withdraw(){ //取钱方法, 用第二种方式同步
+		synchronized(this){
+			int balance = getBalance();
+			balance -= 200;
+			Thread.sleep(1000); //休眠，省略异常处理
+			setBalance(balance);
+			System.out.println("取钱后账户余额为: " + balance);
+		}
+	}
+}
+class SaveAccount implements Runnable{ //存款线程
+	Bank bank;
+	public SaveAccount(Bank bank){ this.bank = bank; }
+	@Override
+	public void run(){
+		bank.save();
+	}
+}
+class WithdrawAccount implements Runnable{	//取款线程
+	Bank bank;
+	public WithdrawAccount(Bank bank){ this.bank = bank; }
+	@Override
+	public void run(){
+		bank.withdraw();
+	}
+}
+public class Test{
+	public static void main(String[] args){
+		Bank bank = new Bank("1001", 1000);
+		Thread t1 = new Thread(new SaveAccount(bank));
+		Thread t2 = new Thread(new WithdrawAccount(bank));
+		t1.start();
+		t2.start();
+		try{
+			t1.join();
+			t2.join();
+		}catch(InterruptedException e){
+			e.printStackTrace();
+		}
+		System.out.println("账户余额为: " + bank.getBalance());
+	}
+}
+7, 线程间通信
+1)通过wait()和notifyAll()/notify()来实现进程间通信;
+2)案例: 生产者消费者线程通信
+class Box{ //商品容器类, 容器里只放一件商品
+	private int n; //商品的序号
+	private boolean flag = false; //false表示无商品，true表示有商品
+	public synchronized int get(){ //消费
+		if(!flag){ //容器空则等待
+			try{
+				wait();
+			}catch(InterruptedException e){
+				e.printStackTrace();
+			}
+		}
+		System.out.println("消费: " + n);
+		this.flag = false;
+		notifyAll(); //唤醒等待的其他进程(如生产者进程)
+		return n;
+	}
+	public synchronized void set(int n){ //生产
+		if(flag){ //容器满则等待
+			try{
+				wait();
+			}catch(InterruptedException e){
+				e.printStackTrace();
+			}
+		}
+		System.out.println("生产: " + n);
+		this.n = n;
+		this.flag = true;
+		notifyAll(); //唤醒等待的其他进程(如消费者进程)
+	}
+}
+class Producer implements Runnable{ //生产者进程
+	Box box;
+	public Producer(Box box){ this.box = box; }
+	@Override
+	public void run(){
+		int i = 1;
+		while(true){
+			box.set(i++);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+}
+class Consumer implements Runnable{ //消费者进程
+	Box box;
+	public Consumer(Box box) {
+		this.box = box;
+	}
+	@Override
+	public void run() {
+		while(true) {
+			box.get();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+}
+public class Test{
+	public static void main(String[] args){
+		Box box = new Box();
+		Thread t1 = new Thread(new Producer(box));
+		Thread t2 = new Thread(new Consumer(box));
+		t1.start();
+		t2.start();
+	}
+}
+
+
+>>线程池
+1, 线程池的好处
+加快响应速度、合理利用CPU和内存、统一管理;
+2, 线程池的应用场合
+1)批量计算任务、服务器处理请求、excel解析等;
+2)实际应用中, 需要5个以上的线程就可以使用线程池来管理;
+3, 普通线程与守护线程
+两者的区别主要在于是否需要JVM的运行, 只要普通线程在则JVM的运行不会结束, 而守护线程可以在JVM停止运行时存在, 如垃圾处理器GC;
+4, 创建线程池
+1)构造方法的参数
+int corePoolSize: 核心线程数;
+int maxPoolSize: 最大线程数;
+BlockingQueue workQueue: 任务存储队列;
+	3种常见的队列类型: 
+	直接交接(无缓冲): SynchronousQueue;
+	无界队列: LinkedBlockingQueue;
+	有界队列: ArrayBlockingQueue;
+long keepAliveTime: 保持存活时间;
+	当线程总数 > corePoolSize时, 多余的线程空闲时间超过keepAliveTime就会被终止;
+ThreadFactory threadFactory: 当线程池需要新的线程时, 使用threadFactory来生成新的线程;
+	自己指定threadFactory可以改变线程名和优先级等, 如果不指定, 则默认使用Executors.线程池()来创建线程;
+RejectedExecutionHandler Hander: 线程池无法接受新任务时的拒绝策略;
+	AbortPolicy(常用): 抛出异常;
+	DiscardPolicy: 直接丢弃;
+	DiscardOldestPolicy: 移除最老的线程;
+	CallerRunsPolicy: 由提交者自己执行;
+2)添加线程的规则
+当线程总数 < corePoolSize时, 每来一个新任务就创建线程, 直到线程数等于corePoolSize;
+当线程总数 = corePoolSize时, 再来新任务就放到任务队列workQueue;
+当workQueue也满了, 如果此时线程总数 < maxPoolSize, 就会创建新线程来执行任务;
+当线程数 = maxPoolSize时, 再来新任务就拒绝;
+5, jdk提供的几种线程池
+1)FixedThreadPool
+corePoolSize: n, maxPoolSize: n, workQueue: LinkedBlockingQueue;
+特点: 队列满后, 无法再增加线程;
+2)SingleThreadExecutor
+corePoolSize: 1, maxPoolSize: 1, workQueue: LinkedBlockingQueue;
+3)CachedThreadPool
+corePoolSize: 0, maxPoolSize: Integer.MAX_VALUE, workQueue: SynchronousQueue;
+特点: 无需核心线程, 有新任务到来就创建线程, 且可以创建无数个;
+4)ScheduledThreadPool
+支持定时及周期性任务执行的线程池;
+举例:
+public class Demo{
+	public static void main(String[] args){
+		ExecutorService fixedThreadPool = Executors.newFixedThreadPool(5);
+		ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+		ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+		ExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(10);
+		fixedThreadPool.execute(new Task());
+		//等价于 fixedThreadPool.submit(new Task());  
+	}
+	static class Task implements Runnable{
+		@Override
+		public void run(){
+			System.out.println(Thread.currentThread().getName());
+		}
+	}
+}
+6, 自动创建与手动创建
+自动创建线程池, 即调用jdk提供的几种线程池, 有可能会产生内存溢出的问题;
+一般使用手动创建线程池, 即根据不同的业务场景来设置线程池的参数;
+线程数 = CPU核数*(1+平均等待时间/平均工作时间), 如:
+CPU密集型(计算): 线程数为CPU核数的1-2倍左右;
+耗时IO型(数据库、文件、网络读写等): 线程数为CPU核数的很多倍;
+7, 停止线程池
+1)shutdown()
+fixedThreadPool.shutdown();
+对线程池进行停止的初始化工作, 调用该方法并不立即停止线程池, 要等当前线程及任务队列中的线程执行完毕再停止, 如果再来新任务则拒绝;
+2)isShutdown()
+判断是否调用了shutdown()方法, 不代表此时线程池已经停止了;
+3)isTerminated()
+判断此时线程池是否已经停止;
+4)awaitTermination()
+boolean b = fixedThreadPool.awaitTermination(3, TimeUnit.SECONDS);
+在等待3秒之后, 判断线程池是否已停止;
+5)shutdownNow()
+List<Runnable> runnableList = fixedThreadPool.shutdownNow();
+立即停止线程池, 中断正在执行的线程, 并返回任务队列中的线程列表;
+7, 自定义线程池
+public class MyThreadPool extends ThreadPoolExcutor{
+	private ReentrantLock lock = new ReentrantLock();  //加锁
+	private boolean flag = false;
+	//自动生成四个构造函数, 省略
+	private void fn(){
+		lock.lock();
+		try{
+			flag = true;
+		}finally{
+			lock.unlock();
+		}
+	}
+}
+8, 线程池家族的继承关系
+Executor <- ExecutorService <- AbstractExecutorService <- ThreadPoolExcutor;
+自定义线程池, 就是继承自ThreadPoolExecutor;
+另外还有一个线程池工具类Executors, 用来自动创建线程池;
+注: 线程池实现复用的核心是相同的线程执行不同的任务;
+9, 线程池的状态
+1)RUNNING
+接受新任务并处理队列任务;
+2)SHUTDOWN
+调用shutdown()后的状态, 不接受新任务, 但处理队列任务;
+3)STOP
+调用shutdownNow()后的状态, 不接受新任务, 也不处理队列任务, 并中断正在进行的任务;
+4)TIDYING
+所有任务都清理完成时的整洁状态;
+5)TERMINATED
+线程池已终止;
+
+
+>>ThreadLocal
+1, SimpleDateFormat的进化之路
+1)2个线程分别用自己的SimpleDateFormat, 这没问题;
+2)后来延伸出10个, 那就有了10个线程和10个SimpleDateFormat, 这虽然写法不优雅(应该复用对象), 但勉强可以接受;
+3)但是当需求变成了1000个, 那么必然要用线程池(否则消耗内存太多);
+4)所有线程都共用一个SimpleDateFormat对象;
+5)这是线程不安全的, 出现了并发安全问题;
+6)我们可以选择加锁, 加锁后结果正常, 但是效率低;
+7)更好的解决方案是使用ThreadLocal;
+2, ThreadLocal的两个使用场景
+1)每个线程需要一个独立的对象(通常是工具类如SimpleDateFormat和Random);
+2)每个线程内需要保存全局变量(如在拦截器中获取用户信息), 可以让不同方法直接使用, 避免了参数传递的麻烦;
+3, 使用加锁来解决共享资源的线程安全问题
+public class Demo{
+	private static ExecutorService threadPool = Executors.newFixedThreadPool(5); //创建线程池
+	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //共享资源
+	public static void main(String[] args){
+		for(int i = 0; i < 100; i++){
+			int finalI = i;
+			threadPool.submit({  //将任务添加到线程池
+				@Override
+				public void run(){
+					System.out.println(n + ">>" + new Demo().date(100*finalI));
+				}
+			});
+		}
+		threadPool.shutdown(); //停止线程池
+	}
+	public String date(int seconds){
+		Thread.sleep(500);
+		Date date = new Date(1000*seconds);
+		String rs = ""; 
+		synchronized(Demo.class){  //对资源加锁: 类锁
+			rs = sdf.format(date);
+		}
+		return rs;
+	}
+}
+注: 加锁后一次只能执行一个任务, 失去了并行的高效;
+4, 使用场景一
+使用ThreadLocal, 给每个线程分配自己的对象, 既保证了线程安全, 又能高效利用内存;
+public class Demo {
+    private static ExecutorService threadPool = Executors.newFixedThreadPool(5);
+    public static void main(String[] args) {
+        for (int i = 1; i <= 20; i++) {
+            int finalI = i;
+            threadPool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println(finalI + ">>" + new Demo().date(100*finalI));
+                }
+            });
+        }
+        threadPool.shutdown();
+    }
+    public String date(int seconds) {
+        Thread.sleep(500);
+        Date date = new Date(1000*seconds);
+        SimpleDateFormat sdf = ThreadSafeFormatter.dateFormatThreadLocal.get();
+        return sdf.format(date);
+    }
+}
+class ThreadSafeFormatter {
+    public static ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>(){
+		@Override
+		protected SimpleDateFormat initialValue() {
+			return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		}
+	};
+}
+5, 当使用多个线程来处理多个用户请求时, 对于用户信息的保存以及用户信息在不同方法间的传递, 有如下方法:
+1)定义类变量UserMap来保存多个用户信息, 并结合synchronized来对UserMap加锁从而防止并发安全问题, 但这会影响效率;
+2)使用ConcurrentHashMap(线程安全的HashMap), 不需要加锁, 但存在效率问题;
+3)使用ThreadLocal, 保证了每个线程保存自己的用户信息, 并且避免了参数传递;
+6, 使用场景二
+public class Demo2 {
+    public static void main(String[] args) {
+        new Service1().process("张三");
+    }
+}
+class Service1{
+    public void process(String name){
+        User user = new User(name);
+        UserContextHolder.threadLocal.set(user);
+        new Service2().process();
+    }
+}
+class Service2{
+    public void process(){
+        User user = UserContextHolder.threadLocal.get();
+        System.out.println(user);
+    }
+}
+class UserContextHolder {
+    public static ThreadLocal<User> threadLocal = new ThreadLocal<>();
+}
+注: 场景一的initialValue(), 是在定义时就把对象初始化出来;
+场景二的set(), 对象的生成时机不确定, 例如拦截器生成的用户信息;
+7, 使用ThreadLocal的优点
+1)线程安全
+2)不需要加锁, 提高执行效率
+3)更高效地利用内存
+4)避免了参数传递
+8, Thread, ThreadLocal, 与ThreadLocalMap之间的关系
+每个Thread都有一个ThreadLocalMap的实例变量, 而ThreadLocalMap的每个key就是ThreadLocal, value就是设置的值;
+所以一个线程可以设置多个ThreadLocal;
+9, ThreadLocalMap和HashMap
+如果两个不同的元素, 通过哈希函数得出的实际存储地址相同, 就成为哈希冲突(也叫哈希碰撞);
+HashMap解决哈希冲突的方式是在冲突的地址上使用链表, 当某个位置冲突到一定的量, 就使用红黑树;
+ThreadLocalMap解决哈希冲突的方式是线性探测法, 也就是寻找下一个空位置, 而不是引入链表;
+10, ThreadLocal的常用方法
+1)T initialValue()
+返回当前线程对应的初始值, 如果先前没有通过set()设置值则在第一次调用get()时默认调用此方法;
+2)void set(T t)
+为当前线程设置新值;
+3)T get()
+得到当前线程对应的值;
+4)void remove()
+删除当前线程对应的值;
+11, 使用ThreadLocal以后要调用remove()方法, 否则容易引起内存泄漏;
+实际项目中应优先使用框架提供的工具, 尽量避免使用ThreadLocal;
+
+
+>>分布式
+1, 分布式的定义
+利用物理架构形成多个自治的处理元素, 不共享主内存, 但是通过发送信息合作;
+2, CAP定理
+C: 一致性; A: 可用性; P: 分区容错性;
+实际中只能满足其中两个, 如CDN选择AP, 转账使用CP;
+3, 集群、分布式、微服务
+集群: 同一个项目部署在多个服务器上, 仅仅为了分散压力;
+微服务: 是从架构设计的角度, 对业务进行拆分, 如一个项目拆分为用户模块、订单模块等;
+分布式: 是从系统部署的方式, 将一个项目的多个子系统分别部署在不同的服务器;
+实际中经常是微服务设计, 然后分布式部署;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
