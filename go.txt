@@ -55,6 +55,17 @@ func main(){  //入口函数
 }
 
 
+//类型声明与类型别名
+1)类型声明
+type A int
+var i A = 5
+fmt.Printf("%T" i)  //main.A
+2)类型别名
+type A = int
+var i A = 5
+fmt.Printf("%T", i)  //int
+
+
 >>package
 1, package声明必须放在第一行, 名称一般与目录名称一致;
 要生成go语言可执行程序, 必须要有main的package包, 且该包下必须有main()函数;
@@ -115,6 +126,8 @@ complex64, complex128
 4)其他
 byte(=uint8), int(=int32或int64), uint(=uint32或uint64),
 rune(=int32), uintptr(无符号整型, 用于存放一个指针)
+注: byte可表示一个ascii字符, 如 
+var ch byte = 65 或 var ch byte = '\x41';
 2, 布尔类型
 bool
 3, 字符串类型(编码统一为"UTF-8")
@@ -131,7 +144,39 @@ Channel类型(chan),
 函数类型(func),
 切片类型(slice),
 接口类型(interface),
-Mapl类型(map)
+Map类型(map)
+
+
+>>字符串
+1, go中的字符串是不可变的字节序列, 字符串统一使用UTF-8编码;
+2, 可使用``来定义多行字符串, 里面的内容原样输出, 如转义符失效;
+3, 字符串的长度
+s := "胡c"
+len(s)  //4, 字节数
+utf8.RuneCountInString(s)  //2, 字符数
+4, 遍历每一个字符
+ascii字符串遍历直接使用下标, Unicode字符串遍历使用for...range;
+1)遍历英文字符串
+s := "hello"
+for i := 0; i < len(s); i++ {
+	fmt.Printf("%c: %d\n", s[i], s[i])
+}
+2)遍历Unicode字符
+s := "赵a钱b孙c"
+for _, v := range s {
+	fmt.Printf("%c: %d\n", v, v)
+}
+5, 查找子串出现的位置
+s := "hello world"
+strings.Index(s, "o")  //4
+strings.LastIndex(s, "o")  //7
+注: 查找的位置索引是子节位置, 如果不存在则返回-1
+6, 字符串的不可变性
+如果要修改字符串, 需要先将字符串转换为[]byte;
+s := "hello"
+bs := []byte(s)
+bs[2] = '*';
+newS := string(bs)
 
 
 >>变量
@@ -147,12 +192,15 @@ var (
 	b bool,
 	c string = "hello"
 )
-3)特殊的变量"_"
+3)匿名变量 _
 _变量相当于垃圾桶, 给其赋值相当于丢弃, 如 a, _, b := 1, 2.0, "hello";
 2, Go中不存在隐式转换, 类型转换必须是显式的, 如 b := float32(a);
 3, 变量的可见性规则
 大写字母开头的变量是公有变量, 即其他包可以读取;
 小写字母开头的变量是私有变量;
+
+>>两数交换
+a, b = b, a
 
 
 >>常量
@@ -171,6 +219,29 @@ const (
 注: iota只能被赋值给常量, 不能在其他地方使用;
 
 
+>>模拟枚举
+go语言中没有枚举类型, 可以模拟枚举:
+type Fruit int
+const (
+	Apple Fruit = iota
+	Orange
+	Banana
+)
+当类型需要显式为字符串时, go语言会自动寻找String()方法进行调用;
+func (f Fruit) String() string {
+	switch f {
+		case Apple:
+			return "Apple"
+		case Orange:
+			return "Orange"
+		case Banana:
+			return "Banana"
+	}
+	return "NONE"
+}
+fmt.Printf("%T, %d, %s", Apple, Apple, Apple)
+
+
 >>运算符
 算术运算符、关系运算符、逻辑运算符、赋值运算符、按位运算符;
 注: go语言中只有后置自增自减, 没有前置自增自减;
@@ -178,28 +249,18 @@ const (
 
 >>控制语句
 1, 条件语句
-如判断变量的类型:
-func main(){
-	var a interface{}
-	a = 2
-	switch a.(type) {
-		case int:
-			fmt.Println("a为整型")
-		case string:
-			fmt.Println("a为字符串类型")
-		default:
-			fmt.Println("a为其他类型")
-	}
-}
-注: go语言不需要使用break来中断case;
-go语言没有elseif;
+1)if, else, if else
+go语言中没有elseif语句;
+2)switch
+switch语句分为表达式switch和类型switch;
+
 2, 循环语句
 go语言中的循环语句只有一种, 就是for;
 1)基本语法
 for i:=1; i<=10; i++ {
 	fmt.Println("hello")
 	time.Sleep(1*time.Second)
-}无法循环
+}
 2)for { //... }
 相当于 for true { //... }
 3)遍历
@@ -216,37 +277,107 @@ goto One
 fmt.Println("中间代码块")
 One:
 	fmt.Println("this is One")
-2)break用于结束当前循环; continue用于进入循环的下一个计数;
+2)break用于结束当前循环; 
+continue用于进入循环的下一个计数;
+break后跟标签, 比如可以跳出最外层循环:
+outerLoop:
+	for i := 0; i < 10; i++ {
+		for j := 0; j <= i; j++ {
+			if j == 5 {
+				break outerLoop
+			}
+		}
+	}
 
 
 >>引用类型
 引用类型的零值为nil;
 1, 数组
+1)数组定义
 var a = [3]int{2, 4, 6}
 len(a)  //数组的长度
 注: 如果只声明一个数组而没有赋值, 则数组元素默认为类型的零值;
+a := [3]int{1, 2}  //[1, 2, 0]
+a := [...]int{1, 2, 3}
+a := [3]int{1: 5, 2: 8}  //[0, 5, 8]
+2)比较两个数组是否相等
+使用 == 或 != 来比较两个数组是否相等, 只能同类型的数组比较;
+a := [3]int{1, 2}
+b := [...]int{1, 2, 0}
+a == b  //true
+3)遍历数组
+for k, v := range a {
+	//...
+}
+4)数组是值类型
+a := [3]int{1, 2, 3}
+b := a  //数组可以直接赋值
+b[1] = 888
+a  //{1, 2, 3}
+5)多维数组
+a := [2][3]int{{1, 2, 3}, {3, 4, 5}}
+a := [2][3]int{1: {3, 4, 5}}
+a := [2][3]int{1: {0: 3, 1: 4, 2: 5}}
 2, 切片
-1)每个切片都有一个底层数组;
+go语言中, 数组是值类型, 而切片是引用类型, 切片的名称相当于一个指针;
+1)声明切片
+var strList []string  //strList == nil 为 true
+var iList []int
+var iList = []int{}  //空切片, iList == nil 为false
+a := make([]int, 2, 10)  //动态构造切片, 指定切片类型、大小和容量
+注: 使用make来定义切片是重新分配内存区域, 而使用a[m:n]这种操作并不分配内存, 而是将切片指向原来的底层数组或底层切片;
+2)每个切片都有一个底层数组;
 a := [10]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 b := a[3:6}  //[4, 5, 6]
 c := b[1:cap(b)]  //[5, 6, 7, 8, 9, 10]
+a[:5]  //从开始位置切
+a[3:]  //一直到结束位置
+a[:]   //整个切
+b[0:0]  //将切片置为空: []
 len(b)  //长度: 3
 cap(b)  //容量: 7
 reflect.TypeOf(a)  //[10]int
 reflect.TypeOf(b)  //[]int
 b := a[min:max:bound]  //第三个参数表示切片容量不超过bound下标的位置
-2)内置函数append()
+注: 修改切片的元素会同时修改底层数组
+3)内置函数append()
 slice = append(slice, 22, 33, 44)
 append新增元素可以超过原切片的容量, 会自动更换底层数组;
-3)内置函数copy()
+a := []int{1, 2}
+a = append(a, 5, 6)  //向切片末尾添加元素 [1, 2, 5, 6]
+a = append(a, []int{5, 6}...)  //以切片的方式添加 [1, 2, 5, 6]
+a = append([]int{5, 6}, a...)  //向切片的开头添加 [5, 6, 1, 2]
+a = append(a[:i], append([]int{999}, a[i:]...)...)  //在第i个位置插入999
+注: append()函数的第一个参数必须是切片类型;
+4)内置函数copy()
 var c = []int{0, 0, 0}
 copy(c, b)  //c复制b
+按照较小个数的那个切片进行复制, 返回实际复制的元素个数;
+5)整体赋值与copy的区别
+整体赋值是浅复制, 改变一个切片会影响到另一个;
+而copy是深复制, 改变一个切片不会影响到另一个;
+6)删除切片中的元素
+go语言中没有直接删除元素的方法;
+//删除前n个元素
+a = a[n:]
+//删除后n个元素
+a = a[:len(a)-n]
+//删除中间index索引的元素
+a = append(a[:index], a[index+1:]...)
 3, 字典Map
+1)Map的基本操作
 emps := map[string]int{"zhao": 30, "qian": 26, "sun": 28}
 a := emps["zhao"]
 a, ok := emps["zhao"]  //ok为false表示key不存在
 emps["cao"] = 88  //向map中添加键值对, 无则添加, 有则修改
 delete(emps, "cao")  //删除键值对, 无key也不会报错
+2)a := make(map[string]int, 100)  //使用make来分配一个空Map, 第一个参数表示容量, 可省略
+3)value可以为复杂类型, 如切片
+a := make(map[string][]int)
+4)可以用for...range来遍历Map
+for k, v := a {
+	fmt.Printf("%s: %d\n", k, v)
+}
 4, 通道Channel
 1)Channel用于在不同Goroutine之间传递类型化的数据, 是并发安全的, 而其他数据类型都不是并发安全的;
 chan T  //声明
@@ -292,13 +423,13 @@ type Person struct {
 	Name string
 	Age int
 }
-p1 := Person{Name: "zhao", Age: 30}
+p1 := Person{Name: "zhao", Age: 30,}
 p2 := Person{"qian", 30}  //顺序相同且完全赋值可省略字段名
 p3 := Person{Age: 30}  //省略的字段为零值
 2)匿名结构体
 p := struct {
 	Name string
-	Age int
+	Age int,
 }{"zhao", 30}
 3)结构体的方法
 func (person *Person) Grow() { //指针方法: 接收者类型是类型的指针
@@ -310,6 +441,8 @@ func (person Person) Grow() {  //值方法: 接收者类型是类型本身
 p1 := Person{"zhao", 30}
 p1.Grow()
 注: 匿名结构体不能定义方法
+注: 非本地类型(不在本包中定义的类型)不能定义方法, 可以为非本地类型重新声明新类型, 就可以为新类型定义方法, 如
+type NewType time.Duration
 4)结构体的零值并不是nil, 而是其所有字段均为零值, 如 Person{};
 6, 接口
 1)接口的定义
@@ -335,26 +468,148 @@ func (p *Person) (newAddr string) (oldAddr string) {
 空接口: interface{}, 所以类型都可以看成是空接口的实现;
 
 
+>>Unicode与UTF-8
+Unicode是字符集, 也就是给每个字符一个固定的编号, 字符集有ascii与Unicode;
+而UTF-8是编码规则, 就是以某种形式对字符编号进行编码;
 
 
+>>格式化输出
+fmt.Printf("%s", s)
+常用的格式符如下:
+%d / %b / %o / %x(X): 整型的十进制 / 二进制 / 八进制 /十六进制;
+%c / %s: 字符 / 字符串;
+%f: 浮点数;
+%p: 指针(十六进制方式显式);
+%v: 按值的本来值输出;
+%T: 变量的类型;
+%U: Unicode字符;
 
 
+>>指针
+1, &与*
+s1 := "hello"
+ptr := &s1  //ptr的类型为 *string
+s2 := *ptr
+2, go语言中不允许对指针进行运算;
 
 
+>>字符串和其他类型的转换
+1, 字符串与整型的转换
+//整型->字符串
+i := 10
+s := strconv.Itoa(i)
+//字符串->整型
+s := "10"
+i, err := strconv.Atoi(s)  //err不为nil表示转换失败
+2, Parse系列用于将字符串转换成其他基本类型
+b, err := strconv.ParseBool(s)  //string->bool
+i, err := strconv.ParseInt(s, base, bitSize)  //string->int
+i, err := strconv.ParseUint(s, base, bitSize)  //string->uint
+f, err := strconv.ParseFloat(s, bitSize)  //string->float32/float64
+3, Format系列用于将其他基本类型转换成字符串
+strconv.FormatBool(), strconv.FormatInt(), strconv.FormatUint(), strconv.FormatFloat()分别
+用于将布尔类型、整型、无符号整型、字符型等转换成字符串;
 
 
+>>sync.Map
+线程安全的Map
+var m sync.Map  //无须初始化, 直接使用, sync.Map不能使用make()创建
+m.Store("zhao", 30)  //保存键值对, 键和值都以interface{}类型保存
+m.Load("zhao")  //取值
+m.Delete("zhao")  //删除对应的键值对
+m.Range(func(k, v interface{}) bool {  //遍历, 使用回调函数
+	fmt.Println(k, v)
+	return true  //返回true则继续下一次迭代, false则立即结束
+})  
+注: sync.Map比Map有一些性能损失, 所以在非并发情况下, 应该使用Map;
 
 
+>>列表List
+列表是链表实现, 其中保存的元素类型可以不同;
+//初始化列表
+var m list.List
+或者 m := list.New()
+//插入元素
+m.PushBack("canon")  //尾部添加
+m.PushFront(67)  //头部添加
+elem := m.pushBack("fist")  //尾部添加并返回元素指针
+m.InsertAfter("high", elem)  //在元素elem之后添加
+m.InsertBefore("noon", elem)  //在元素elem之前添加
+m.Remove(elem)  //删除elem元素
+//遍历列表
+for i := m.Front(); i != nil; i = i.Next() {
+	fmt.Println(i.Value)
+}
 
 
+>>make()和new()
+1, func new(Type) *Type
+new()接受一个类型参数, 返回一个类型指针, 分配的内存置为类型零值;
+var sum *int = new(int) 
+var stu *Student = new(Student)
+2, func make(t Type, size ...IntegerType) Type
+make只用于给slice, map, chan分配内存, 并且返回这些类型本身, 因为本身就是指针;
+3, 两者的区别
+1)make只能用来分配及初始化类型为slice, map和chan的数据, 而new可以分配任意类型数据;
+2)new分配返回的是指针, 即*Type, 而make返回引用, 即Type;
+3)new分配的空间被清零; make分配空间后, 会进行初始化;
 
 
+>>闭包
+func Accumulate(value int) func() int {
+	return func() int {
+		value++
+		return value
+	}
+}
+accumulate := Accumulate(1)
+accumulate()  //2
+accumulate()  //3
 
 
-
-
-
-
+>>可变参数
+可变参数变量是一个包含所有参数的切片;
+1, 固定类型的可变函数
+func joinStrings(args ...string) string {
+	var b bytes.Buffer  //定义一个字节缓冲
+	for _, s := range args {
+		b.WriteString(s)  //将每个字符串写入字节数组
+	}
+	return b.String()  //将字节数组转换为字符串并返回
+}
+...string[]string, 所以可以使用for...range来遍历;
+注: bytes.Buffer字节缓冲作为快速字符串连接, 类似于java中的StringBuffer;
+2, 任意类型的可变函数
+如fmt.Printf()的函数原型:
+func Printf(format string, args ...interface{}) {
+	//...
+}
+interface()类型表示可接受任意类型参数;
+例； 如打印每个可变变量的值和类型
+func printValueAndType(args ...interface{}) string {
+	var b bytes.Buffer
+	for _, s := range args {
+		sValue := fmt.Sprintf("%v", s)
+		sType := fmt.Sprintf("%T", s)
+		b.WriteString("value: ")
+		b.WriteString(sValue)
+		b.WriteString(", type: ")
+		b.WriteString(sType)
+		b.WriteString("\n")
+	}
+	return b.String()
+}
+3, a为一个切片, a...表示传递切片的所有元素, 而不是a变量本身;
+func f(args ...interface{}) {
+	for _, v := range args {
+		fmt.Print("value: ", v, ", type: ", fmt.Sprintf("%T", v), "\n")
+	}
+}
+func f1(args ...interface{}) {
+	fmt.Println("-----------调用f()函数进行处理---------------")
+	f(args...)
+}
+如果传递的是args, 那么就是对args这个变量进行处理, 而不是处理切片里面的元素;
 
 
 
