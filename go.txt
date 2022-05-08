@@ -498,7 +498,7 @@ p.Y = 6  //底层自动转换 (*p).Y
 p2 := &Point{}  //取地址实例化
 p2 := &p1 
 注: 取地址实例化是最广泛的一种结构体实例化方式;
-2, 初始化
+3, 初始化
 1)使用键值对形式
 type People struct {
 	name string
@@ -517,7 +517,7 @@ relation := &People{
 2)使用列表形式
 p1 := Point{2, 4}
 使用列表形式必须初始化所有字段, 且顺序一致;
-3, 匿名结构体
+4, 匿名结构体
 ins := struct {
 	字段1 类型1
 	字段2 类型2
@@ -529,7 +529,7 @@ msg := &struct {  //定义部分
 	1024, 
 	"hello",
 }
-4, 嵌入结构体
+5, 嵌入结构体
 type Person struct {
 	Name string
 	Age int
@@ -547,7 +547,7 @@ s2.Name = "qian"
 s2.Age = 28
 s2.Major = "Maths"
 fmt.Printf("%T, %v", s1, s1)  //main.Student, {{"zhao", 26}, "Maths"}
-5, 模拟构造函数重载
+6, 模拟构造函数重载
 go语言没有提供构造函数相关的机制, 用户根据需求将参数使用函数传递给结构体;
 type Cat struct {
 	Color string
@@ -563,11 +563,11 @@ func newCatByColor(color string) *Cat {
 		Color: color
 	}
 }
-6, 方法
+7, 方法
 go的方法是作用在接收器上的一个函数;
 接收器可以是任何类型(除了接口类型), 也就是说任何类型都可以定义方法, 比如基本类型的别名类型、函数类型等;
 接收器分为指针类型接收器和非指针类型接收器, 区别在于是否能修改结构体的字段;
-7, 为任意类型添加方法
+8, 为任意类型添加方法
 type MyInt int
 func (m MyInt) IsZero() bool {
 	return m == 0
@@ -575,8 +575,8 @@ func (m MyInt) IsZero() bool {
 func (m MyInt) Add(other int) int {
 	return other + int(m)
 }
-8, 内嵌结构体
-1)结构体可以包含匿名字段, 即没有字段的类型而没有字段名, 此时类型就可以当名字使用;
+9, 继承: 内嵌结构体
+1)结构体可以包含匿名字段, 即只有字段的类型, 此时类型就可以当名字使用;
 Go语言没有继承, 可以通过结构体的内嵌或组合来模拟继承;
 type innerS struct {
 	in1 int
@@ -967,7 +967,8 @@ ch := make(chan int, 4)  //len(ch): 0, cap(ch): 4
 defer close(ch)
 
 
-
+>>并发
+协程(goroutine) + 协程间通信(channel) + 协程间同步(锁)
 
 
 
