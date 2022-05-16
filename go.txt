@@ -17,7 +17,7 @@
 将源码文件(.go)编译成可执行文件(.exe);
 2, go run
 编译并运行源码文件(.go);
-3, go build
+3, go install
 用于编译并安装代码包或源码文件;
 安装代码包会在当前工作区的pkg/<平台相关目录>下生成归档文件;
 安装命令源码文件会在当前工作区的bin目录下生成可执行文件;
@@ -438,47 +438,18 @@ accumulate()  //2
 accumulate()  //3
 4, 可变参数
 可变参数变量是一个包含所有参数的切片;
-1)固定类型的可变函数
-func joinStrings(args ...string) string {
-	var b bytes.Buffer  //定义一个字节缓冲
-	for _, s := range args {
-		b.WriteString(s)  //将每个字符串写入字节数组
-	}
-	return b.String()  //将字节数组转换为字符串并返回
-}
-...string[]string, 所以可以使用for...range来遍历;
-注: bytes.Buffer字节缓冲作为快速字符串连接, 类似于java中的StringBuffer;
-2)任意类型的可变函数
-如fmt.Printf()的函数原型:
-func Printf(format string, args ...interface{}) {
-	//...
-}
-interface()类型表示可接受任意类型参数;
-例； 如打印每个可变变量的值和类型
-func printValueAndType(args ...interface{}) string {
-	var b bytes.Buffer
-	for _, s := range args {
-		sValue := fmt.Sprintf("%v", s)
-		sType := fmt.Sprintf("%T", s)
-		b.WriteString("value: ")
-		b.WriteString(sValue)
-		b.WriteString(", type: ")
-		b.WriteString(sType)
-		b.WriteString("\n")
-	}
-	return b.String()
-}
-3)a为一个切片, a...表示传递切片的所有元素, 而不是a变量本身;
-func f(args ...interface{}) {
+func fn(args ...interface{}) {  //args的类型为: []interface{}
 	for _, v := range args {
-		fmt.Print("value: ", v, ", type: ", fmt.Sprintf("%T", v), "\n")
+		fmt.Printf("%T, %v\n", v, v)
 	}
 }
-func f1(args ...interface{}) {
-	fmt.Println("-----------调用f()函数进行处理---------------")
-	f(args...)
-}
-如果传递的是args, 那么就是对args这个变量进行处理, 而不是处理切片里面的元素;
+调用:
+1)扁平化传递多个参数
+fn(6, "hello", 2.0, true, Person{"zhao", 30})
+2)传递切片, 需要在切片后面添加...
+param := []interface{}{6, "hello", 2.0, true, Person{"zhao", 30}}
+fn(param...)
+注: 传递param表示传递的是param变量本身, 而param...表示将切片内容拆开成扁平化的多个元素;
 
 
 >>结构体
@@ -685,11 +656,10 @@ type WriteCloser interface {
 
 
 >>指针
-1, &与*
-s1 := "hello"
-ptr := &s1  //ptr的类型为 *string
-s2 := *ptr
-2, go语言中不允许对指针进行运算;
+1, 声明指针变量, 默认为nil, 而通过new()得到的指针变量, 其指向一块内存区域, 所以不等于nil;
+var p *int  //p == nil
+var p = new(int)  //p != nil
+2, go语言中的指针不能进行算术运算;
 
 
 >>字符串和其他类型的转换
@@ -833,8 +803,8 @@ p := Person{"zhao", 30,}
 temp, err := json.Marsha1(p)  //temp是[]byte类型
 s := string(temp)  //json串
 注: `json:"age"`表示序列化json时给字段换一个名字;
-`json:""`标签的使用有以下几点:
-1)FieldName int `json:"myName"`: 表示在json串里使用myName作为键名;
+`json:""`标签(Tag)的使用有以下几点:
+1)FieldName int `json:"myName"`): 表示在json串里使用myName作为键名;
 2)FieldName int `json:"myName,omitempty"`: 表示在json串里使用myName作为键名, 如果该字段为空则省略;
 3)FieldName int `json:",omitempty"`: 表示使用默认键名, 如果该字段为空则省略;
 4)FieldName int `json:"-"`: 表示在json串忽略该字段;
@@ -968,7 +938,101 @@ defer close(ch)
 
 
 >>并发
-协程(goroutine) + 协程间通信(channel) + 协程间同步(锁)
+协程(goroutine) + 协程间通信(channel) + 协程同步(sync.waitgroup)
+1, 协程
+func main() {
+	go f1()
+	go f2()
+	time.Sleep(time.Second)  //主程序结束前有足够时间让协程执行完毕
+}
+2, 协程间通信--channel
+1)多个协程之间通过channel通信;
+2)select
+select语句中的case关键字只能后跟通道的发送或者接收操作;
+ch1 := make(chan int, 2)
+ch2 := make(chan string, 1)
+ch1 <- 2
+ch1 <- 6
+ch2 <- "zhao"
+for {
+	select {
+		case n := <- ch1:
+			fmt.Println("ch1: ", n)
+		case n := <- ch2:
+			fmt.Println("ch2: ", n)
+		default:
+			fmt.Println("通道里已没有数据")
+	}
+}
+注: 如果当前多个通道有数据, select会随机选择一个通道case执行;
+e, ok := <- ch  //如果ch没数据则阻塞, 如果ch已关闭则ok为false;
+3, 协程同步
+主协程等待其他协程执行完再结束: 系统工具 sync.WaitGroup
+Add(delta int)  //添加计数
+Done()  //移除一个计数, 等价于Add(-1)
+Wait()  //阻塞直到所有任务完成
+举例:
+var wg sync.WaitGroup
+func tast(i int) {
+	//defer wg.Done()
+	fmt.Println("task...", i)
+	//...
+	wg.Done()
+}
+func main() {
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go task(i)
+	}
+	wg.Wait()
+}
+4, 举例
+1)模拟多个顾客抢购鸡蛋
+func main() {
+	var wg sync.WaitGroup
+	var ch = make(chan int, 10)  
+	for i := 1; i <= 10; i++ {  //将10个鸡蛋放入channel
+		ch <- i
+	}
+	for i := 1; i <= 100; i++ {  //100个顾客并发抢购鸡蛋
+		wg.Add(1)
+		go func(n int) {  //单个抢鸡蛋的协程
+			select {
+				case egg := <- ch:
+					fmt.Printf("第%d个顾客抢到第%d个鸡蛋\n", n, egg)
+				default:
+					fmt.Printf("当前第%d个顾客, 鸡蛋已抢完\n", n)
+			}
+			wg.Done()
+		}(i)
+	}
+	wg.Wait()
+}
+2)生产者-消费者
+var chan = make(chan int, 10)
+func producer(n int) {  //生产者
+	ch <- n
+	fmt.Println("生产:", n)
+}
+func consumer() {  //消费者
+	fmt.Println("消费:", <- ch)
+}
+func main() {
+	for i := 1; i <= 10; i++ {
+		go producer(i)
+		go consumer()
+	}
+}
+
+
+>>go module(go的模块与依赖管理)
+
+
+
+
+
+
+
 
 
 

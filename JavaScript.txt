@@ -18,13 +18,13 @@ function foo(){
 foo();
 console.log(typeof a); //'undefined'
 console.log(typeof b); //'number'
-这里的b隐式的创建为一个全局变量，应该改为：
+这里的b隐式的创建为一个全局变量，应该改为:
 var a = 1, b = 1;
 
 >>try...catch
 //抛出基本类型如字符串
 try{
-	throw 'test ';
+	throw 'test';
 }catch(ex){
 	console.log(ex);
 }finally{
@@ -38,7 +38,7 @@ try{
 }finally{
 	console.log('finally');
 }
-注：finally语句可有可无, 无论是否抛出异常，finally都会被执行；
+注：finally语句可有可无, 无论是否抛出异常，finally都会被执行;
 
 //for...in
 var obj = {x: 1, y: 2};
@@ -72,7 +72,7 @@ function foo(){this.x = 1; this.y = 2;}
 foo.prototype.z = 3;
 var obj = new foo();
 3, Object.create(o);
-该方法创建了一个以o为原型的空对象；
+该方法创建了一个以o为原型的空对象;
 
 >>读对象的属性前要判断对象是否存在
 var yz, obj = {};
@@ -235,7 +235,7 @@ new Date('October 13, 1975 11:13:00');
 new Date(75, 10, 13, 11, 13, 0);
 2, 获取与设置
 d.getFullYear()/d.setFullYear();
-d.getMonth()/d.setMonth(); //月份从0开始计算, 而php是从1开始
+d.getMonth()/d.setMonth(); //月份从0开始计算
 d.getDate()/d.setDate();
 d.getHours()/d.setHours();
 d.getMinutes()/d.setMinutes();
@@ -510,8 +510,8 @@ Student.prototype.say = function(){
 Student.prototype.learn = function(){
 	console.log(this.name + ' is learning.');
 };
-这是最经典的组合式原型继承，
-通过Person.call(this, name, age)继承基类的构造函数，
+这是最经典的组合式原型继承,
+通过Person.call(this, name, age)继承基类的构造函数,
 通过Student.prototype = Object.create(Person.prototype)继承基类的原型;
 Student的原型链如下：
 Student.prototype -> Person.prototype -> Object.prototype -> null;
