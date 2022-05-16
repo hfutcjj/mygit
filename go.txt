@@ -1025,7 +1025,7 @@ func main() {
 }
 
 
->>go module(go的模块与依赖管理)
+>>go modules(go的模块与依赖管理) 
 
 
 
