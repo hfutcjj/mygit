@@ -1,1 +1,327 @@
->>
+*******************************ES6***************************************
+>>var, let, const
+1, let与var的区别:
+let有块级作用域、let不允许重复声明、let不存在变量提升;
+2, const必须在声明时初始化, const声明的基本类型就是常量, 声明的复杂类型只是引用不变;
+
+
+>>解构赋值
+可对任何可遍历的对象进行解构, 如数组、对象、字符串等, 包括完全解构、部分解构、提供默认值的解构等;
+[a, b] = [1, 2];  //完全解构
+[a, b] = 'hi';
+{name: a, age: b} = {name: 'zhao', age: 30}; 
+{name, age} = {name: 'zhao', age: 30};
+[a, , c] = [1, 2, 3];  //部分解构
+[a=1, b=2, c] = [6, 7, 8];  //带默认值的解构
+[a=1, b=a] = [6, 7];  //a=6, b=6
+
+
+>>Symbol
+新的原始数据类型Symbol, 表示独一无二的值, 一般用来定义对象的唯一属性名;
+let a = Symbol('kk')  //字符串作为Symbol的描述
+typeof a == 'symbol'  //true
+Symbol('kk') == Symbol('kk');  //false
+//Symbol作为对象的属性名
+var o1 = {}; o1[a] = 'zhao';  o1  //{Symbol(kk): 'zhao'}
+var o2 = {[a]: 'zhao'};
+Object.defineProperty(o3, a, {value: 'zhao'}); 
+
+
+>>...的用法
+var a = [1, 2], b = [1, 3], c = new Set(a), d = 'hello';
+[...c]  //将集合转换为数组
+[...d]  //将字符串转换为字符数组
+[...a, ...b]  //数组的合并
+...也可以用在函数的形参前表示可变参数;
+function f(...names) {
+	//names等价于数组
+}
+
+
+
+>>Map和Set类型
+1, Map
+1)Map与Object的区别
+Map的键可以是字符串、对象、函数等任意类型, Map的键值对个数可以从size属性获取, 
+Map不会像Object那样可能产生对象上的键名与原型链上的键名相冲突的问题;
+Map通过set()和get()函数来设置和获取值;
+2)定义Map
+var map = new Map();
+var s1 = 'zhao'; map.set(s1, 30);  
+var s2 = {}; map.set(s2, 40); 
+var s3 = function(){}; map.set(s3, 50);
+var s4 = NaN; map.set(s4, 60);
+map.get({});  //undefined, 因为{}与{}是不同的对象
+map.get(Number('abc'));  //60, 虽然NaN和自己都不相等, 但对于Map来说没有区别
+map.has('zhao');  //判断map中存在指定的键
+3)遍历Map
+有两种遍历方式:
+//for...of
+for(let [k, v] of map) { //... }
+for(let k of map.keys()) { //... }
+for(let v of map.values()) { //... }
+//forEach
+map.forEach(function(value, key) { //... });
+4)Map与Array的转换
+var a1 = [['zhao', 25], ['qian', 32]];
+var m1 = new Map(a1);  //m1: {'zhao'=>25, 'qian'=>32}
+var a2 = Array.from(m1);  
+5)Map的克隆
+var m1 = new Map([['zhao', 25], ['qian', 32]]];  //注意传入的是二维数组
+var m2 = m1; //m2与m1指向同一个实例
+var m3 = new Map(m1);  //m3生成新的实例
+6)Map的合并
+var m1 = new Map([['zhao', 23], ['qian', 30]]);
+var m2 = new Map(['zhao', 26], ['sun', 32], ['li', 38]);
+var merged = new Map([...m1, ...m2]);  //如果有重复的键, 后面的值会覆盖前面的值
+merged.size  //4 通过size属性来取得Map的大小
+2, Set
+1)Set存储的值唯一, Set的大小也是通过size属性来获得;
+var set = new Set();
+set.add(1);
+set.add({x: 1, y: 2});
+set.add({x: 1, y: 2});
+set.size  //3 两个对象是不同的引用, 所以视为不同的元素;
+set.has('zhao');  //判断set中是否存在指定的元素
+2)Set与Array的转换
+var a = [1, 2, 3, 2];
+var s1 = new Set(a);  //s1: {1, 2, 3}
+var b = [...s1];  
+3)String转Set
+var set = new Set('hello');  //set: {'h', 'e', 'l', 'o'}
+4)Set的作用
+//数组去重
+var set = new Set([1, 2, 3, 3, 3]);
+[...set];  //[1, 2, 3]
+//进行交并补运算
+var a = new Set([1, 2, 3]);
+var b = new Set([2, 3, 4]);
+var union = new Set([...a, ...b]);
+var intersect = new Set([...a].filter(x => b.has(x)));
+var diff = new Set([...a].filter(x => !b.has(x)));
+
+
+>>Proxy 与 Reflect
+
+
+>>字符串
+1, es6新增了一些字符串的方法:
+s.includes(s1);  //判断字符串中是否包含指定的子串, 返回布尔值
+s.startsWith(s1);  //判断字符串是否以指定的字符串开头
+s.endsWith(s1);  //判断字符串是否以指定的字符串结尾
+s.repeat(n);  //将字符串重复n次
+'hh'.padStart(5, 'o');  //开头填充, ooohh
+'hh'.padEnd(5, 'o');  //结尾填充, hhooo
+2, ``(模板字符串)
+``可以作为定义普通字符串、多行字符串, 也可以在其中用{}包含js的变量、表达式或函数调用;
+let s1 = `My name is ${name}, I am ${age+1} years old next year`;
+let s2 = `Game start, ${f()}`;
+注: 模板字符串中的空格和换行都会原样保留;
+
+
+>>数值
+1, parseInt()和parseFloat()从全局移到Number对象;
+2, Math对象扩展了很多新方法;
+3, Number.isFinite()  //判断一个数值是否是有限的
+Number.isInteger()  //判断是否为整数
+4, a ** b  //指数运算符
+
+
+>>对象
+
+
+
+
+
+**************************TypeScript*********************************
+>>ts的安装, 环境搭建, 及工具链
+1, 需要nodejs与npm的环境, 命令行输入: npm install -g typescript 全局安装ts,
+安装后通过: tsc -v 查看ts的版本;
+注: 在任意目录运行 npm install -g ***, 包会被安装到全局目录: nodejs/node_modules目录下;
+而局部安装必须在项目目录下运行 npm install ***, 安装到 项目/node_modules目录下;
+2, 进入vscode, 编写ts文件index.ts, 在终端输入: tsc index.ts, 将ts文件编译成js文件, 
+然后输入: node index.js 运行js文件;
+注: ts的工作流: *.ts -> tsc *.ts(编译) -> *.js;
+3, 在vscode的终端先后输入以下命令: 
+npm init  //在项目目录下生成 package.json 文件;
+npm install --save-dev lite-server  //安装本地服务器 lite-server, 可以通过localhost:3000自动访问页面;
+在package.json的"script"字段下添加 "start": "lite-server", 然后在终端输入 npm start 就可以自动打开localhost:3000;
+注: package.json 的内容类似如下: 
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "***",
+  "main": "***",
+  "scripts": {
+    "test": "***",
+    "start": "lite-server"
+  },
+  "author": "***",
+  "license": "***",
+  "dependencies": {
+	***
+  },
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  }
+}
+
+
+>>ts基础语法
+1, 指定类型
+let a = 5;  //自动进行类型推断
+let a: number = 5;  //显式指定类型
+let str = `我今年${a}岁了`; //反引号定义字符串
+2, 数据类型
+1)原始类型: 
+boolean, number, string, undefined, null;
+2)数组(Array) 与 元组(Tuple)
+//数组的定义
+let a1 = [1, 2, 4];
+let a2: number[] = [1, 2, 4];
+let a3: Array<number> = [1, 2, 4];  
+//元组: 固定长度、固定类型的数组
+let b1: [number, string] = [1, 'hi'];
+注: 如果不指定类型, 就不是元组, 而是数组; 目前元组存在的bug就是可以push;
+3)联合(Union) 与 字面量(Literal)
+//联合: 指定的多种类型
+let a: string|number
+a = 5;
+a = 'hi';
+//字面量: 指定的多个值
+let b: 1|'hi'|true
+b = 'hi';  //√
+b = [1, 2];  //×
+4)枚举(Enum)
+Enum Color {
+	red, green, blue
+}
+let a:Color = Color.green  //1
+注: 枚举的元素内部存储的是整数, 如
+Enum Color{red, green, blue}  //red(0), green(1), blue(2)
+也可以指定枚举元素的值, 如
+Enum Color{red, green=5, blue}  //red(0), green(5), blue(6)
+5)any 与 unknown
+//any等于原生js, 无须对变量进行类型检查
+let a: any = 1.5;
+Math.round(a);  //√
+//而unknown必须在对变量操作之前强制进行类型检查, 否则报错;
+let a: unknown = 1.5;
+Math.round(a);  //错
+让unknown类型正常使用的两种方法:
+1)let a: unknown = 1.5;
+if(typeof a == 'number') {
+	let num = Math.round(a);
+}
+2)使用断言
+let a: unknown = 1.5;
+let num = Math.round(a as number);
+6)undefined, void, never
+//undefined
+没有初始化的变量, 其值就是undefined;
+//void
+没有返回值的函数, 可以定义为void, 默认函数就是void;
+ts中函数返回类型要么为any或void, 要么必须返回值;
+function fn() : void {
+	//...
+}
+//never
+永远不会有返回值的函数, 就可以定义为never, 如定义异常的函数;
+function fn(message: string, errCode: number) : never {
+	throw {
+		message,
+		errCode
+	}
+}
+7)类型断言(类型适配)
+let msg: any;
+msg = 'abc';
+(<string>msg).toUpperCase();
+或者
+<msg as number).toUpperCase();
+8)函数类型
+let log = (message: string, code: number) => console.log(message, code);
+log('hi");  //×
+调用时必须传递两个参数, 只传一个参数会报错, 可以将第二个参数定义为可选, 或者设一个默认值;
+let log = (message: string, code?: number) => console.log(message, code);
+或者
+let log = (message: string, code: number = 0) => console.log(message, code);
+log('hi');  //√
+
+
+>>ts面向对象
+1, 对象类型
+const a = {name: 'zhao', age: 30};  //等价于 const a: {} = {...} 或者 const a: object = {...};
+let a: {name: string, age: number}
+a = {name: 'zhao', age: 30};
+2, 接口类型
+interface Point {
+	x: number;
+	y: number;
+}
+
+
+
+
+
+
+
+
+************************************React********************************************************
+>>JSX会被React转换为对象
+const elem = (
+	<div className="box" style={{color: 'blue'}}>
+		<h1>react</h1>
+		<p>this is react test page.</p>
+	</div>
+)
+内部经过React.createElement(), 会被转换为如下对象(简化后的):
+const elem = {
+	type: 'div',
+	props: {
+		className: 'box',
+		style: {color: 'blue'},
+		children: [{
+			type: 'h1',
+			children: 'react'
+		}, {
+			type: 'p',
+			children: 'this is react test page.'
+		}]
+	}
+}
+
+
+>>React元素
+React元素就是一个js对象, ReactDOM负责更新DOM来与react元素保持一致;
+React元素: const elem = <h1>hello world</h1>;
+ReactDOM: const root = ReactDOM.createRoot(document.getElementById('root'));
+渲染: root.render(elem);
+注: React元素是不可变对象, 一旦被创建，就无法更改它的子元素和属性;
+elem.props.className = 'change';  //×
+elem.props.style = {color: 'red'};  //×
+elem.props.style.color = 'red';  //√
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
