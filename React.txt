@@ -224,7 +224,18 @@ class Demo {
 }
 注: 类中的方法不用写function, 类中定义的方法会被放到prototype中; 调用静态方法需要用类名来调用;
 注: 类定义不会被提升, 必须在使用之前定义;
-2, 给类添加新的方法也可以通过原型来添加
+2, 方法的默认写法是定义在原型上, 如果采用箭头的写法则是定义在类的实例上;
+class Person {
+	name = 'zhao';  //定义在实例上
+	say() {  //定义在原型上
+		console.log('my name is ' + this.name);
+	}
+	walk = () => {  //定义在实例上
+		console.log(this.name + ' is walking');
+	}
+}
+住: 箭头函数中的this不进行绑定, 所以等于外层的this;
+3, 给类添加新的方法也可以通过原型来添加
 class Demo {
 	constructor(a, b) {
 		this.a = a;
@@ -240,7 +251,7 @@ Object.getPrototypeOf(demo).sub = function() {
 }
 此时demo的原型为:
 Object.getPrototypeOf(demo):  {constructor: f, sum: f, sub: f}
-3, 通过extends实现继承
+4, 通过extends实现继承
 class Child extends Father {  //... }
 
 
