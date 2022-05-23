@@ -27,16 +27,26 @@ var o2 = {[a]: 'zhao'};
 Object.defineProperty(o3, a, {value: 'zhao'}); 
 
 
->>...的用法
-var a = [1, 2], b = [1, 3], c = new Set(a), d = 'hello';
-[...c]  //将集合转换为数组
-[...d]  //将字符串转换为字符数组
-[...a, ...b]  //数组的合并
-...也可以用在函数的形参前表示可变参数;
+>>...(拓展运算符)的用法
+1, 将字符串、集合等转换为数组
+const a1 = new Set([1, 2, 3]), a2 = 'hello';
+const b1 = [...a1];  //集合 -> 数组
+const b2 = [...a2];  //字符串 -> 字符数组
+2, 数组、对象的复制
+const a1 = [1, 2, 3], b1 = {name: 'zhao', age: 32};
+const a2 = [...a1];  //复制数组
+const b2 = {...b1};  //复制对象
+3, 数组、对象的合并
+const a1 = [1, 2], a2 = [2, 3]
+[...a1, ...a2];  //[1, 2, 2, 3]
+[...a1, 2, 3];  //[1, 2, 2, 3]
+const c1 = {name: 'zhao', age: 32}, c2 = {name: 'qian', major: 'maths'}
+{...c1, ...c2};  //{name: 'qian', age: 32, major: 'maths'}
+{...c1, name: 'qian', major: 'maths'}
+4, 用在函数的形参前表示可变参数;
 function f(...names) {
 	//names等价于数组
 }
-
 
 
 >>Map和Set类型
@@ -65,7 +75,7 @@ map.forEach(function(value, key) { //... });
 4)Map与Array的转换
 var a1 = [['zhao', 25], ['qian', 32]];
 var m1 = new Map(a1);  //m1: {'zhao'=>25, 'qian'=>32}
-var a2 = Array.from(m1);  
+var a2 = Array.from(m1);  //a2: [['zhao', 25], ['qian', 32]]
 5)Map的克隆
 var m1 = new Map([['zhao', 25], ['qian', 32]]];  //注意传入的是二维数组
 var m2 = m1; //m2与m1指向同一个实例
@@ -128,6 +138,161 @@ Number.isInteger()  //判断是否为整数
 
 
 >>对象
+1, 属性和方法都可以简写
+const name = 'zhao', age = 32;
+const o = {name, age};  //等价于 {name: name, age: age}
+const o = {
+	say() { //... }  //等价于 say: function() { //... }
+}
+2, 拓展运算符(...)写在对象前面, 可进行对象的复制和合并;
+const o2 = {...o1};  //复制
+const o3 = {...o1, ...o2};  //两个对象合并
+const o3 = {...o1, name: 'qian', major: 'maths'};  //对象与其他属性的合并
+3, 对象的新方法
+1)Object.assign(target, source1, ...) 
+将后面的对象的属性复制进第一个对象, 并返回第一个对象;
+let o1 = {a: 1}, o2 = {b: 2}, o3 = {c: 3};
+Object.assign(o1, o2, o3); //o1: {a: 1, b: 2, c: 3}
+let o = Object.assign({a: 1}, {b: 2});  //o: {a: 1, b: 2}
+注: 遇到同名属性时, 遵循后面覆盖前面的原则;
+let o2 = Object.assign(o1);  //只接受一个参数时, 表示复制对象;
+
+
+>>数组
+1, 数组的创建
+1)Array.of() 
+let a = Array.of(1, 2, 4);  //等价于 new Array()
+2)Array.from()
+用于将类数组、字符串、Set、Map等可迭代对象转化为数组;
+var a1 = Array.from([1, 2, 3], n => n*n);  //[1, 4, 9]
+var a2 = Array.from('hello');  //字符串->字符数组
+var a3 = Array.from(new Set([1, 2, 1, 3, 1, 4]));  //[1, 2, 3, 4], 可用于数组的去重
+2, 扩展运算符(...)写在数组前面, 可进行数组的复制与合并;
+const a2 = [...a1];  //复制
+const a3 = [...a1, ...a2];  //两个数组的合并
+const a3 = [...a1, 4, 5];  //数组与其他值的合并
+
+
+>>函数
+1, 默认参数
+function fn(name, age=20) { //... }
+2, 不定参数
+function fn(...values) { //... }
+3, 箭头函数
+var fn = (id, name) => ({id: id, name: name});
+注: 当只有一个参数时, 参数可以省略(), 当函数体只有一条语句时, 可以省略{};
+如果返回一个对象, 为了区分于代码块, 要用()将对象包裹起来;
+4, 箭头函数中的this
+箭头函数中的this是外层的this对象, 即是定义函数时的对象, 而不是使用函数时的对象;
+function fn() {
+	setTimeout(() => {
+		console.log(this.a);
+	}, 1000);
+}
+var a = 20;
+fn.call({a: 18});  //18
+箭头函数不适合的场景, 看下面的例子:
+var o1 = {
+	age: 20,
+	say: function(){
+		console.log(this.age);  //此处的 this == o1 
+	}
+}
+var o2 = {
+	age: 20, 
+	say: () => {
+		console.log(this.age);  //此处的 this == window
+	}
+}
+
+
+>>类
+1, es6中的Class底层就是函数实现;
+类中的成员包括静态属性、静态方法、实例属性、构造方法、原型方法等;
+class Demo {
+	static a = 1;  //静态属性
+	b = 2;  //实例属性
+	constructor(value){  //构造方法
+		this.c = value;  //实例属性  
+	}
+	static f1() {  //静态方法
+		//...
+	}
+	f2() {  //原型方法
+		//...
+	}
+}
+注: 类中的方法不用写function, 类中定义的方法会被放到prototype中; 调用静态方法需要用类名来调用;
+注: 类定义不会被提升, 必须在使用之前定义;
+2, 给类添加新的方法也可以通过原型来添加
+class Demo {
+	constructor(a, b) {
+		this.a = a;
+		this.b = b;
+	}
+	sum() {
+		return this.a + this.b;
+	}
+}
+let demo = new Demo(10, 20);
+Object.getPrototypeOf(demo).sub = function() {
+	return this.a - this. b;
+}
+此时demo的原型为:
+Object.getPrototypeOf(demo):  {constructor: f, sum: f, sub: f}
+3, 通过extends实现继承
+class Child extends Father {  //... }
+
+
+>>模块
+1, es6通过import与export来导入和导出模块, 可以导入和导出函数、对象以及各种类型的变量等;
+//util.js
+let age = 32;
+let fn = function() {  //... }
+class Demo { //... }
+export { age, fn, Demo }  //导出
+//test.js
+import { age, fn, Demo } from './util.js';  //导入
+2, as
+给导出或导入的名称起别名, 比如导出时隐藏模块内部的变量, 或解决导入不同模块时名称重复的问题;
+import { myName as name } from './util.js';
+export { myName as name };
+3, export default
+一个模块中 export default 只能有一个, 导入时可以不加 {}, 且可以使用任意变量来接收;
+
+
+>>Promise对象
+1, 异步编程的一种解决方案, 可以从Promise对象获取异步操作的消息;
+Promise异步操作有三种状态: Pending(进行中), fulfilled(已完成), rejected(已失败);
+var pm = new Promise(function(resolve, reject){
+	var score = Math.floor(Math.random()*100);
+	if(score >= 60){
+		resolve(score + "分, 通过考试");
+	}else{
+		reject(score + "分, 不及格");
+	}
+});
+pm.then(function(value){
+	console.log("执行成功时的回调: ", value);
+}, function(value){
+	console.log("执行失败时的回调: ", value);
+});
+pm.then(function(value){
+	console.log("执行成功时的回调: ", value);
+});
+pm.catch(function(value){
+	console.log("执行失败时的回调: ", value);
+});
+pm.finally(function(){
+	console.log("任何时候都会执行的回调");
+});
+
+
+>>Generator函数
+
+
+
+
 
 
 
