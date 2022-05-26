@@ -603,9 +603,34 @@ window.innerWidth;
 window.innerHeight;
 
 
->>var, let, const
+>>ES6的新特性
+1, let和const命令
+2, 模板字符串
+3, 箭头函数
+4, 解构赋值
+5, 字符串、数组、对象新增的方法
+6, Symbol
+7, Map和Set类型
+8, 迭代器和生成器
+9, Promise对象
+10, Proxy对象
+11, async的用法
+12, 类 class
+13, 模块化实现
+
+
+>>let和const
 1, let与var的区别:
-let有块级作用域、let不允许重复声明、let不存在变量提升;
+1)let有块级作用域
+2)let不允许重复声明
+3)let不存在变量提升;
+4)var声明的全局变量都会绑定到window上, 而let不会;
+var a = 1; window.a  //1
+let b = 2; window.b  //error
+5)避免闭包中var存在的问题;
+const a = [], b = [];
+for(var i = 0; i < 10; i++){ a[i] = () => i; }  a[1]()  //10
+for(let i = 0; i < 10; i++){ b[i] = () => i; }  b[1]()  //1
 2, const必须在声明时初始化, const声明的基本类型就是常量, 声明的复杂类型只是引用不变;
 
 
@@ -620,37 +645,35 @@ let有块级作用域、let不允许重复声明、let不存在变量提升;
 [a=1, b=a] = [6, 7];  //a=6, b=6
 
 
->>Symbol
-新的原始数据类型Symbol, 表示独一无二的值, 一般用来定义对象的唯一属性名;
-let a = Symbol('kk')  //字符串作为Symbol的描述
-typeof a == 'symbol'  //true
-Symbol('kk') == Symbol('kk');  //false
-//Symbol作为对象的属性名
-var o1 = {}; o1[a] = 'zhao';  o1  //{Symbol(kk): 'zhao'}
-var o2 = {[a]: 'zhao'};
-Object.defineProperty(o3, a, {value: 'zhao'}); 
-
-
 >>...(拓展运算符)的用法
-1, 将字符串、集合等转换为数组
+1, 将数组的各个元素分离出来传递给函数
+如求数组的最大值, const a = [2, 5, 1, 9, 2],
+es5中的做法:
+const maxNum = Math.max.apply(null, a);
+es6中的做法:
+const maxNum = Math.max(...a);
+2, 将字符串、集合等转换为数组
 const a1 = new Set([1, 2, 3]), a2 = 'hello';
 const b1 = [...a1];  //集合 -> 数组
 const b2 = [...a2];  //字符串 -> 字符数组
-2, 数组、对象的复制
+3, 数组、对象的复制
 const a1 = [1, 2, 3], b1 = {name: 'zhao', age: 32};
 const a2 = [...a1];  //复制数组
 const b2 = {...b1};  //复制对象
-3, 数组、对象的合并
+4, 数组、对象的合并
 const a1 = [1, 2], a2 = [2, 3]
 [...a1, ...a2];  //[1, 2, 2, 3]
 [...a1, 2, 3];  //[1, 2, 2, 3]
 const c1 = {name: 'zhao', age: 32}, c2 = {name: 'qian', major: 'maths'}
 {...c1, ...c2};  //{name: 'qian', age: 32, major: 'maths'}
 {...c1, name: 'qian', major: 'maths'}
-4, 用在函数的形参前表示可变参数;
+5, 用在函数的形参前表示可变参数;
 function f(...names) {
 	//names等价于数组
 }
+6, 结合部分解构
+const props = {name: 'zhao', age: 30, major: 'maths'};
+const {name, ...other} = props;  //name: 'zhao', other: {age: 30, major: 'maths'}
 
 
 >>字符串
@@ -674,6 +697,69 @@ let s2 = `Game start, ${f()}`;
 3, Number.isFinite()  //判断一个数值是否是有限的
 Number.isInteger()  //判断是否为整数
 4, a ** b  //指数运算符
+
+
+>>函数
+1, 默认参数
+function fn(name, age=20) { //... }
+es5中的做法:
+function add(a, b) {
+	a = a || 10;
+	b = b || 20;
+	return a + b;
+}
+es6中的做法:
+const add = (a = 10, b = 20) => a + b;
+2, 不定参数
+function fn(...args) { //... }  //es6中...args代替了es5中的arguments;
+es5中的做法:
+const person = {name: 'zhao', age: 32, major: 'maths', addr: 'hefei'};
+function pick() {
+	const rs = Object.create(null);
+	for(let i = 1; i < arguments.length; i++) {  //第一个参数为对象, 所以跳过
+		rs[arguments[i]] = person[arguments[i]];
+	}
+	return rs;
+}
+es6中的做法:
+const pick = (obj, ...params) => {
+	const rs = Object.create(null);
+	for(let i = 0; i < params.length; i++) {
+		rs[params[i]] = obj[params[i]];
+	}
+	return rs;
+}
+pick(person, 'name', 'age')  //{name: 'zhao', age: 32}
+pick(person, 'name', 'major', 'addr')  //{name: 'zhao', major: 'maths', addr: 'hefei'}
+3, 箭头函数
+var fn = (id, name) => ({id: id, name: name});
+注: 当只有一个参数时, 参数可以省略(), 当函数体只有一条语句时, 可以省略{};
+如果返回一个对象, 为了区分于代码块, 要用()将对象包裹起来;
+注: 返回函数的函数, 使用箭头函数来简写:
+const f = () => () => console.log('hello bing');
+f()() //hello bing
+4, 箭头函数中的this
+箭头函数中的this是外层的this对象, 即是定义函数时的对象, 而不是使用函数时的对象;
+function fn() {
+	setTimeout(() => {
+		console.log(this.a);
+	}, 1000);
+}
+var a = 20;
+fn.call({a: 18});  //18
+箭头函数不适合的场景, 看下面的例子:
+var o1 = {
+	age: 20,
+	say: function(){
+		console.log(this.age);  //此处的 this == o1 
+	}
+}
+var o2 = {
+	age: 20, 
+	say: () => {
+		console.log(this.age);  //此处的 this == window
+	}
+}
 
 
 >>对象
@@ -710,39 +796,6 @@ var a3 = Array.from(new Set([1, 2, 1, 3, 1, 4]));  //[1, 2, 3, 4], 可用于数�
 const a2 = [...a1];  //复制
 const a3 = [...a1, ...a2];  //两个数组的合并
 const a3 = [...a1, 4, 5];  //数组与其他值的合并
-
-
->>函数
-1, 默认参数
-function fn(name, age=20) { //... }
-2, 不定参数
-function fn(...values) { //... }
-3, 箭头函数
-var fn = (id, name) => ({id: id, name: name});
-注: 当只有一个参数时, 参数可以省略(), 当函数体只有一条语句时, 可以省略{};
-如果返回一个对象, 为了区分于代码块, 要用()将对象包裹起来;
-4, 箭头函数中的this
-箭头函数中的this是外层的this对象, 即是定义函数时的对象, 而不是使用函数时的对象;
-function fn() {
-	setTimeout(() => {
-		console.log(this.a);
-	}, 1000);
-}
-var a = 20;
-fn.call({a: 18});  //18
-箭头函数不适合的场景, 看下面的例子:
-var o1 = {
-	age: 20,
-	say: function(){
-		console.log(this.age);  //此处的 this == o1 
-	}
-}
-var o2 = {
-	age: 20, 
-	say: () => {
-		console.log(this.age);  //此处的 this == window
-	}
-}
 
 
 >>类
@@ -873,7 +926,15 @@ var intersect = new Set([...a].filter(x => b.has(x)));
 var diff = new Set([...a].filter(x => !b.has(x)));
 
 
-
+>>Symbol
+新的原始数据类型Symbol, 表示独一无二的值, 一般用来定义对象的唯一属性名;
+let a = Symbol('kk')  //字符串作为Symbol的描述
+typeof a == 'symbol'  //true
+Symbol('kk') == Symbol('kk');  //false
+//Symbol作为对象的属性名
+var o1 = {}; o1[a] = 'zhao';  o1  //{Symbol(kk): 'zhao'}
+var o2 = {[a]: 'zhao'};
+Object.defineProperty(o3, a, {value: 'zhao'}); 
 
 
 
