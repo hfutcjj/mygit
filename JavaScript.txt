@@ -946,18 +946,49 @@ var diff = new Set([...a].filter(x => !b.has(x)));
 
 
 >>Symbol
-新的原始数据类型Symbol, 表示独一无二的值, 一般用来定义对象的唯一属性名;
+1, 新的原始数据类型Symbol, 表示独一无二的值, 一般用来定义对象的唯一属性名;
 let a = Symbol('kk')  //字符串作为Symbol的描述
 typeof a == 'symbol'  //true
 Symbol('kk') == Symbol('kk');  //false
-//Symbol作为对象的属性名
+2, Symbol作为对象的属性名
 var o1 = {}; o1[a] = 'zhao';  o1  //{Symbol(kk): 'zhao'}
 var o2 = {[a]: 'zhao'};
 Object.defineProperty(o3, a, {value: 'zhao'}); 
+3, 遍历
+对于一般的对象, 可以通过如下放下进行遍历:
+for(let key in o){ //... }
+Object.keys(o)
+Object.getOwnPropertyNames(o)
+Reflect.ownKeys(o)
+而如果属性是Symbol类型, 则只能通过如下方式才能遍历到:
+Object.getOwnPropertySymbols(o)
+Reflect.ownKeys(o)
 
 
+>>Iterator(迭代器)
+const a = ['one', 'two', 'three'];
+const iterator = a[Symbol.iterator]();
+iterator.next();  //{value: 'one', done: false}
+iterator.next();  //{value: 'two', done: false}
+iterator.next();  //{value: 'three', done: false}
+iterator.next();  //{value: undefined, done: true}
 
 
+>>Generator(生成器)
+通过在function关键字后加*表示定义生成器;
+Generator在函数内部使用yield表达式来将函数挂起, 为异步编程提供基础;
+调用生成器并不会执行生成器, 只是返回一个迭代器对象;
+function* func() {
+	console.log('222');
+	yield 2;
+	console.log('333');
+	yield 3;
+	console.log('end');
+}
+const fn = func();  
+const a = fn.next();  //222   a: {value: 2, done: false}
+const b = fn.next();  //333   b: {value: 3, done: false}
+const c = fn.next();  //end   c: {value: undefined, done: true}
 
 
 
