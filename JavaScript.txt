@@ -635,14 +635,18 @@ for(let i = 0; i < 10; i++){ b[i] = () => i; }  b[1]()  //1
 
 
 >>解构赋值
-可对任何可遍历的对象进行解构, 如数组、对象、字符串等, 包括完全解构、部分解构、提供默认值的解构等;
-[a, b] = [1, 2];  //完全解构
-[a, b] = 'hi';
-{name: a, age: b} = {name: 'zhao', age: 30}; 
-{name, age} = {name: 'zhao', age: 30};
-[a, , c] = [1, 2, 3];  //部分解构
-[a=1, b=2, c] = [6, 7, 8];  //带默认值的解构
-[a=1, b=a] = [6, 7];  //a=6, b=6
+可对任何可遍历的对象进行解构, 如数组、对象、字符串等;
+const [a, b] = [1, 2];  //完全解构
+const [a, b] = 'hi';
+const {name: a, age: b} = {name: 'zhao', age: 30}; 
+const {name, age} = {name: 'zhao', age: 30};
+const [a, , c] = [1, 2, 3];  //部分解构
+const [a=1, b=2, c] = [6, 7, 8];  //带默认值的解构
+const [a=1, b=a] = [6, 7];  //a=6, b=6
+const obj = {name: 'zhao', age: 32, major: 'maths', addr: 'hefei'};
+const [name, ...o2} = obj;  //o2: {age: 32, major: 'maths', addr: 'hefei'}  //剩余解构
+const arr = [1, [2], 3];
+const [a, [b], c] = arr;  //嵌套解构
 
 
 >>...(拓展运算符)的用法
@@ -739,7 +743,7 @@ var fn = (id, name) => ({id: id, name: name});
 const f = () => () => console.log('hello bing');
 f()() //hello bing
 4, 箭头函数中的this
-箭头函数中的this是外层的this对象, 即是定义函数时的对象, 而不是使用函数时的对象;
+1)箭头函数中this没有自身的作用域, 它会向外查找最近的外层作用域;
 function fn() {
 	setTimeout(() => {
 		console.log(this.a);
@@ -747,7 +751,7 @@ function fn() {
 }
 var a = 20;
 fn.call({a: 18});  //18
-箭头函数不适合的场景, 看下面的例子:
+2)箭头函数不适合的场景, 看下面的例子:
 var o1 = {
 	age: 20,
 	say: function(){
@@ -760,27 +764,36 @@ var o2 = {
 		console.log(this.age);  //此处的 this == window
 	}
 }
+3)箭头函数不能作为构造函数;
+const o = () => {};
+new o();  //×
 
 
 >>对象
 1, 属性和方法都可以简写
 const name = 'zhao', age = 32;
-const o = {name, age};  //等价于 {name: name, age: age}
-const o = {
-	say() { //... }  //等价于 say: function() { //... }
+const person = {
+	name, 
+	age, 
+	say() {
+		//...
+	}
 }
-2, 拓展运算符(...)写在对象前面, 可进行对象的复制和合并;
+2, 属性的计算值
+const prop = 'name';
+const o1 = {
+	[prop]: 'zhao',
+	['age'+1]: 32
+};
+3, 拓展运算符(...)写在对象前面, 可进行对象的复制和合并;
 const o2 = {...o1};  //复制
 const o3 = {...o1, ...o2};  //两个对象合并
 const o3 = {...o1, name: 'qian', major: 'maths'};  //对象与其他属性的合并
-3, 对象的新方法
+4, 对象的新方法
 1)Object.assign(target, source1, ...) 
-将后面的对象的属性复制进第一个对象, 并返回第一个对象;
-let o1 = {a: 1}, o2 = {b: 2}, o3 = {c: 3};
-Object.assign(o1, o2, o3); //o1: {a: 1, b: 2, c: 3}
-let o = Object.assign({a: 1}, {b: 2});  //o: {a: 1, b: 2}
-注: 遇到同名属性时, 遵循后面覆盖前面的原则;
-let o2 = Object.assign(o1);  //只接受一个参数时, 表示复制对象;
+将后面对象的属性复制进第一个对象, 并返回第一个对象;
+const p1 = Object.assign({}, {name: 'zhao'}, {age: 32});
+p1  //{name: 'zhao', age: 32}
 
 
 >>数组
@@ -862,6 +875,12 @@ import { myName as name } from './util.js';
 export { myName as name };
 3, export default
 一个模块中 export default 只能有一个, 导入时可以不加 {}, 且可以使用任意变量来接收;
+4, import React, {Component} from 'react';
+说明'react.js'文件中分别使用了默认暴露与分别暴露的形式, 形如
+export class Component {
+	//...
+}
+export default React;
 
 
 >>Map和Set类型
