@@ -874,7 +874,7 @@ import { age, fn, Demo } from './util.js';  //导入
 import { myName as name } from './util.js';
 export { myName as name };
 3, export default
-一个模块中 export default 只能有一个, 导入时可以不加 {}, 且可以使用任意变量来接收;
+一个模块中 export default 只能有一个, 导入时可以不加 {}, 且可以使用任意变量名来接收;
 4, import React, {Component} from 'react';
 说明'react.js'文件中分别使用了默认暴露与分别暴露的形式, 形如
 export class Component {
@@ -975,22 +975,69 @@ iterator.next();  //{value: undefined, done: true}
 
 
 >>Generator(生成器)
-通过在function关键字后加*表示定义生成器;
+1, 通过在function关键字后加*表示定义生成器;
 Generator在函数内部使用yield表达式来将函数挂起, 为异步编程提供基础;
-调用生成器并不会执行生成器, 只是返回一个迭代器对象;
+调用生成器并不会执行生成器里的内容, 只是返回一个迭代器对象;
 function* func() {
 	console.log('222');
 	yield 2;
 	console.log('333');
 	yield 3;
 	console.log('end');
+	return 88;
 }
 const fn = func();  
 const a = fn.next();  //222   a: {value: 2, done: false}
 const b = fn.next();  //333   b: {value: 3, done: false}
-const c = fn.next();  //end   c: {value: undefined, done: true}
+const c = fn.next();  //end   c: {value: 88, done: true}
 
 
+>>解决回调地狱的几种异步方案
+js中的异步请求、定时器、事件处理等操作常会引起回调地狱, 有以下几种解决方法;
+1, 使用Generator
+function* gn() {
+	showLoading();
+	yield getData();
+	hideLoading();
+}
+const g = gn();
+g.next();  //执行
+function showLoading() {
+	console.log('show loading...');
+}
+function getData() {
+	setTimeout(() => {
+		console.log('get data');
+		g.next();  //此处控制获取到数据后程序再往下走
+	}, 2000);
+}
+function hideLoading() {
+	console.log('hide loading...');
+}
+2, 使用Promise
+function getJson() {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {  //使用定时器来模拟异步请求
+			let flag = Math.floor(Math.random() + 0.5);
+			if(flag == 1) {  //请求成功
+				resolve({
+					status: 200,
+					data: [{name: 'zhao', age: 30}, {name: 'qian', age: 32}]
+				});
+			} else {  //请求失败
+				reject({
+					status: 400,
+					message: 'get data error'
+				});
+			}
+		}, 2000);
+	});
+}
+getJson().then(res => { //请求成功时的处理
+	console.log(res);
+}).catch(err => {  //请求失败时的处理
+	console.log(err);
+});
 
 
 
