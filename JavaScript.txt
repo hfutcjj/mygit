@@ -992,6 +992,60 @@ const b = fn.next();  //333   b: {value: 3, done: false}
 const c = fn.next();  //end   c: {value: 88, done: true}
 
 
+>>Promise
+
+
+>>async await
+1, async放在函数前表示该函数是一个异步操作, await后面的值自动转换为Promise对象;
+async函数里可以包含多个异步操作, 等所有await执行完, 再执行then操作;
+async function f() {
+	let s = await 'hello world';  //异步操作1(假设)
+	let data = await s.split(' ');  //异步操作2
+	let flag = Math.floor(Math.random() + 0.5);
+	if(flag == 1) {  //模拟成功
+		return data;
+	} else {  //模拟失败
+		throw new Error('请求数据失败');
+		return await Promise.reject('请求数据失败');  //或者
+	}
+}
+f().then(res => {
+	console.log(res);  //['hello', 'world']
+}).catch(err => {
+	console.log(err);  //'请求数据失败'
+});
+
+
+>>fetch
+1, fetch(url)可以直接发送请求, 而且本身就是Promise, 所以可以执行then()操作;
+const url = 'https://unidemo.dcloud.net.cn/api/news';
+const url = 'https://api.github.com/search/users?q=hfutcjj';
+fetch(url).then(response => {
+	return response.json();
+}).then(res => {
+	console.log(res);
+});
+2, fetch接收第二个参数表示配置参数;
+fetch(url, {
+	method: 'POST',
+	headers: {
+		'Content-Type': 'application/json',
+		...
+	},
+	body: JSON.stringify({
+		'key': value,
+		...
+	})
+});
+3, fetch结合async使代码更优雅
+const getData = async (url) => {
+	const response = await fetch(url);
+	const data = await response.json();
+	return data;
+}
+getData(url);
+
+
 >>解决回调地狱的几种异步方案
 js中的异步请求、定时器、事件处理等操作常会引起回调地狱, 有以下几种解决方法;
 1, 使用Generator
@@ -1038,7 +1092,19 @@ getJson().then(res => { //请求成功时的处理
 }).catch(err => {  //请求失败时的处理
 	console.log(err);
 });
-
+3, 使用async+await
+function process() {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve('获取数据成功');
+		}, 2000);
+	});
+}
+async function test() {
+	let a = await process();
+	console.log(a);
+}
+test();
 
 
 

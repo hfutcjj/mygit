@@ -48,13 +48,56 @@ elem.props.style.color = 'red';  //√
 1)componentWillUnmount() * //常用, 一般在这个钩子中做一些收尾的事, 例如: 关闭定时器、取消订阅消息等;
 
 
+>>消息订阅与发布
+通过消息订阅与发布, 可以在兄弟组件之间传递数据, 从而更改状态;
+1, 下载消息订阅插件
+yarn add pubsub-js [--save] 或 npm install pubsub-js [--save]
+引入插件
+import PubSub from 'pubsub-js';
+2, A组件订阅消息
+function A() {
+	const [data, setData] = useState({ //... });
+	useEffect(() => {
+		PubSub.subscribe('atguigu', (_, data) => {  //第一个参数为消息名, 此处同'atguigu'所以省略
+			setData(preData => {
+				return {...preData, ...data}
+			});
+		};
+		return () => {  //组件解挂后取消消息订阅
+			PubSub.unsubscribe('atguigu');
+		}
+	})
+}
+3, B组件发布消息
+function B() {
+	PubSub.publish('atguigu', {
+		//...传递的数据
+	});
+}
+注: 当B发布'atguigu'消息时, 订阅该消息的A组件就会收到B发布的数据, 从而实现更改状态;
 
 
-
-
-
-
-
+>>请求数据的几种方式
+1, XMLHttpRequest
+2, jQuery.ajax({
+	//...
+})
+3, axios(url).then(res=>{
+	//...
+}).catch(err=>{
+	//...
+});
+注: jQuery.ajax()和axios(url)都是对XMLHttpRequest的封装, 而且都是第三方库, 需要先下载后使用;
+axios可以避免jQuery.ajax()产生的回调地狱的问题;
+4, fetch
+fetch(url).then(response => {
+	return response.json()  //response.json()也是Promise对象
+}).then(res => {
+	//...
+}).catch(err => {
+	//...
+});
+注: fetch是js的原生方法, 不需要下载第三方插件; 请求数据的方式也不是XMLHttpRequest;
 
 
 
