@@ -22,6 +22,12 @@ const elem = {
 }
 
 
+>>通过脚手架的 npx create-react-app demo 命令创建项目, 脚手架会通过webpack创建一个
+内置服务器devServer, public文件夹就是这台内置服务器的根路径, 然后就可以通过 
+localhost:3000来访问应用;
+注: 刷新页面, 某些静态资源会从缓存中取, 按shift键的同时刷新, 则所有资源都从后台重新取, 不走缓存;
+
+
 >>React元素
 React元素就是一个js对象, ReactDOM负责更新DOM来与react元素保持一致;
 React元素: const elem = <h1>hello world</h1>;
@@ -31,6 +37,18 @@ ReactDOM: const root = ReactDOM.createRoot(document.getElementById('root'));
 elem.props.className = 'change';  //×
 elem.props.style = {color: 'red'};  //×
 elem.props.style.color = 'red';  //√
+
+
+>>调用组件时, 组件体作为props.children一起传递
+组件定义:
+function MyLink(props) {
+	return (
+		<a className="link" {...props} />  //等价于
+		<a className="link" {...props} >{props.children}</a>  
+	)
+}
+调用组件:
+<Mylink href="..." target="_blank">百度</MyLink>
 
 
 >>组件的生命周期
@@ -144,7 +162,7 @@ router.get(path, function(req, res));
 import {BrowserRouter, Link, Route} from 'react-router-dom';
 <BrowserRouter>
 	...
-	<Link to="/about">About</Link>  //导肮链接
+	<Link to="/about">About</Link>  //导航链接
 	<Lint to="/home">Home</Link>
 	...
 	<Route path="/about" component={About}/>  //注册路由
@@ -159,8 +177,24 @@ BrowserRouter是/方式的路由器, 与之对应的HashRouter是#方式的路�
 2)接收到的props不同
 一般组件: 写组件标签时传递什么就接收什么;
 路由组件: 自动接收到三个固定的属性: history, location, match;
-
-
+6, <NavLink>
+点击导航链接时高亮显式, 使用<NavLink>代替<Link>;
+<NavLink activeClassName="active" to="/about">About</Link>
+<NavLink activeClassName="active" to="/home">Home</Link>
+给.active编写一个高亮的样式;
+注: 可以通过自定义组件来封装导航链接组件, 如
+function MyNavLink(props) {
+	return (
+		<NavLink activeClassName="active" {...props} />
+	)
+}
+7, <Switch>
+将注册路由列表用<Switch>包裹起来, 就能使Route的path与component进行单一匹配;
+8, <Redirect>
+当第一次进入页面时, 没有选择任何匹配, 则默认重定向到一个指定的匹配;
+<Route path="/about" component={About} />
+<Route path="/home" component={Home} />
+<Redirect to="/home" />
 
 
 

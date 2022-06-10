@@ -6,6 +6,11 @@ go env查看go的环境变量;
 2, 下载vscode后安装汉化包扩展以及go语言扩展, 即可进行go语言开发;
 
 
+>>认识的golang包
+fmt, unsafe, reflect, strconv, strings, 
+		
+
+
 >>Go语言命令行工具
 1, go build
 将源码文件(.go)编译成可执行文件(.exe);
@@ -43,7 +48,7 @@ Unicode是字符集, 也就是给每个字符一个固定的编号, 字符集有
 
 
 >>格式化输出
-fmt.Printf("%s", s)
+1, fmt.Printf("%s", s)
 常用的格式符如下:
 %v: 按值的本来值输出;  //%+v 打印时会增加字段名
 %d / %b / %o / %x(X): 整型的十进制 / 二进制 / 八进制 /十六进制;
@@ -52,6 +57,8 @@ fmt.Printf("%s", s)
 %T: 变量的类型;
 %p: 指针(十六进制方式显式);
 %U: Unicode字符;
+2, s := fmt.Sprintf("%s|%s", s1, s2)
+格式化拼接字符串;
 
 
 >>变量
@@ -69,8 +76,7 @@ var (
 )
 3)匿名变量 _
 _变量相当于垃圾桶, 给其赋值相当于丢弃, 如 a, _, b := 1, 2.0, "hello";
-2, Go中不存在隐式转换, 类型转换必须是显式的, 如 b := float32(a);
-3, 变量的可见性规则
+2, 变量的可见性规则
 大写字母开头的变量是公有变量, 即其他包可以读取;
 小写字母开头的变量是私有变量;
 
@@ -98,7 +104,6 @@ const (
 注: go语言中变量和常量是严格区分大小写的;
 
 
-
 >>两数交换的简写
 a, b = b, a
 
@@ -118,6 +123,7 @@ byte(=uint8), int(=int32或int64), uint(=uint32或uint64),
 rune(=int32), uintptr(无符号整型, 用于存放一个指针)
 注: byte可表示一个ascii字符, 如 
 var ch byte = 65 或 var ch byte = '\x41';
+rune可表示一个utf-8字符, 如汉字;
 2, 布尔类型
 bool
 注: 与其他语言不同, go语言不允许将其他类型转化为布尔类型;
@@ -139,13 +145,14 @@ Map类型(map)
 
 
 >>字符串
-1, go中的字符串是不可变的字节序列, 字符串统一使用UTF-8编码;
-2, 可使用``来定义多行字符串, 里面的内容原样输出, 如转义符失效;
-3, 字符串的长度
+1, go中的字符串是不可变的byte序列, go语言中没有char类型;
+可使用``来定义多行字符串, 里面的内容原样输出, 如转义符失效;
+字符串统一使用UTF-8编码, utf8编码: 1个字母占用1个字节, 1个汉字占用3个字节;
+2, 字符串的长度
 s := "胡c"
 len(s)  //4, 字节数
 utf8.RuneCountInString(s)  //2, 字符数
-4, 遍历每一个字符
+3, 遍历每一个字符
 ascii字符串遍历直接使用下标, Unicode字符串遍历使用for...range;
 1)遍历英文字符串
 s := "hello"
@@ -157,17 +164,51 @@ s := "赵a钱b孙c"
 for _, v := range s {
 	fmt.Printf("%c: %d\n", v, v)
 }
-5, 查找子串出现的位置
-s := "hello world"
-strings.Index(s, "o")  //4
-strings.LastIndex(s, "o")  //7
-注: 查找的位置索引是子节位置, 如果不存在则返回-1
-6, 字符串的不可变性
+4, 字符串的不可变性
 如果要修改字符串, 需要先将字符串转换为[]byte;
-s := "hello"
-bs := []byte(s)
+s := "hello world"
+bs := []byte(s)  //如果字符串里有汉字, 则使用 []rune
 bs[2] = '*';
 newS := string(bs)
+或者使用 strings.ReplaceAll
+ss := strings.ReplaceAll(s, "o", "*")
+5, 字符串的常用操作
+1)len(s), utf8.RuneCountInString(s)
+字符串的长度;
+2)strings.Index(s, "o"), strings.LastIndex(s, "o")
+子串出现的位置, 没有则返回-1;
+3)s[m:n]
+取子串;
+4)strings.Contains(s, "o")
+是否包含子串, 返回true或false;
+5)strings.HasPrefix(s, "o"), strings.HasSuffix(s, "o")
+前缀/后缀判断;
+6)strings.Split(s, "|")
+字符串分割, 返回[]string;
+7)strings.Join(a []string, "|")
+字符连接, 返回字符串;
+8)strings.ReplaceAll(s, "o", "*")
+替换子串;
+
+
+>>类型转换
+1, go语言中必须进行强制类型转换, 不存在隐式转换;
+2, 数值类型之间的转换
+一般将小类型转换为大类型, 避免数据丢失;
+var a int = 3
+var b float64 = 1.2
+c := float64(a) + b
+3, 字符串和其他类型的转换
+1)其他类型 => 字符串
+//fmt.Sprintf()
+s := fmt.Sprintf("%d, %.2f, %c", 2, 1.2345, 'b')
+//strconv.Format***()
+分为FormatInt()、FormatUint()、FormatFloat()、FormatBool();
+2)字符串 => 其他类型
+//strconv.Parse***()
+分为ParseInt()、ParseUint()、ParseFloat()、ParseBool();
+3)整型与字符串的快速转换
+//strconv.Itoa() / strconv.Atoi()
 
 
 //类型声明与类型别名
@@ -183,31 +224,31 @@ fmt.Printf("%T", i)  //int
 
 >>运算符
 算术运算符、关系运算符、逻辑运算符、赋值运算符、按位运算符;
-注: go语言中只有后置自增自减, 没有前置自增自减;
+注: go语言中只有后置自增自减, 没有前置自增自减; 而且++/--只能独立使用, 不能与赋值运算符一起使用, 如
+b := a++ //错
+注: &&和|| 按短路逻辑执行;
 
 
 >>控制语句
 1, 条件语句
 1)if, else, if else
-go语言中没有elseif语句;
+变量的初始化可以放在if语句里面, 如
+if sum := calSum(); sum > 100 {
+	//...
+}
 2)switch
 switch语句分为表达式switch和类型switch;
 2, 循环语句
 go语言中的循环语句只有一种, 就是for;
 1)基本语法
-for i:=1; i<=10; i++ {
-	fmt.Println("hello")
-	time.Sleep(1*time.Second)
-}
-2)for { //... }
-相当于 for true { //... }
+for i:=1; i<=10; i++ { //... }
+for ; i<=10; i++ { //... }
+for i<=10 { //... }
+for { //... }  相当于 for true { //... }
 3)遍历
 a := []string{"苹果", "香蕉", "例子"}
-for key,value := range a {
-	fmt.Println(key, value)
-}
-for _, value := range a {
-	fmt.Println(key, value)
+for k, v := range a {
+	//...
 }
 3, goto, break, continue
 1)goto
@@ -382,24 +423,6 @@ a = append(a[:index], a[index+1:]...)
 var p *int  //p == nil
 var p = new(int)  //p != nil
 2, go语言中的指针不能进行算术运算;
-
-
->>字符串和其他类型的转换
-1, 字符串与整型的转换
-//整型->字符串
-i := 10
-s := strconv.Itoa(i)
-//字符串->整型
-s := "10"
-i, err := strconv.Atoi(s)  //err不为nil表示转换失败
-2, Parse系列用于将字符串转换成其他基本类型
-b, err := strconv.ParseBool(s)  //string->bool
-i, err := strconv.ParseInt(s, base, bitSize)  //string->int
-i, err := strconv.ParseUint(s, base, bitSize)  //string->uint
-f, err := strconv.ParseFloat(s, bitSize)  //string->float32/float64
-3, Format系列用于将其他基本类型转换成字符串
-strconv.FormatBool(), strconv.FormatInt(), strconv.FormatUint(), strconv.FormatFloat()分别
-用于将布尔类型、整型、无符号整型、字符型等转换成字符串;
 
 
 >>Map
