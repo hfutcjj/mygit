@@ -143,7 +143,7 @@ async () => {
 
 >>react路由
 1, SPA(单页应用)
-整个应用只有一个页面, 点击连接不会刷新页面, 只做局部更新, 数据通过ajax请求并在前端异步展示;
+整个应用只有一个页面, 点击链接不会刷新页面, 只做局部更新, 数据通过ajax请求并在前端异步展示;
 2, 路由
 一个路由就是一个映射关系(key: value), key就是url中的path, value就是一个function或component;
 1)后端路由
@@ -195,6 +195,20 @@ function MyNavLink(props) {
 <Route path="/about" component={About} />
 <Route path="/home" component={Home} />
 <Redirect to="/home" />
+9, 嵌套路由
+在Home文件夹新建两个文件夹News和Message, 作为导航链接Home的子导航链接;
+//Home.js
+{/* 子导航区 */}
+<NavLink activeClassName='focus' to="/home/news">News</NavLink>
+<NavLink activeClassName='focus' to="/home/message">Message</NavLink>
+{/* 注册路由 */}
+<Switch>
+	<Route path="/home/news" component={News} />
+	<Route path="/home/message" component={Message} />
+	<Redirect to="/home/news" />
+</Switch>
+
+
 
 
 
