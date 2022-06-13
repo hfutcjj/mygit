@@ -133,7 +133,8 @@ string
 使用unsafe.Sizeof(a)可以得到变量a所占的字节数; 
 布尔类型占1个子节, 字符串类型占4个子节;
 声明基本类型时未初始化, 则默认为类型零值;
-4, 派生类型
+4, 引用类型
+引用类型的零值为nil;
 指针类型(Pointer),
 数组类型,
 结构化类型(struct),
@@ -211,17 +212,6 @@ s := fmt.Sprintf("%d, %.2f, %c", 2, 1.2345, 'b')
 //strconv.Itoa() / strconv.Atoi()
 
 
-//类型声明与类型别名
-1)类型声明
-type A int
-var i A = 5
-fmt.Printf("%T" i)  //main.A
-2)类型别名
-type A = int
-var i A = 5
-fmt.Printf("%T", i)  //int
-
-
 >>运算符
 算术运算符、关系运算符、逻辑运算符、赋值运算符、按位运算符;
 注: go语言中只有后置自增自减, 没有前置自增自减; 而且++/--只能独立使用, 不能与赋值运算符一起使用, 如
@@ -262,6 +252,9 @@ for { //... }  相当于 for true { //... }
 for...range用来遍历数组、切片、字符串、map及通道(channel);
 a := []string{"苹果", "香蕉", "例子"}
 for k, v := range a {
+	//...
+}
+for k := range a {  //也可以省略v, 或者将v写成_
 	//...
 }
 3, goto, break, continue
@@ -451,47 +444,55 @@ var p = new(int)  //p != nil
 
 
 >>Map
-1, Map的基本操作
-emps := map[string]int{"zhao": 30, "qian": 26, "sun": 28}
-a := emps["zhao"]
-a, ok := emps["zhao"]  //ok为false表示key不存在
-emps["cao"] = 88  //向map中添加键值对, 无则添加, 有则修改
-delete(emps, "cao")  //删除键值对, 无key也不会报错
-注: value可以为复杂类型, 如切片 a := make(map[string][]int)
-2, 可以用for...range来遍历Map
-for k, v := a {
-	fmt.Printf("%s: %d\n", k, v)
+1, 创建map
+var m map[string]int  //这种声明m为nil, 不能增加key-value
+m := make(map[string]int)  //这种声明m不为nil, 可以增加key-value
+m := map[string]int{"zhao": 30, "qian": 26, "sun": 28,}
+2, 遍历
+for k, v := range m {
+	fmt.Println(k, v)
 }
-
-
->>通道Channel
-1, Channel用于在不同Goroutine之间传递类型化的数据, 是并发安全的, 而其他数据类型都不是并发安全的;
-chan T  //声明
-ch1 := make(chan string, 5)  //声明通道类型的变量并为其赋值, 第二个参数表示通道的长度
-ch1 <- "value1"  //向通道发送数据
-value := <- ch1  //从通道接受数据
-value, ok := <- ch1  //ok为false表示通道已关闭
-close(ch1)  //关闭通道
-注: 向已满通道发送数据, 或从空通道接受数据, 都会引起阻塞;
-2, 缓冲通道与非缓冲通道
-ch := make(chan string, 5)  //缓冲通道
-ch := make(chan string, 0)  //非缓冲通道
-3, 双向通道, 发送通道, 接受通道
-ch := make(chan int, 5)  //双向通道
-type Receiver <- chan int  //接受通道
-var receiver Receiver = make(chan int, 5)
-type Sender chan <- int  //发送通道
-var sender Sender = make(chan int, 5)
+3, map的基本操作
+1)查找
+a := m["cao"]  //如果key不存在则返回0
+a, ok := m["cao"]  //ok为false表示key不存在
+2)新增或修改
+m["cao"] = 32  //向map中添加键值对, key不存在则添加, key存在则修改对应value
+3)删除
+delete(m, "cao")  //删除键值对, 无key也不会报错
+4, 给map的key或value排序
+先将key或value保存到切片中, 通过sort包给切片排序, 然后遍历切片取值;
+5, map与切片的结合
+//元素为map类型的切片
+s := make([]map[string]string, 3, 3)
+s[0] = map[string]string{"username": "zhao", "age": "26",}
+s[1] = map[string]string{"username": "qian", "age": 28",}
+s  //map[map[age:26 username:zhao], map[age:28 username:qian], map[]]
+//value为切片类型的map
+m := make(map[string][]string)
+m["skill"] = []string{"java", "golang", "js"}
+m["hobby"] = []string{"阅读", "音乐", "跑步"}
+m  //map[skill:[java golang js] hobby:[阅读 音乐 跑步]]
+6, 举例: 统计一个段落中每个单词出现的次数
+func (s string) map[string]int {
+	m := make(map[string]int)
+	bs := strings.Split(s, " ")
+	for _, v := range bs {
+		m[v]++
+	}
+	return m
+}
+注: golang中没有Set数据类型;
 
 
 >>函数
 1, 函数定义
 func fn(a int, b int) int { return a + b }
-func fn(a int, b int) (r int) { 
+func fn(a, b int) (r int) { //多个参数的类型相同, 可以使用简写形式
 	r = a + b
 	return 
 }
-func fn(a int, b int) (c int, d int){ //返回多个结果
+func fn(a, b int) (c int, d int){ //返回多个结果
 	c = a + b
 	d = a - b
 	return 
@@ -502,33 +503,135 @@ var f1 = func(a int, b int) int {
 	return a + b
 }
 //匿名函数直接调用
-var r = func(a int, b int) int {
+func(a int, b int) int {
 	return a + b
 }(4, 6)
+注: golang中函数内部不允许再定义另外一个函数, 但可以使用匿名函数的形式, 如
+func test() {
+	var f = func(a, b int) int {
+		//...
+	}
+	f()
+}
 3, 闭包
-func Accumulate(value int) func() int {
+闭包是指返回函数的函数, 内部函数可以使外部函数的变量常驻内存, 避免全局变量的污染;
+func f() func() int {
+	value := 1
 	return func() int {
 		value++
 		return value
 	}
 }
-accumulate := Accumulate(1)
-accumulate()  //2
-accumulate()  //3
+fn := f()  
+fn()  //2
+fn()  //3
 4, 可变参数
 可变参数变量是一个包含所有参数的切片;
-func fn(args ...interface{}) {  //args的类型为: []interface{}
+func f(args ...int) int {  //args的类型是 []int
+	sum := 0
 	for _, v := range args {
-		fmt.Printf("%T, %v\n", v, v)
+		sum += v
 	}
+	return sum
 }
 调用:
 1)扁平化传递多个参数
-fn(6, "hello", 2.0, true, Person{"zhao", 30})
+fn(1, 2, 3)
 2)传递切片, 需要在切片后面添加...
-param := []interface{}{6, "hello", 2.0, true, Person{"zhao", 30}}
-fn(param...)
+fn([]int{1, 2, 3}...)
 注: 传递param表示传递的是param变量本身, 而param...表示将切片内容拆开成扁平化的多个元素;
+5, 给函数起类型别名
+type calc func(int, int) int
+6, 函数可以作为另一个函数的参数或者返回值
+//函数作为参数
+func calc(x, y int, f func(int, int) int) int {
+	return f(x, y)
+}
+//调用
+rs := calc(4, 3, func(a, b int) int {  //实参可以直接用匿名函数的形式, 也可以传入函数名
+	return a * b
+})
+
+
+>>defer
+1, defer语句在函数结束或程序异常退出时执行, 当有多个defer语句时, 后面的先执行;
+defer后面跟函数调用;
+//执行结果: start end 2 1
+fmt.Print("start")
+defer fmt.Print(1)
+defer fmt.Print(2)
+fmt.Print("end) 
+//执行结果: start end 1 2
+fmt.Print("start")
+defer func(){
+	fmt.Print(1)
+	fmt.Print(2)
+}()
+fmt.Print("end")
+2, defer f(n) 实参n是立即确定, 而f(n)的执行才是延时确定的;
+当有多个defer时, 从上往下即时确定实参n, 然后从下往上延时执行函数;
+func f(id string, a, b int) int {
+	r := a + b
+	fmt.Println(id, a, b, r)
+	return r
+}
+func main() {
+	x, y := 1, 2
+	defer f("aa", x, f("a", x, y))
+}
+执行结果: 
+a 1 2 3
+aa 1 3 4
+
+
+
+>>错误处理
+go语言没有像类似java语言中的异常处理机制, 而是在函数中返回一个错误接口error, 调用者须对这个返回值是否等于nil进行判断;
+1, error接口
+type error interface {
+	Error() string
+}
+2, 自定义一个错误
+var err = errors.New("this is an error")
+//例: 自定义除数为0的错误
+var myerr = errors.New("这是除数为零的错误")
+func div(a, b int) (int, error) {
+	if b == 0 {
+		return 0, myerr
+	}
+	return a / b, nil
+}
+func main() {
+	fmt.Println(div(1, 0))  //0 这是除数为零的错误
+}
+
+
+>>异常处理: 宕机(panic)与恢复(recover)
+1, panic抛出一个异常, recover捕获异常并处理; recover()必须跟在defer后面;
+如果不通过defer...recover来对异常进行处理, 当发生异常时程序就会崩溃, 不会继续执行;
+func f() {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("处理f抛出的异常")
+		}
+	}()
+	panic("f抛出一个异常")
+}
+2, 举例
+func f(a, b int) int {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("发生错误", err)
+		} else {
+			fmt.Println("一切正常", err)
+		}
+	}()
+	return a / b
+}
+func main() {
+	f(2, 1)  //一切正常 <nil>
+	f(2, 0)  //发生错误 runtime error: integer divide by zero
+}
 
 
 >>结构体
@@ -765,58 +868,6 @@ for i := m.Front(); i != nil; i = i.Next() {
 }
 
 
->>defer
-1, defer语句在函数结束或程序异常退出时执行, 当有多个defer语句时, 后面的先执行;
-//例: 延迟并发解锁
-var (
-	values = make(map[string]int)
-	lock sync.Mutex  //互斥锁
-)
-func readValue(key string) int {
-	lock.Lock()
-	defer lock.Unlock()
-	return values[key]
-}
-
-
->>错误处理
-go语言没有像类似java语言中的异常处理机制, 而是在函数中返回一个错误接口error, 调用者须对这个返回值是否等于nil进行判断;
-1, error接口
-type error interface {
-	Error() string
-}
-2, 自定义一个错误
-var err = errors.New("this is an error")
-//例: 自定义除数为0的错误
-var myerr = errors.New("这是除数为零的错误")
-func div(a, b int) (int, error) {
-	if b == 0 {
-		return 0, myerr
-	}
-	return a / b, nil
-}
-func main() {
-	fmt.Println(div(1, 0))  //0 这是除数为零的错误
-}
-
-
->>异常处理: 宕机(panic)与恢复(recover)
-1, 有些错误只能在运行时才能被检查, 如数组越界、空指针引用等, 这些运行时错误会引起宕机;
-2, 手动触发宕机
-panic("crash")
-3, 在宕机时触发延迟执行语句
-func main() {
-	defer fmt.Println("宕机前要做的事情1")
-	defer fmt.Println("宕机前要做的事情2")
-	panic("宕机")
-}
-//输出如下
-宕机后要做的事情2
-宕机后要做的事情1
-panic: 宕机	
-4, panic相当于throw, recover相当于catch
-
-
 >>通过内存缓存来提升性能
 1, 普通的斐波那契数列生成
 func fibonacci(n int) (res int) {
@@ -988,6 +1039,26 @@ close只用于chan类型;
 s := make([]int, 3, 10)  //len(s): 3, cap(s): 10
 ch := make(chan int, 4)  //len(ch): 0, cap(ch): 4
 defer close(ch)
+
+
+>>通道Channel
+1, Channel用于在不同Goroutine之间传递类型化的数据, 是并发安全的, 而其他数据类型都不是并发安全的;
+chan T  //声明
+ch1 := make(chan string, 5)  //声明通道类型的变量并为其赋值, 第二个参数表示通道的长度
+ch1 <- "value1"  //向通道发送数据
+value := <- ch1  //从通道接受数据
+value, ok := <- ch1  //ok为false表示通道已关闭
+close(ch1)  //关闭通道
+注: 向已满通道发送数据, 或从空通道接受数据, 都会引起阻塞;
+2, 缓冲通道与非缓冲通道
+ch := make(chan string, 5)  //缓冲通道
+ch := make(chan string, 0)  //非缓冲通道
+3, 双向通道, 发送通道, 接受通道
+ch := make(chan int, 5)  //双向通道
+type Receiver <- chan int  //接受通道
+var receiver Receiver = make(chan int, 5)
+type Sender chan <- int  //发送通道
+var sender Sender = make(chan int, 5)
 
 
 >>并发
