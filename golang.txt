@@ -7,7 +7,7 @@ go env查看go的环境变量;
 
 
 >>认识的golang包
-fmt, unsafe, reflect, strconv, strings, utf8, sort, 
+fmt, unsafe, reflect, strconv, strings, utf8, sort, errors, time, 
 		
 
 
@@ -55,8 +55,10 @@ Unicode是字符集, 也就是给每个字符一个固定的编号, 字符集有
 %c / %s: 字符 / 字符串;
 %f / %e: 浮点数 / 用科学计数法表示
 %T: 变量的类型;
-%p: 指针(十六进制方式显式);
+%p: 指针(十六进制方式显示);
 %U: Unicode字符;
+注: %.2f表示保留小数点后2位的小数;
+%2d表示2位整数, 不足2位的前面补0;
 2, s := fmt.Sprintf("%s|%s", s1, s2)
 格式化拼接字符串;
 
@@ -108,14 +110,12 @@ const (
 a, b = b, a
 
 
->>数据类型
+>>基本数据类型
 1, 数值类型
 1)整型
 int8, int16, int32, int64, uint8, uint16, uint32, uint64
 2)浮点类型
 float32, float64
-浮点数的格式化输出:
-%.2f  //保留小数点后2位小数
 3)复数类型
 complex64, complex128
 4)其他
@@ -133,7 +133,10 @@ string
 使用unsafe.Sizeof(a)可以得到变量a所占的字节数; 
 布尔类型占1个子节, 字符串类型占4个子节;
 声明基本类型时未初始化, 则默认为类型零值;
-4, 引用类型
+
+
+>>引用类型
+1, 有以下引用类型
 引用类型的零值为nil;
 指针类型(Pointer),
 数组类型,
@@ -143,6 +146,19 @@ Channel类型(chan),
 切片类型(slice),
 接口类型(interface),
 Map类型(map)
+2, 引用类型默认为nil, 不能给nil变量赋值, 必须先用new()或make()函数分配内存后才能赋值;
+1)var p *int
+*p = 12 (×)
+var p *int = new(int)
+*p = 12 (√)
+2)var s []int
+s[0] = 3 (×)
+var s = make([]int, 5)
+s[0] = 3 (√)
+3)var m map[string]int
+m["zhao"] = 23 (×)
+var m = make(map[string]int)
+m["zhao"] = 23 (√)
 
 
 >>字符串
@@ -437,10 +453,14 @@ a = append(a[:index], a[index+1:]...)
 
 
 >>指针
-1, 声明指针变量, 默认为nil, 而通过new()得到的指针变量, 其指向一块内存区域, 所以不等于nil;
+1, 普通变量与指针
+a := 12
+p := &a  //取变量的地址
+b := *p  //取指针指向的地址存放的值
+2, 声明指针变量, 默认为nil, 而通过new()得到的指针变量, 其指向一块内存区域, 所以不等于nil;
 var p *int  //p == nil
 var p = new(int)  //p != nil
-2, go语言中的指针不能进行算术运算;
+3, go语言中的指针不能进行算术运算;
 
 
 >>Map
@@ -594,10 +614,9 @@ type error interface {
 2, 自定义一个错误
 var err = errors.New("this is an error")
 //例: 自定义除数为0的错误
-var myerr = errors.New("这是除数为零的错误")
 func div(a, b int) (int, error) {
 	if b == 0 {
-		return 0, myerr
+		return 0, errors.New("这是除数为零的错误")
 	}
 	return a / b, nil
 }
@@ -608,7 +627,7 @@ func main() {
 
 >>异常处理: 宕机(panic)与恢复(recover)
 1, panic抛出一个异常, recover捕获异常并处理; recover()必须跟在defer后面;
-如果不通过defer...recover来对异常进行处理, 当发生异常时程序就会崩溃, 不会继续执行;
+只有加上defer...recover(), 当程序遇到异常时, 才可以继续往下执行;
 func f() {
 	defer func() {
 		if err := recover(); err != nil {
@@ -837,37 +856,6 @@ type WriteCloser interface {
 如果一个类型同时实现了Writer和Closer接口, 则表示该类型实现了WriteCloser接口;
 
 
->>sync.Map
-线程安全的Map
-var m sync.Map  //无须初始化, 直接使用, sync.Map不能使用make()创建
-m.Store("zhao", 30)  //保存键值对, 键和值都以interface{}类型保存
-m.Load("zhao")  //取值
-m.Delete("zhao")  //删除对应的键值对
-m.Range(func(k, v interface{}) bool {  //遍历, 使用回调函数
-	fmt.Println(k, v)
-	return true  //返回true则继续下一次迭代, false则立即结束
-})  
-注: sync.Map比Map有一些性能损失, 所以在非并发情况下, 应该使用Map;
-
-
->>列表List
-列表是链表实现, 其中保存的元素类型可以不同;
-//初始化列表
-var m list.List
-或者 m := list.New()
-//插入元素
-m.PushBack("canon")  //尾部添加
-m.PushFront(67)  //头部添加
-elem := m.pushBack("fist")  //尾部添加并返回元素指针
-m.InsertAfter("high", elem)  //在元素elem之后添加
-m.InsertBefore("noon", elem)  //在元素elem之前添加
-m.Remove(elem)  //删除elem元素
-//遍历列表
-for i := m.Front(); i != nil; i = i.Next() {
-	fmt.Println(i.Value)
-}
-
-
 >>通过内存缓存来提升性能
 1, 普通的斐波那契数列生成
 func fibonacci(n int) (res int) {
@@ -974,7 +962,7 @@ sort.Slice(heros, func(i, j int) bool{
 
 >>内建方法
 1, make与new
-用于创建slice、map、chan这三种类型, 返回类型的引用;
+make用于创建slice、map、chan这三种类型, 返回类型的引用;
 1)创建切片
 s := make([]int, 3)
 s := make([]int, 3, 10)
@@ -1149,9 +1137,55 @@ func main() {
 }
 
 
->>go modules(go的模块与依赖管理) 
-
-
+>>time包和日期时间函数
+1, 当前时间、时间戳、指定字符串之间的转换
+//获取当前Time对象
+now := time.Now()  //类型: time.Time
+//获取各个时间字段
+now.Year() / now.Month() / now.Day() / now.Hour() / now.Minute() / now.Second();
+//格式化输出
+1)自定义输出指定格式:
+fmt.Printf("%d-%02d-%02d %02d:%02d:%02d", now.Year(), now.Month(), now.Day(), 
+	now.Hour(), now.Minute(), now.Second)
+2)使用Format()
+格式: 2006-年, 01-月, 02-日, 03/15-时(12/24小时制), 04-分, 05-秒
+s := now.Format("2006-01-02 03:04:05")
+//获取时间戳
+now.Unix()  //单位: 秒
+now.UnixNano()  //单位: 纳秒(秒/10^9)
+//将时间戳转换为Time对象
+utime := 1655169518
+t := time.Unix(int64(utime), 0)  //t: time.Time   //第二个参数表示纳秒的时间戳, 0表示省略
+//将指定日期时间字符串转换为Time对象
+s := "1987-07-01 15:30:00"
+template := "2006-01-02 15:04:05"  //定义模板与字符串格式匹配
+t, err := time.ParseInLocation(template, s, time.Local)
+2, 时间常量
+time.Hour  //1h0m0s
+time.Minute  //1m
+time.Second  //1s
+time.Millisecond //1ms
+time.Microsecond  //1µs
+time.Nanosecond  //1ns
+3, 日期时间的操作函数
+//将Time对象增加或减少一段时间
+t2 := t1.Add(time.Hour)
+t2 := t1.Sub(time.Hour)
+//比较两个Time对象的先后
+t2.Before(t1)
+t2.After(t1)
+4, 定时器
+1)使用time.Sleep()
+time.Sleep(3*time.Second)  //睡眠3秒
+2)使用time.NewTicker()
+ticker := time.NewTicker(3*time.Second)
+for v := range ticker.C {	//无限循环, 每隔3秒执行一次
+	//...
+	if ... {
+		ticker.Stop()  //终止定时器
+		break
+	}
+}
 
 
 
