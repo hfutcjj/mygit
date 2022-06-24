@@ -133,33 +133,30 @@ bool
 
 >>引用类型
 1, 有以下引用类型
+指针、数组、切片、map、函数、结构体、接口、chan;
 引用类型的零值为nil;
-指针类型(Pointer),
-数组类型,
-结构化类型(struct),
-Channel类型(chan),
-函数类型(func),
-切片类型(slice),
-接口类型(interface),
-Map类型(map)
 2, 引用类型默认为nil, 不能给nil变量赋值, 必须先用new()或make()函数分配内存后才能赋值;
-1)var p *int
+1)var p *int  //数组
 *p = 12 (×)
 var p *int = new(int)
 *p = 12 (√)
-2)var s []int
+2)var s []int  //切片
 s[0] = 3 (×)
 var s = make([]int, 5)
 s[0] = 3 (√)
-3)var m map[string]int
+3)var m map[string]int  //map
 m["zhao"] = 23 (×)
 var m = make(map[string]int)
 m["zhao"] = 23 (√)
+4)var ch chan int  //chan
+ch <- 12 (×)
+var ch chan int = make(chan int, 3)
+ch <- 12 (√)
 
 
 >>字符串
 1, go中的字符串是不可变的byte序列, go语言中没有char类型;
-可使用``来定义多行字符串, 里面的内容原样输出, 如转义符失效;
+可使用``来定义多行字符串, 里面的内容原样输出, 里面的转义符会失效;
 字符串统一使用UTF-8编码, utf8编码: 1个字母占用1个字节, 1个汉字占用3个字节;
 2, 字符串的长度
 s := "胡c"
@@ -186,22 +183,15 @@ newS := string(bs)
 或者使用 strings.ReplaceAll
 ss := strings.ReplaceAll(s, "o", "*")
 5, 字符串的常用操作
-1)len(s), utf8.RuneCountInString(s)
-字符串的长度;
-2)strings.Index(s, "o"), strings.LastIndex(s, "o")
-子串出现的位置, 没有则返回-1;
-3)s[m:n]
-取子串;
-4)strings.Contains(s, "o")
-是否包含子串, 返回true或false;
-5)strings.HasPrefix(s, "o"), strings.HasSuffix(s, "o")
-前缀/后缀判断;
-6)strings.Split(s, "|")
-字符串分割, 返回[]string;
-7)strings.Join(a []string, "|")
-字符连接, 返回字符串;
-8)strings.ReplaceAll(s, "o", "*")
-替换子串;
+1)长度: len(s), utf8.RuneCountInString(s)
+2)子串: s[m:n]
+3)子串的位置: strings.Index(s, "o"), strings.LastIndex(s, "o")
+4)是否包含子串: strings.Contains(s, "o")
+5)子串的个数: strings.Count(s, "o")
+6)子串的替换: strings.ReplaceAll(s, "o", "*")
+7)是否包含指定前缀/后缀: strings.HasPrefix(s, "o"), strings.HasSuffix(s, "o")
+8)分割(返回[]string): strings.Split(s, "|")
+9)连接(返回string): strings.Join(a []string, "|")
 
 
 >>类型转换
@@ -226,7 +216,7 @@ s := fmt.Sprintf("%d, %.2f, %c", 2, 1.2345, 'b')
 
 >>运算符
 算术运算符、关系运算符、逻辑运算符、赋值运算符、按位运算符;
-注: go语言中只有后置自增自减, 没有前置自增自减; 而且++/--只能独立使用, 不能与赋值运算符一起使用, 如
+注: go语言中只有后置自增自减, 没有前置自增自减; 而且++/--只能独立使用, 不能与其他表达式一起使用, 如
 b := a++ //错
 注: &&和|| 按短路逻辑执行;
 
@@ -341,30 +331,6 @@ func main(){
 }
 
 
->>模拟枚举
-go语言中没有枚举类型, 可以模拟枚举:
-type Fruit int
-const (
-	Apple Fruit = iota
-	Orange
-	Banana
-)
-当类型需要显式为字符串时, go语言会自动寻找String()方法进行调用;
-func (f Fruit) String() string {
-	switch f {
-		case Apple:
-			return "Apple"
-		case Orange:
-			return "Orange"
-		case Banana:
-			return "Banana"
-	}
-	return "NONE"
-}
-fmt.Printf("%T, %d, %s", Apple, Apple, Apple)
-
-
-
 >>数组
 1, 数组定义
 数组的长度是数组类型的一部分, 而切片不是;
@@ -435,8 +401,8 @@ fmt.Println(len(a), cap(a));  //7 12
 var c = []int{0, 0, 0}
 copy(c, b)  //c复制b
 按照较小个数的那个切片进行复制, 返回实际复制的元素个数;
-注: 整体赋值与copy的区别: 
-整体赋值是浅复制, 改变一个切片会影响到另一个;
+注: 直接赋值与copy的区别: 
+直接赋值是浅复制, 改变一个切片会影响到另一个;
 而copy是深复制, 改变一个切片不会影响到另一个;
 5, 删除切片中的元素
 go语言中没有直接删除元素的方法;
