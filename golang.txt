@@ -58,9 +58,9 @@ Unicode是字符集, 也就是给每个字符一个固定的编号, 字符集有
 %p: 指针(十六进制方式显示);
 %U: Unicode字符;
 注: %.2f表示保留小数点后2位的小数;
-%2d表示2位整数, 不足2位的前面补0;
+%2d表示2位整数, 不足2位的前面补空格;
 2, s := fmt.Sprintf("%s|%s", s1, s2)
-格式化拼接字符串;
+格式化输出到字符串;
 
 
 >>变量
@@ -72,15 +72,19 @@ var a, b, c int = 1, 2, 3 或 a, b, c := "zhao", 32, "maths"
 像 a := 3 的方式只能用在函数体内作为局部变量;
 2)变量可以分组声明
 var (
-	a int,
-	b bool,
-	c string = "hello"
+	name string = "zhao";
+	age int = 32;
+	likes []string;
 )
 3)匿名变量 _
 _变量相当于垃圾桶, 给其赋值相当于丢弃, 如 a, _, b := 1, 2.0, "hello";
 2, 变量的可见性规则
 大写字母开头的变量是公有变量, 即其他包可以读取;
 小写字母开头的变量是私有变量;
+3, go语言中的变量和常量都是严格区分大小写的;
+4, 使用reflect.TypeOf(a)可以得到a的数据类型;
+使用unsafe.Sizeof(a)可以得到变量a所占的字节数; 
+声明基本类型变量时未初始化, 则默认为类型零值;
 
 
 >>常量
@@ -88,22 +92,18 @@ _变量相当于垃圾桶, 给其赋值相当于丢弃, 如 a, _, b := 1, 2.0, "
 const NATION string = "中国" (显式),
 const NATION = "CHINA" (隐式, 也叫无类型常量)
 常量也可以通过内置函数来定义(只能通过内置函数, 使用自定义函数会报错):
-const a, b = len(NATION), reflect.TypeOf(NATION)
+const a = len(NATION)
 2, 特殊常量iota
-iota在第一次遇到const时为0, 以后每次加1;
+分块声明的多个常量, 如果省略了值则表示和上面一行的值相同; 
+如果上面出现了iota, 则下面的值缺省情况下逐步加1;
 const (
-	a = iota      //0
-	b			  //1
-	c = iota * 2  //4
-	d = iota      //3
+	a = 20        //20
+	b             //20
+	c = iota      //2
+	d	          //3
+	e             //4
+	f = iota*3    //15
 )
-注: iota只能被赋值给常量, 不能在其他地方使用;
-注: const分块声明多个常量时, 如果省略了值则表示和上面一行的值相同, 如
-const (
-	a = 100
-	b        //b也为100
-)
-注: go语言中变量和常量是严格区分大小写的;
 
 
 >>两数交换的简写
@@ -119,20 +119,16 @@ float32, float64
 3)复数类型
 complex64, complex128
 4)其他
-byte(=uint8), int(=int32或int64), uint(=uint32或uint64),
-rune(=int32), uintptr(无符号整型, 用于存放一个指针)
-注: byte可表示一个ascii字符, 如 
-var ch byte = 65 或 var ch byte = '\x41';
-rune可表示一个utf-8字符, 如汉字;
+int(=int32或int64), uint(=uint32或uint64), 
+byte(=uint8), rune(=int32), 
+uintptr(无符号整型, 用于存放一个指针)
+注: byte可表示一个ascii字符, 如 var c byte = 65 或 var c byte = '\x41';
+rune可表示一个utf-8字符, 如汉字 var c rune = '佳';
 2, 布尔类型
 bool
 注: 与其他语言不同, go语言不允许将其他类型转化为布尔类型;
-3, 字符串类型(编码统一为"UTF-8")
-string
-注: 使用reflect.TypeOf(a)可以得到a的数据类型;
-使用unsafe.Sizeof(a)可以得到变量a所占的字节数; 
+3, 字符串类型string (编码统一为"UTF-8")
 布尔类型占1个子节, 字符串类型占4个子节;
-声明基本类型时未初始化, 则默认为类型零值;
 
 
 >>引用类型
