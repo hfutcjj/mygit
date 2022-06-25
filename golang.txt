@@ -7,7 +7,7 @@ go env查看go的环境变量;
 
 
 >>认识的golang包
-fmt, unsafe, reflect, strconv, strings, utf8, sort, errors, time, 
+fmt, unsafe, reflect, strconv, strings, utf8, sort, errors, time, json, 
 		
 
 
@@ -58,7 +58,7 @@ Unicode是字符集, 也就是给每个字符一个固定的编号, 字符集有
 %p: 指针(十六进制方式显示);
 %U: Unicode字符;
 注: %.2f表示保留小数点后2位的小数;
-%2d表示2位整数, 不足2位的前面补空格;
+%02d表示2位整数, 不足2位的前面补0;
 2, s := fmt.Sprintf("%s|%s", s1, s2)
 格式化输出到字符串;
 
@@ -85,6 +85,8 @@ _变量相当于垃圾桶, 给其赋值相当于丢弃, 如 a, _, b := 1, 2.0, "
 4, 使用reflect.TypeOf(a)可以得到a的数据类型;
 使用unsafe.Sizeof(a)可以得到变量a所占的字节数; 
 声明基本类型变量时未初始化, 则默认为类型零值;
+5, 两数交换的简写
+a, b = b, a
 
 
 >>常量
@@ -104,10 +106,6 @@ const (
 	e             //4
 	f = iota*3    //15
 )
-
-
->>两数交换的简写
-a, b = b, a
 
 
 >>基本数据类型
@@ -448,7 +446,7 @@ delete(m, "cao")  //删除键值对, 无key也不会报错
 //元素为map类型的切片
 s := make([]map[string]string, 3, 3)
 s[0] = map[string]string{"username": "zhao", "age": "26",}
-s[1] = map[string]string{"username": "qian", "age": 28",}
+s[1] = map[string]string{"username": "qian", "age": "28",}
 s  //map[map[age:26 username:zhao], map[age:28 username:qian], map[]]
 //value为切片类型的map
 m := make(map[string][]string)
@@ -464,7 +462,7 @@ func (s string) map[string]int {
 	}
 	return m
 }
-注: golang中没有Set数据类型;
+注: golang中没有set数据类型;
 
 
 >>函数
@@ -613,6 +611,218 @@ func main() {
 	f(2, 1)  //一切正常 <nil>
 	f(2, 0)  //发生错误 runtime error: integer divide by zero
 }
+
+
+>>通过内存缓存来提升性能
+1, 普通的斐波那契数列生成
+func fibonacci(n int) (res int) {
+	if n == 1 || n == 2 {
+		res = 1
+	} else {
+		res = fibonacci(n-1) + fibonacci(n-2)
+	}
+	return
+}
+2, 通过内存缓存改进后的斐波那契生成
+const LIMIT = 100
+var cache [LIMIT]uint64
+func fibonacci(n int) (res int) {
+	if cache[n] != 0 {  //检查数组中是否已知斐波那契n
+		res = cache[n]
+		return 
+	}
+	if n == 1 || n == 2 {
+		res = 1
+	} else {
+		res = fibonacci(n-1) + fibonacci(n-2)
+	}
+	cache[n] = res  //将生成的斐波那契n保存到数组
+	return
+}
+注: 优化后的性能提升无数倍;
+
+
+>>排序
+1, 快速排序
+1)基本类型的快速排序
+sort.Ints(slice)  //整型切片
+sort.Strings(slice)  //字符串切片
+sort.Float64s(slice)  //浮点型切片
+2)结构体的快速排序
+sort.Slice(slice, func(i, j int) bool {
+	if slice[i].age != slice[j].age {
+		return slice[i].age < slice[j].age
+	}
+	return slice[i].name < slice[j].name
+})
+2, 自定义排序
+需要自定义类型来实现sort.Interface接口, 需要实现三个方法:
+type MyStringList []string
+func (m MyStringList) Len() int { 
+	return len(m)
+}
+func (m MyStringList) Less(i, j int) bool {
+	return m[i] < m[j]
+}
+func (m MyStringList) Swap(i, j int) {
+	m[i], m[j] = m[j], m[i]
+}
+names := MyStringList{"java", "go", "python", "js", "c++", "php",}
+sort.Sort(names)  //通过sort.Sort()函数来对切片序列进行排序
+
+
+>>内建方法
+1, make与new
+make用于创建slice、map、chan这三种类型, 返回类型的引用;
+1)创建切片
+s := make([]int, 3)
+s := make([]int, 3, 10)
+s[0] = 2
+s[1] = 4
+s[2] = 6
+fmt.Printf("%T, %v", s, s)  //[]int, [2, 4, 6]
+注: make切片时必须传入第二个参数指明切片的长度, 可选的第三个参数表示初始容量;
+2)创建map
+m := make(map[string]int)
+m["zhao"] = 26
+m["qian"] = 22
+m["sun"] = 25
+fmt.Printf("%T, %v")  //map[string]int, map[qian:22, sun:25, zhao:26]
+3)创建channel
+ch := make(chan int)  //没有缓存的chan
+ch := make(chan int, 3)  //缓存数量为3的chan
+4)new
+返回指定类型的指针, 可以给任意类型分配内存;
+2, append, copy, delete
+append与copy应用于slice, 而delete应用于map;
+1)append
+s := make([]int, 3)
+s = append(s, 1)
+s = append(s, 6, 7, 8)  //s: [0, 0, 0, 1, 6, 7, 8]
+2)copy
+a := []int{1, 2, 3}
+b1 := make([]int, 2)
+copy(b1, a)  //b1: [1, 2]
+b2 := make([]int, 4)
+copy(b2, a)  //b2: [1, 2, 3, 0]
+3)delete
+m := map[string]int{"zhao": 24, "qian": 26, "sun": 22,}
+delete(m, "qian")  //m: map[zhao:24, sun:22]
+3, panic与recover
+相当于抛出异常与捕获异常;
+func f1() {  //手动触发panic
+	fmt.Println("enter f1")
+	panic(errors.New("occur a panic"))
+	fmt.Println("quit f2")
+}	
+func f2() {  //宕机恢复
+	if p := recover(); p != nil {
+		fmt.Printf("Fatal error: %s\n", p)
+	}
+}
+func main() {
+	defer f2()
+	fmt.Println("enter main")
+	f1()
+	fmt.Println("quit main")
+}
+输出如下:
+enter main
+enter f1
+Fatal error: occur a panic
+注: defer f2()一定要放在panic()前面, 否则执行不到recover()程序就崩溃了;
+4, len, cap, close
+len用于string, array, slice, map, chan这几种类型;
+cap用于array, slice, chan这几种类型;
+close只用于chan类型;
+s := make([]int, 3, 10)  //len(s): 3, cap(s): 10
+ch := make(chan int, 4)  //len(ch): 0, cap(ch): 4
+defer close(ch)
+
+
+>>time包和日期时间函数
+1, 当前时间、时间戳、指定字符串之间的转换
+1)获取当前Time对象
+now := time.Now()  //类型: time.Time
+2)获取各个时间字段
+now.Year() / now.Month() / now.Day() / now.Hour() / now.Minute() / now.Second();
+3)格式化输出
+//自定义输出指定格式:
+fmt.Printf("%d-%02d-%02d %02d:%02d:%02d", now.Year(), now.Month(), now.Day(), 
+	now.Hour(), now.Minute(), now.Second)
+//使用Format()
+格式: 2006-年, 01-月, 02-日, 03/15-时(12/24小时制), 04-分, 05-秒
+s := now.Format("2006-01-02 03:04:05")
+4)获取时间戳
+now.Unix()  //单位: 秒
+now.UnixNano()  //单位: 纳秒(秒/10^9)
+5)将时间戳转换为Time对象
+utime := 1655169518
+t := time.Unix(int64(utime), 0)  //t: time.Time   //第二个参数表示纳秒的时间戳, 0表示省略
+6)将指定日期时间字符串转换为Time对象
+s := "1987-07-01 15:30:00"
+template := "2006-01-02 15:04:05"  //定义模板与字符串格式匹配
+t, err := time.ParseInLocation(template, s, time.Local)
+2, 时间常量
+time.Hour  //1h0m0s
+time.Minute  //1m
+time.Second  //1s
+time.Millisecond //1ms
+time.Microsecond  //1µs
+time.Nanosecond  //1ns
+3, 日期时间的操作函数
+1)将Time对象增加或减少一段时间
+t2 := t1.Add(time.Hour)
+t2 := t1.Sub(time.Hour)
+2)比较两个Time对象的先后
+t2.Before(t1)
+t2.After(t1)
+4, 定时器
+1)使用time.Sleep()
+time.Sleep(3*time.Second)  //睡眠3秒
+2)使用time.NewTicker()
+ticker := time.NewTicker(3*time.Second)
+for v := range ticker.C {	//无限循环, 每隔3秒执行一次
+	//...
+	if ... {
+		ticker.Stop()  //终止定时器
+		break
+	}
+}
+
+
+>>json
+go语言中json的序列化和反序列化需要通过[]byte类型来中转;
+1, json.Marsha1()  //序列化
+1)序列化slice, map
+o := map[string]int{"zhao": 26, "qian": 32, "sun": 28}
+if b, err := json.Marsha1(o); err == nil {
+	fmt.Println(string(b))
+}
+2)序列化结构体对象
+type Person struct {
+	Name string
+	Age int `json:"age"`
+}
+p := Person{"zhao", 30,}
+temp, err := json.Marsha1(p)  //temp是[]byte类型
+s := string(temp)  //json串
+注: `json:"age"`表示序列化时给字段取一个别名;
+`json:""`标签(Tag)的使用有以下几点:
+1)FieldName int `json:"myName"`: 表示在json串里使用myName作为键名;
+2)FieldName int `json:"myName,omitempty"`: 表示在json串里使用myName作为键名, 如果该字段为空则省略;
+3)FieldName int `json:",omitempty"`: 表示使用默认键名, 如果该字段为空则省略;
+4)FieldName int `json:"-"`: 表示在json串忽略该字段;
+2, json.Unmarsha1()  //反序列化
+1)反序列化slice, map
+s := `{"zhao": 26, "qian": 32, "sun": 28}`
+o := make(map[string]int)
+json.Unmarshal([]byte(s), &o)
+fmt.Printf("%T, %v", o, o)
+2)反序列化结构体对象
+s := `{"Name": "zhao", "Age": 30}`
+ptr := new(Person)
+err := json.Unmarsha1([]byte(s), ptr)  //ptr就是指向对象的指针
 
 
 >>结构体
@@ -818,179 +1028,6 @@ type WriteCloser interface {
 如果一个类型同时实现了Writer和Closer接口, 则表示该类型实现了WriteCloser接口;
 
 
->>通过内存缓存来提升性能
-1, 普通的斐波那契数列生成
-func fibonacci(n int) (res int) {
-	if n == 1 || n == 2 {
-		res = 1
-	} else {
-		res = fibonacci(n-1) + fibonacci(n-2)
-	}
-	return
-}
-2, 通过内存缓存改进后的斐波那契生成
-const LIMIT = 100
-var cache [LIMIT]uint64
-func fibonacci(n int) (res int) {
-	if cache[n] != 0 {  //检查数组中是否已知斐波那契n
-		res = cache[n]
-		return 
-	}
-	if n == 1 || n == 2 {
-		res = 1
-	} else {
-		res = fibonacci(n-1) + fibonacci(n-2)
-	}
-	cache[n] = res  //将生成的斐波那契n保存到数组
-	return
-}
-注: 优化后的性能提升无数倍;
-
-
->>json
-go语言中json的序列化和反序列化需要通过[]byte类型来中转;
-1, json.Marsha1()  //序列化
-type Person struct {
-	Name string
-	Age int `json:"age"`
-}
-p := Person{"zhao", 30,}
-temp, err := json.Marsha1(p)  //temp是[]byte类型
-s := string(temp)  //json串
-注: `json:"age"`表示序列化json时给字段换一个名字;
-`json:""`标签(Tag)的使用有以下几点:
-1)FieldName int `json:"myName"`): 表示在json串里使用myName作为键名;
-2)FieldName int `json:"myName,omitempty"`: 表示在json串里使用myName作为键名, 如果该字段为空则省略;
-3)FieldName int `json:",omitempty"`: 表示使用默认键名, 如果该字段为空则省略;
-4)FieldName int `json:"-"`: 表示在json串忽略该字段;
-2, json.Unmarsha1()  //反序列化
-s := `{"Name": "zhao", "Age": 30}`
-ptr := new(Person)
-err := json.Unmarsha1([]byte(s), ptr)  //ptr就是指向对象的指针
-
-
->>排序
-1, 自定义排序
-需要自定义类型来实现sort.Interface接口, 需要实现三个方法:
-type MyStringList []string
-func (m MyStringList) Len() int { 
-	return len(m)
-}
-func (m MyStringList) Less(i, j int) bool {
-	return m[i] < m[j]
-}
-func (m MyStringList) Swap(i, j int) {
-	m[i], m[j] = m[j], m[i]
-}
-names := MyStringList{"java", "go", "python", "js", "c++", "php",}
-sort.Sort(names)  //通过sort.Sort()函数来对切片序列进行排序
-2, 常见基本类型的快速排序
-1)字符串的排序
-方式一: 
-直接使用sort.Strings(names)对字符串切片进行排序;
-names := []string{ //... }
-sort.Strings(names)
-
-方式二:
-names := sort.StringSlice{"java", "go", "python", "js", "c++", "php",}  //字符串切片
-sort.Sort(names)
-2)整型的排序
-使用sort.IntSlice整型切片然后sort.Sort(), 或者使用sort.Ints()快速排序;
-3)浮点数的排序
-使用sort.Float64Slice浮点切片然后sort.Sort(), 或者使用sort.Float64s()快速排序;
-3, 对结构体切片进行排序
-1)自定义排序规则
-type Hero struct{
-	Name string
-	King int
-}
-type Heros []*Hero 
-然后让Heros实现sort.Interface接口;
-names := Heros{
-	//...
-}
-sort.Sort(names)
-2)快速排序 sort.Slice()
-函数原型如下:
-func Slice(slice interface{}, less func(i, j int) bool)
-使用:
-sort.Slice(heros, func(i, j int) bool{
-	if heros[i].Kind != heros[j].Kind {
-		return heros[i].Kind < heros[j].Kind
-	}
-	return heros[i].Name < heros[j].Name
-})
-
-
->>内建方法
-1, make与new
-make用于创建slice、map、chan这三种类型, 返回类型的引用;
-1)创建切片
-s := make([]int, 3)
-s := make([]int, 3, 10)
-s[0] = 2
-s[1] = 4
-s[2] = 6
-fmt.Printf("%T, %v", s, s)  //[]int, [2, 4, 6]
-注: make切片时必须传入第二个参数指明切片的长度, 可选的第三个参数表示初始容量;
-2)创建map
-m := make(map[string]int)
-m["zhao"] = 26
-m["qian"] = 22
-m["sun"] = 25
-fmt.Printf("%T, %v")  //map[string]int, map[qian:22, sun:25, zhao:26]
-3)创建channel
-ch := make(chan int)  //没有缓存的chan
-ch := make(chan int, 3)  //缓存数量为3的chan
-4)new
-返回指定类型的指针, 可以给任意类型分配内存;
-2, append, copy, delete
-append与copy应用于slice, 而delete应用于map;
-1)append
-s := make([]int, 3)
-s = append(s, 1)
-s = append(s, 6, 7, 8)  //s: [0, 0, 0, 1, 6, 7, 8]
-2)copy
-a := []int{1, 2, 3}
-b1 := make([]int, 2)
-copy(b1, a)  //b1: [1, 2]
-b2 := make([]int, 4)
-copy(b2, a)  //b2: [1, 2, 3, 0]
-3)delete
-m := map[string]int{"zhao": 24, "qian": 26, "sun": 22,}
-delete(m, "qian")  //m: map[zhao:24, sun:22]
-3, panic与recover
-相当于抛出异常与捕获异常;
-func f1() {  //手动触发panic
-	fmt.Println("enter f1")
-	panic(errors.New("occur a panic"))
-	fmt.Println("quit f2")
-}	
-func f2() {  //宕机恢复
-	if p := recover(); p != nil {
-		fmt.Printf("Fatal error: %s\n", p)
-	}
-}
-func main() {
-	defer f2()
-	fmt.Println("enter main")
-	f1()
-	fmt.Println("quit main")
-}
-输出如下:
-enter main
-enter f1
-Fatal error: occur a panic
-注: defer f2()一定要放在panic()前面, 否则执行不到recover()程序就崩溃了;
-4, len, cap, close
-len用于string, array, slice, map, chan这几种类型;
-cap用于array, slice, chan这几种类型;
-close只用于chan类型;
-s := make([]int, 3, 10)  //len(s): 3, cap(s): 10
-ch := make(chan int, 4)  //len(ch): 0, cap(ch): 4
-defer close(ch)
-
-
 >>通道Channel
 1, Channel用于在不同Goroutine之间传递类型化的数据, 是并发安全的, 而其他数据类型都不是并发安全的;
 chan T  //声明
@@ -1097,62 +1134,6 @@ func main() {
 		go consumer()
 	}
 }
-
-
->>time包和日期时间函数
-1, 当前时间、时间戳、指定字符串之间的转换
-//获取当前Time对象
-now := time.Now()  //类型: time.Time
-//获取各个时间字段
-now.Year() / now.Month() / now.Day() / now.Hour() / now.Minute() / now.Second();
-//格式化输出
-1)自定义输出指定格式:
-fmt.Printf("%d-%02d-%02d %02d:%02d:%02d", now.Year(), now.Month(), now.Day(), 
-	now.Hour(), now.Minute(), now.Second)
-2)使用Format()
-格式: 2006-年, 01-月, 02-日, 03/15-时(12/24小时制), 04-分, 05-秒
-s := now.Format("2006-01-02 03:04:05")
-//获取时间戳
-now.Unix()  //单位: 秒
-now.UnixNano()  //单位: 纳秒(秒/10^9)
-//将时间戳转换为Time对象
-utime := 1655169518
-t := time.Unix(int64(utime), 0)  //t: time.Time   //第二个参数表示纳秒的时间戳, 0表示省略
-//将指定日期时间字符串转换为Time对象
-s := "1987-07-01 15:30:00"
-template := "2006-01-02 15:04:05"  //定义模板与字符串格式匹配
-t, err := time.ParseInLocation(template, s, time.Local)
-2, 时间常量
-time.Hour  //1h0m0s
-time.Minute  //1m
-time.Second  //1s
-time.Millisecond //1ms
-time.Microsecond  //1µs
-time.Nanosecond  //1ns
-3, 日期时间的操作函数
-//将Time对象增加或减少一段时间
-t2 := t1.Add(time.Hour)
-t2 := t1.Sub(time.Hour)
-//比较两个Time对象的先后
-t2.Before(t1)
-t2.After(t1)
-4, 定时器
-1)使用time.Sleep()
-time.Sleep(3*time.Second)  //睡眠3秒
-2)使用time.NewTicker()
-ticker := time.NewTicker(3*time.Second)
-for v := range ticker.C {	//无限循环, 每隔3秒执行一次
-	//...
-	if ... {
-		ticker.Stop()  //终止定时器
-		break
-	}
-}
-
-
-
-
-
 
 
 
