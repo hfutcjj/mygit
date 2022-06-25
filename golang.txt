@@ -844,20 +844,7 @@ p2 := &p1
 注: 取地址实例化是最广泛的一种结构体实例化方式;
 3, 初始化
 1)使用键值对形式
-type People struct {
-	name string
-	child *People
-}
-relation := &People{
-	name: "爷爷",
-	child: &People{
-		name: "爸爸",
-		child: &People{
-			name: "我",
-		},
-	}
-}
-注: 结构体成员中只能包含本结构体的指针类型, 非指针类型则报错;
+p1 := Point{x: 2, y: 4}
 2)使用列表形式
 p1 := Point{2, 4}
 使用列表形式必须初始化所有字段, 且顺序一致;
@@ -874,44 +861,38 @@ msg := &struct {  //定义部分
 	"hello",
 }
 5, 嵌入结构体
+//定义结构体以及方法
 type Person struct {
 	Name string
 	Age int
+}
+func (p Person) say() {
+	fmt.Println(p.Name + " is saying")
 }
 type Student struct {
 	Person
 	Major string
 }
-s1 := Student{
+func (s Student) study() {
+	fmt.Println(s.Name + " is studying " + s.Major)
+}
+//测试用例
+s := Student{
 	Person{"zhao", 26},
 	"Maths",
 }
-var s2 Student  //实例化Student也会自动实例化Person: {{"", 0}, ""}
-s2.Name = "qian"
-s2.Age = 28
-s2.Major = "Maths"
-fmt.Printf("%T, %v", s1, s1)  //main.Student, {{"zhao", 26}, "Maths"}
-6, 模拟构造函数重载
-go语言没有提供构造函数相关的机制, 用户根据需求将参数使用函数传递给结构体;
-type Cat struct {
-	Color string
-	Name string
-}
-func NewCatByName(name string) *Cat {
-	return &Cat{
-		Name: name
-	}
-}
-func newCatByColor(color string) *Cat {
-	return &Cat{
-		Color: color
-	}
-}
-7, 方法
+p := new(Student)
+p.Name = "zhao"
+p.Age = 26
+p.Major = "maths"
+p.say()
+p.study()
+注: golang中没有继承, 可以使用嵌入结构体来实现继承;
+6, 方法
 go的方法是作用在接收器上的一个函数;
 接收器可以是任何类型(除了接口类型), 也就是说任何类型都可以定义方法, 比如基本类型的别名类型、函数类型等;
 接收器分为指针类型接收器和非指针类型接收器, 区别在于是否能修改结构体的字段;
-8, 为任意类型添加方法
+7, 可以为任意类型添加方法
 type MyInt int
 func (m MyInt) IsZero() bool {
 	return m == 0
@@ -919,78 +900,22 @@ func (m MyInt) IsZero() bool {
 func (m MyInt) Add(other int) int {
 	return other + int(m)
 }
-9, 继承: 内嵌结构体
-1)结构体可以包含匿名字段, 即只有字段的类型, 此时类型就可以当名字使用;
-Go语言没有继承, 可以通过结构体的内嵌或组合来模拟继承;
-type innerS struct {
-	in1 int
-	in2 int
-}
-type outerS struct {
-	a int
-	b float32
-	int
-	innerS
-}
-func main() {
-	o1 := new(outerS)
-	o1.b = 2.1
-	o.int = 3
-	o.in1 = 6
-	o.in2 = 8
-	o2 := outerS{1, 2.0, 5, interS{6, 8}}
-}
-注: 访问内嵌结构体的字段, 可以使用详细的字段进行一层层访问, 也可以直接访问, 如 o.innerS.in1, 或 o.in1;
-2)使用内嵌结构体模拟继承
-type Walking struct{}
-func (w *Walking) Walk(){
-	fmt.Println("I can walk")
-}
-type Flying struct{}
-func (f *Flying) Fly(){
-	fmt.Println("I can fly")
-}
-//通过组合来实现继承关系
-type Bird struct {
-	Walking
-	Flying
-}
-int main() {
-	b := new(Bird)
-	b.Walk()
-	b.Fly()
-}
 
 
 >>接口
 1, 如果一个任意类型T的方法集为一个接口类型的方法集的超集, 则称类型T实现了此接口类型;
 type Walker interface{
-	Walk() error
+	Walk()
 }
 type Person struct {}
-func (p Person) Walk() error {
+func (p Person) Walk() {
 	fmt.Println("Person can walk")
-	return nil
 }
-var walker Walker = Person{}
-walker.Walk()
+var w Walker = Person{}
+w.Walk()
 当一个类型实现了接口, 就可以把该类型变量赋值给接口类型的变量;
 注: Go语言中实现接口是隐式的, 叫做非侵入式设计; 
-2, 可以通过本类型和嵌入的类型来共同实现一个接口, 避免代码冗余;
-type Service interface {  //定义接口
-	Start()
-	Log(string)
-}
-type Logger struct {}  //Logger实现接口的Log()方法
-func (g *Logger) Log(s string) {}
-type GameService struct {  //GameService实现接口的Start()方法, 同时通过内嵌Logger类型实现Log()方法
-	Logger
-}
-func (g *GameService) Start() {}
-var s Service = new(GameService)
-s.Start()
-s.Log("hello")
-3, nil
+2, nil
 nil只能被赋值给指针或者接口;
 只有显式地将nil赋值给接口时, 接口才等于nil, 如
 var w *Walker = nil
@@ -999,11 +924,11 @@ w == nil  //true
 var p *Person = nil  
 var w Walker = p  //*Person实现了Walker接口
 p == nil  //false
-4, 类型断言
+3, 类型断言
 1)x.(T)
 var x interface{} = 10
-value, ok := x.(int)  //10 true
-value, ok := x.(string)  // "" false
+v, ok := x.(int)  //10 true
+v, ok := x.(string)  // "" false
 2)x.(type)
 只能用于switch结构中;
 switch x.(type) {
@@ -1014,7 +939,7 @@ switch x.(type) {
 	default:
 		//...
 }
-5, 接口的嵌套
+4, 接口的嵌套
 type Writer interface {
 	Write(p []byte) (n int, err error)
 }
