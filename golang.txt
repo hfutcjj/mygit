@@ -50,7 +50,7 @@ Unicode是字符集, 也就是给每个字符一个固定的编号, 字符集有
 >>格式化输出
 1, fmt.Printf("%s", s)
 常用的格式符如下:
-%v: 按值的本来值输出;  //%+v 打印时会增加字段名
+%v: 按值的本来值输出;  //%+v 打印时会增加字段名, %#v 打印时会增加类型名和字段名
 %d / %b / %o / %x(X): 整型的十进制 / 二进制 / 八进制 /十六进制;
 %c / %s: 字符 / 字符串;
 %f / %e: 浮点数 / 用科学计数法表示
@@ -793,62 +793,70 @@ for v := range ticker.C {	//无限循环, 每隔3秒执行一次
 
 >>json
 go语言中json的序列化和反序列化需要通过[]byte类型来中转;
-1, json.Marsha1()  //序列化
-1)序列化slice, map
-o := map[string]int{"zhao": 26, "qian": 32, "sun": 28}
+1, json.Marshal()  
+用于将slice, map, struct等类型序列化为[]byte, 再转换为json串;
+o := []Person{{"zhao", 26}, {"qian", 29}, {"sun", 24}}
 if b, err := json.Marsha1(o); err == nil {
-	fmt.Println(string(b))
+	s = string(b)
 }
-2)序列化结构体对象
+2, json.Unmarsha1()  
+用于将json串(先转换成[]byte)反序列化为对应的slice, map, struct等类型;
+s := `{"zhao": 26, "qian": 32, "sun": 28}`
+o := make(map[string]int)  //或直接声明指针 o := new(Person)
+json.Unmarshal([]byte(s), &o)  //第二个参数为指针
+fmt.Printf("%T, %v", o, o)
+3, 结构体的字段需要特殊处理的情形(字段标签)
 type Person struct {
 	Name string
 	Age int `json:"age"`
 }
-p := Person{"zhao", 30,}
-temp, err := json.Marsha1(p)  //temp是[]byte类型
-s := string(temp)  //json串
 注: `json:"age"`表示序列化时给字段取一个别名;
-`json:""`标签(Tag)的使用有以下几点:
-1)FieldName int `json:"myName"`: 表示在json串里使用myName作为键名;
-2)FieldName int `json:"myName,omitempty"`: 表示在json串里使用myName作为键名, 如果该字段为空则省略;
-3)FieldName int `json:",omitempty"`: 表示使用默认键名, 如果该字段为空则省略;
-4)FieldName int `json:"-"`: 表示在json串忽略该字段;
-2, json.Unmarsha1()  //反序列化
-1)反序列化slice, map
-s := `{"zhao": 26, "qian": 32, "sun": 28}`
-o := make(map[string]int)
-json.Unmarshal([]byte(s), &o)
-fmt.Printf("%T, %v", o, o)
-2)反序列化结构体对象
-s := `{"Name": "zhao", "Age": 30}`
-ptr := new(Person)
-err := json.Unmarsha1([]byte(s), ptr)  //ptr就是指向对象的指针
+注: 结构体序列化时会自动省略以小写字母开头的字段;
 
 
 >>结构体
-1, 实例化
+1, 定义
 结构体的定义只是一种内存布局的描述, 只有当实例化时, 才会真正分配内存;
-//基本的实例化形式
-type Point struct {  //定义
-	X, Y int
+type Person struct {
+	name string
+	age int
 }
-var p Point  //实例化  {0, 0}
-p.X = 2
-p.Y = 6
-2, 结构体指针
-p := new(Point)  //类型: *main.Point
-p.X = 2  //指针类型仍然可以像普通类型一样使用.来访问成员
-p.Y = 6  //底层自动转换 (*p).Y
-p2 := &Point{}  //取地址实例化
-p2 := &p1 
-注: 取地址实例化是最广泛的一种结构体实例化方式;
-3, 初始化
-1)使用键值对形式
-p1 := Point{x: 2, y: 4}
-2)使用列表形式
-p1 := Point{2, 4}
-使用列表形式必须初始化所有字段, 且顺序一致;
-4, 匿名结构体
+2, 初始化
+1)最基本的方式
+var p1 Person  //此时p1已分配内存, 值为{"", 0}
+p1.name = "zhao"
+p1.age = 32
+2)结构体指针的方式(常用)
+p2 := new(Person)  //等价于 p2 := &Person{}
+p2.name = "zhao"
+p2.age = 32
+注: golang中结构体指针可以直接通过.来取字段值, 如p.name, 等价于(*p).name;
+注: %T: *main.Person;  %#v: &main.Person{name:"zhao", age:32};
+3)键值对的形式
+p3 := Person{name: "zhao", age: 32,} 或 
+p3 := &Person{name: "zhao", age: 32,}
+4)列表的方式
+p4 := Person{"zhao", 32,} 或 
+p4 := &Person{"zhao", 32,}
+注: 使用列表的方式必须初始化所有字段且顺序一致;
+3, 结构体是值类型
+结构体与数组一样, 是值类型; 而结构体指针与切片、map一样, 是引用类型;
+p1 := Person{"zhao", 32,}
+p2 := p1
+p2.age = 88
+p1  //{"zhao", 32}
+4, 结构体定义方法
+1)接收者为结构体
+func (p Person) say() {
+	fmt.Printf("name: %s, age: %d\n", p.name, p.age)
+}
+2)接收者为结构体指针
+func (p *Person) grow() {
+	p.age++
+}
+注: 如果需要修改结构体的字段值, 则接收者必须为结构体指针;
+注: 只能给自定义类型定义方法, 不能给非本地类型定义方法;
+5, 匿名结构体
 ins := struct {
 	字段1 类型1
 	字段2 类型2
@@ -860,7 +868,16 @@ msg := &struct {  //定义部分
 	1024, 
 	"hello",
 }
-5, 嵌入结构体
+6, 结构体的匿名字段
+匿名字段就是只有字段类型而没有字段名, 可以使用如 p.string 来取字段值, 
+实际使用不推荐, 仅在嵌套结构体中使用;
+type Person struct {
+	string
+	int
+}
+p := Person{"zhao", 32,}
+fmt.Printf("name: %s, age: %d", p.string, p.int)
+7, 嵌套结构体
 //定义结构体以及方法
 type Person struct {
 	Name string
@@ -870,29 +887,22 @@ func (p Person) say() {
 	fmt.Println(p.Name + " is saying")
 }
 type Student struct {
-	Person
+	Person  //匿名字段
 	Major string
 }
 func (s Student) study() {
 	fmt.Println(s.Name + " is studying " + s.Major)
 }
 //测试用例
-s := Student{
-	Person{"zhao", 26},
-	"Maths",
-}
+s := Student{Person{"zhao", 26}, "Maths",}
 p := new(Student)
 p.Name = "zhao"
 p.Age = 26
 p.Major = "maths"
 p.say()
 p.study()
-注: golang中没有继承, 可以使用嵌入结构体来实现继承;
-6, 方法
-go的方法是作用在接收器上的一个函数;
-接收器可以是任何类型(除了接口类型), 也就是说任何类型都可以定义方法, 比如基本类型的别名类型、函数类型等;
-接收器分为指针类型接收器和非指针类型接收器, 区别在于是否能修改结构体的字段;
-7, 可以为任意类型添加方法
+注: golang中没有继承, 可以使用嵌套结构体来实现继承;
+8, 可以为任意类型添加方法
 type MyInt int
 func (m MyInt) IsZero() bool {
 	return m == 0
