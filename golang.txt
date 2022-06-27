@@ -45,7 +45,7 @@ go get github.com/shopspring/decimal  //全局
 go env -w GOPROXY=https://goproxy.cn,direct
 5, 常用的系统内置包
 fmt, unsafe, reflect, strconv, strings, utf8, sort, errors, time, encoding/json, 
-
+sync, 
 
 
 >>import
@@ -767,7 +767,7 @@ fmt.Printf("%d-%02d-%02d %02d:%02d:%02d", now.Year(), now.Month(), now.Day(),
 s := now.Format("2006-01-02 03:04:05")
 4)获取时间戳
 now.Unix()  //单位: 秒
-now.UnixNano()  //单位: 纳秒(秒/10^9)
+now.UnixMilli()  //单位: 毫秒
 5)将时间戳转换为Time对象
 utime := 1655169518
 t := time.Unix(int64(utime), 0)  //t: time.Time   //第二个参数表示纳秒的时间戳, 0表示省略
@@ -780,8 +780,6 @@ time.Hour  //1h0m0s
 time.Minute  //1m
 time.Second  //1s
 time.Millisecond //1ms
-time.Microsecond  //1µs
-time.Nanosecond  //1ns
 3, 日期时间的操作函数
 1)将Time对象增加或减少一段时间
 t2 := t1.Add(time.Hour)
@@ -1004,110 +1002,40 @@ v, ok := u.(*Phone)
 fmt.Printf("%T, %v", v, v)  //*main.Phone, &{Redmi7}
 
 
->>通道Channel
-1, Channel用于在不同Goroutine之间传递类型化的数据, 是并发安全的, 而其他数据类型都不是并发安全的;
-chan T  //声明
-ch1 := make(chan string, 5)  //声明通道类型的变量并为其赋值, 第二个参数表示通道的长度
-ch1 <- "value1"  //向通道发送数据
-value := <- ch1  //从通道接受数据
-value, ok := <- ch1  //ok为false表示通道已关闭
-close(ch1)  //关闭通道
-注: 向已满通道发送数据, 或从空通道接受数据, 都会引起阻塞;
-2, 缓冲通道与非缓冲通道
-ch := make(chan string, 5)  //缓冲通道
-ch := make(chan string, 0)  //非缓冲通道
-3, 双向通道, 发送通道, 接受通道
-ch := make(chan int, 5)  //双向通道
-type Receiver <- chan int  //接受通道
-var receiver Receiver = make(chan int, 5)
-type Sender chan <- int  //发送通道
-var sender Sender = make(chan int, 5)
-
-
->>并发
-协程(goroutine) + 协程间通信(channel) + 协程同步(sync.waitgroup)
-1, 协程
-func main() {
-	go f1()
-	go f2()
-	time.Sleep(time.Second)  //主程序结束前有足够时间让协程执行完毕
-}
-2, 协程间通信--channel
-1)多个协程之间通过channel通信;
-2)select
-select语句中的case关键字只能后跟通道的发送或者接收操作;
-ch1 := make(chan int, 2)
-ch2 := make(chan string, 1)
-ch1 <- 2
-ch1 <- 6
-ch2 <- "zhao"
-for {
-	select {
-		case n := <- ch1:
-			fmt.Println("ch1: ", n)
-		case n := <- ch2:
-			fmt.Println("ch2: ", n)
-		default:
-			fmt.Println("通道里已没有数据")
-	}
-}
-注: 如果当前多个通道有数据, select会随机选择一个通道case执行;
-e, ok := <- ch  //如果ch没数据则阻塞, 如果ch已关闭则ok为false;
+>>协程(goroutine)
+1, 进程(process)、线程(thread)、协程(goroutine)
+进程是一个正在执行的程序, 进程是系统进行资源分配和调度的基本单位;
+线程是程序执行的最小单元, 一个进程可以包含多个线程;
+golang中的协程是用户级线程, golang的一大特色就是语言层面原生支持协程;
+golang中的协程占用的内存单元远比C/Java中的线程少, 多协程间的切换调度的开销也远比线程少;
+golang在主线程(main)中开启多个协程;
+2, 并发与并行
+同一时间多个线程同时执行, 叫并行, 如多核CPU上的多任务并行执行;
+同一时间只有一个线程执行, 多个线程分片轮流执行, 叫并发, 如单核CPU上的多任务并发执行;
 3, 协程同步
-主协程等待其他协程执行完再结束: 系统工具 sync.WaitGroup
-Add(delta int)  //添加计数
-Done()  //移除一个计数, 等价于Add(-1)
-Wait()  //阻塞直到所有任务完成
-举例:
+sync.WaitGroup 可以实现主线程等待协程执行完毕;
+Add(1)  //开启新协程时, 将WaitGroup的计数器加1
+Done()  //一个协程结束时, 将WaitGroup的计数器减1, 同 Add(-1)
+Wait()  //阻塞直到WaitGroup的计数器为0, 用来等待所有协程执行结束
 var wg sync.WaitGroup
-func tast(i int) {
-	//defer wg.Done()
-	fmt.Println("task...", i)
+func main() {
+	wg.Add(1)
+	go fn()
 	//...
-	wg.Done()
-}
-func main() {
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go task(i)
-	}
 	wg.Wait()
+	fmt.Println("主线程结束")
 }
-4, 举例
-1)模拟多个顾客抢购鸡蛋
-func main() {
-	var wg sync.WaitGroup
-	var ch = make(chan int, 10)  
-	for i := 1; i <= 10; i++ {  //将10个鸡蛋放入channel
-		ch <- i
-	}
-	for i := 1; i <= 100; i++ {  //100个顾客并发抢购鸡蛋
-		wg.Add(1)
-		go func(n int) {  //单个抢鸡蛋的协程
-			select {
-				case egg := <- ch:
-					fmt.Printf("第%d个顾客抢到第%d个鸡蛋\n", n, egg)
-				default:
-					fmt.Printf("当前第%d个顾客, 鸡蛋已抢完\n", n)
-			}
-			wg.Done()
-		}(i)
-	}
-	wg.Wait()
+func fn() {
+	defer wg.Done()
+	//...
 }
-2)生产者-消费者
-var chan = make(chan int, 10)
-func producer(n int) {  //生产者
-	ch <- n
-	fmt.Println("生产:", n)
-}
-func consumer() {  //消费者
-	fmt.Println("消费:", <- ch)
-}
-func main() {
-	for i := 1; i <= 10; i++ {
-		go producer(i)
-		go consumer()
-	}
-}
+4, 管道(channel)
+
+
+
+
+
+
+
+
 
