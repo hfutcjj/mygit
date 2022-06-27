@@ -6,45 +6,103 @@ go env查看go的环境变量;
 2, 下载vscode后安装汉化包扩展以及go语言扩展, 即可进行go语言开发;
 
 
->>认识的golang包
-fmt, unsafe, reflect, strconv, strings, utf8, sort, errors, time, json, 
-		
-
-
->>Go语言命令行工具
-1, go build
-将源码文件(.go)编译成可执行文件(.exe);
-2, go run
-编译并运行源码文件(.go);
-3, go install
-用于编译并安装代码包或源码文件;
-安装代码包会在当前工作区的pkg/<平台相关目录>下生成归档文件;
-安装命令源码文件会在当前工作区的bin目录下生成可执行文件;
-4, go get
-用来动态获取远程代码包;
-5, go env
-查看go的环境变量;
-
-
->>go get 从github下载内容失败的解决方案
-修改代理环境变量:
-go env -w GOPROXY=https://goproxy.cn,direct
-
-
->>go.mod file not found的解决方案
-1, 开启go modules功能
-在命令行输入: go env -w GO111MODULE=on
-初始化Go module
-进入项目目录输入: go mod init [xxx]  //xxx代表文件夹名, 如test
-2, 直接在项目目录下新建go.mod文件
+>>package
+1, 包的基本概念
+1)golang中包的种类: 系统内置包、第三方包、自定义包;
+2)package声明必须放在第一行, 名称一般与目录名称一致;
+要生成go语言可执行程序, 必须要有main包, 且该包下必须有main()函数;
+同一个路径下只能存在一个package, 一个package可以拆成多个源文件;
+3)代码包的初始化函数: init();
+4)包中以大写字母开头的变量、常量、类型或函数是公有的, 包外可访问, 否则为私有;
+2, go mod
+go mod是包的管理工具, 使用自定义包时, 必须先生成 go.mod 文件, 步骤为: 
+在终端输入: go env -w GO111MODULE=on  //如果已打开则不需要执行
+进入项目目录输入: go mod init xxx  //xxx代表文件夹名, 如test
+或者, 直接在项目目录下新建go.mod文件
 //go.mod
 module test
 go 1.18
+3, 自定义包的目录结构
+test 
+	utils
+		calc.go
+		sort.go
+	go.mod
+	main.go
+//main.go
+package main
+import (
+	"fmt"
+	"test/utils"  //必须有go.mod才能导入该自定义包
+)
+4, 使用第三方包
+1)go的第三方包查找网址: https://pkg.go.dev
+2)下载安装第三方包
+go get github.com/shopspring/decimal  //全局
+下载后会把第三方包存放到 {gopath}/pkg/mod 目录下, 同时会写到 go.mod 文件中, 同时会生成一个 go.sum 文件;
+注: go get 从github下载内容失败的解决方案
+修改代理环境变量:
+go env -w GOPROXY=https://goproxy.cn,direct
+5, 常用的系统内置包
+fmt, unsafe, reflect, strconv, strings, utf8, sort, errors, time, encoding/json, 
 
 
->>Unicode与UTF-8
-Unicode是字符集, 也就是给每个字符一个固定的编号, 字符集有ascii与Unicode;
-而UTF-8是编码规则, 就是以某种形式对字符编号进行编码;
+
+>>import
+1, 导入源码文件所依赖的包;
+不得导入源码文件没有用到的包, 否则会报错;
+2, 两种形式:
+import "package1"
+import "package2"
+或
+import (
+	"fmt"
+	"test/sub1"
+	"test/sub2"
+)
+3, 如果一个包被多次导入, 只导入一次;
+4, 导入包和main包的执行顺序
+main包依赖包B, 包B依赖包A:
+A中常量初始化 -> A中变量初始化 -> 执行A中init()函数 ->
+B中常量初始化 -> B中变量初始化 -> 执行B中init()函数 ->
+main中常量初始化 -> main中变量初始化 -> 执行main中init()函数 -> 执行main()函数;
+5, 导入的包起别名
+import my "test/sub1"
+6, 匿名导入包
+import _ "test/sub1", 表示仅执行导入包中的init()函数, 而不能调用其中的函数;
+常用来注册包里的引擎;
+7, 导入的包加.
+import . "test/sub1", 调用其中的函数时可以省略包名, 不推荐;
+8, 举例
+package main
+import (
+	"fmt"
+	"test/sub1"
+	my "test/sub2"
+)
+func init(){
+	fmt.Println("main.init()")
+}
+func main(){
+	sub1.A()
+	my.B()
+	fmt.Println("main.main()")
+}
+	
+
+>>Go语言命令行工具
+1, go env
+查看go的环境变量;
+2, go build
+将源码文件(.go)编译成可执行文件(.exe);
+3, go run
+编译并运行源码文件(.go);
+4, go install
+用于编译并安装代码包或源码文件;
+安装代码包会在当前工作区的pkg/<平台相关目录>下生成归档文件;
+安装命令源码文件会在当前工作区的bin目录下生成可执行文件;
+5, go get
+用来动态获取远程代码包;
 
 
 >>格式化输出
@@ -87,6 +145,9 @@ _变量相当于垃圾桶, 给其赋值相当于丢弃, 如 a, _, b := 1, 2.0, "
 声明基本类型变量时未初始化, 则默认为类型零值;
 5, 两数交换的简写
 a, b = b, a
+6, Unicode与UTF-8
+Unicode是字符集, 也就是给每个字符一个固定的编号, 字符集有ascii与Unicode;
+而UTF-8是编码规则, 就是以某种形式对字符编号进行编码;
 
 
 >>常量
@@ -278,55 +339,6 @@ for i := 1; i <= 9; i++ {
 break outer 直接结束外层循环;
 continue outer 继续执行外层循环, 从当前的i值接着执行;
 goto outer 重新执行外层循环(死循环);
-
-
->>package
-1, package声明必须放在第一行, 名称一般与目录名称一致;
-要生成go语言可执行程序, 必须要有main的package包, 且该包下必须有main()函数;
-同一个路径下只能存在一个package, 一个package可以拆成多个源文件;
-2, 代码包的初始化函数: init();
-
-
->>import
-1, 导入源码文件所依赖的包;
-不得导入源码文件没有用到的包, 否则会报错;
-2, 两种形式:
-import "package1"
-import "package2"
-或
-import (
-	"fmt"
-	"test/sub1"
-	"test/sub2"
-)
-3, 如果一个包被多次导入, 只导入一次;
-4, 导入包和main包的执行顺序
-main包依赖包B, 包B依赖包A:
-A中常量初始化 -> A中变量初始化 -> 执行A中init()函数 ->
-B中常量初始化 -> B中变量初始化 -> 执行B中init()函数 ->
-main中常量初始化 -> main中变量初始化 -> 执行main中init()函数 -> 执行main()函数;
-5, 导入的包起别名
-import my "test/sub1"
-6, 导入的包加_
-import _ "test/sub1", 表示仅执行导入包中的init()函数, 而不能调用其中的函数;
-常用来注册包里的引擎;
-7, 导入的包加.
-import . "test/sub1", 调用其中的函数时可以省略包名, 不推荐;
-8, 举例
-package main
-import (
-	"fmt"
-	"test/sub1"
-	my "test/sub2"
-)
-func init(){
-	fmt.Println("main.init()")
-}
-func main(){
-	sub1.A()
-	my.B()
-	fmt.Println("main.main()")
-}
 
 
 >>数组
@@ -913,54 +925,83 @@ func (m MyInt) Add(other int) int {
 
 
 >>接口
-1, 如果一个任意类型T的方法集为一个接口类型的方法集的超集, 则称类型T实现了此接口类型;
-type Walker interface{
-	Walk()
+1, 接口是一组行为规范, 接口只含有一组抽象方法, 由具体的结构体实现这些抽象方法;
+type Usber interface {
+	start(string)
 }
-type Person struct {}
-func (p Person) Walk() {
-	fmt.Println("Person can walk")
+type Phone struct {  //Phone实现Usber接口
+	Name string
 }
-var w Walker = Person{}
-w.Walk()
-当一个类型实现了接口, 就可以把该类型变量赋值给接口类型的变量;
-注: Go语言中实现接口是隐式的, 叫做非侵入式设计; 
-2, nil
-nil只能被赋值给指针或者接口;
-只有显式地将nil赋值给接口时, 接口才等于nil, 如
-var w *Walker = nil
-w == nil  //true
-如果不是显式的将nil赋值给接口, 那么接口将不等于nil, 如
-var p *Person = nil  
-var w Walker = p  //*Person实现了Walker接口
-p == nil  //false
+func (p Phone) start(s string) {
+	//...
+}
+func (p Phone) call() {  //Phone的其他方法
+	//...
+}
+//调用
+var u Usber = Phone{"Redmi7"}
+u.start()
+2, 空接口
+1)不包含任何方法的接口为空接口, 用 interface{} 或 any 表示, 任何类型都算实现了空接口;
+var x interface{} = 12
+fmt.Printf("%T, %v\n", x, x)  //int, 12
+x = "hello"
+fmt.Printf("%T, %v\n", x, x)  //string, hello
+2)空接口应用于切片和map, 可使切片和map的value表示任意类型;
+s := []interface{}{"zhao", 32, "maths"}
+m := map[string]interface{}{"name": "zhao", "age": 32, "hobby": []string{"reading", "running"},}
+3)空接口的使用细节
+当map的value为空接口类型时, 要注意空接口上不能使用索引和取字段;
+m := map[string]interface{}{
+	"username": "zhao",
+	"age": 32,
+	"hobby": []string{"reading", "running"},
+	"address": Address{"高新区", "102"},
+}
+取某个hobby: m["hobby"][1] (错!)
+取Address字段: m["hobby"].Name (错!)
+应该先使用类型断言将interface{}转换为切片或者结构体类型, 如下:
+hobby, _ := m["hobby"].([]string)
+hobby[1]  //或 m["hobby"].([]string)[1]
+address, _ := m["address"].(Address)
+address.Name  //或 m["address"].(Address).Name
 3, 类型断言
-1)x.(T)
-var x interface{} = 10
-v, ok := x.(int)  //10 true
-v, ok := x.(string)  // "" false
+1)x.(T)  //T为具体类型
+用于将接口转换为具体的实现类型;
+var x interface{} = "hello"
+v, ok := x.(string)  //"string" true
+v, ok := x.(int)  //0 false
+var u Usber = Phone{"Redmi7"}
+u.start()
+if v, ok := u.(Phone); ok {  //调用Phone的其他方法, 需要先转换为具体的Phone类型
+	v.call()
+}
 2)x.(type)
-只能用于switch结构中;
+判断具体类型, 只能用于switch语句;
 switch x.(type) {
+	case string:
+		fmt.Println("x是string类型")
 	case int:
-		//...
-	case string: 
-		//...
+		fmt.Println("x是int类型")
 	default:
-		//...
+		fmt.Println("x是其他类型")
 }
-4, 接口的嵌套
-type Writer interface {
-	Write(p []byte) (n int, err error)
+4, 值类型接收者和指针类型接收者实现接口的区别
+1)值类型实现接口, 则值类型变量和指针类型变量都可以赋值给接口;
+func (p Phone) start() {
+	//...
 }
-type Closer interface {
-	Close() error
+var u Usber = Phone{"Redmi7"}  //√
+var u Usber = &Phone{"Redmi7"}  //√
+2)指针类型实现接口, 则只允许指针类型变量赋值给接口;
+func (p *Phone) start() {
+	//...
 }
-type WriteCloser interface {
-	Writer
-	Closer
-}
-如果一个类型同时实现了Writer和Closer接口, 则表示该类型实现了WriteCloser接口;
+var u Usber = &Phone{"Redmi7"}  //√
+var u Usber = Phone{"Redmi7"}  //×
+3)指针接收者的类型断言
+v, ok := u.(*Phone)
+fmt.Printf("%T, %v", v, v)  //*main.Phone, &{Redmi7}
 
 
 >>通道Channel
@@ -1069,18 +1110,4 @@ func main() {
 		go consumer()
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
