@@ -1003,16 +1003,17 @@ fmt.Printf("%T, %v", v, v)  //*main.Phone, &{Redmi7}
 
 
 >>协程(goroutine)
-1, 进程(process)、线程(thread)、协程(goroutine)
+1, 基本概念
+1)进程(process)、线程(thread)、协程(goroutine)
 进程是一个正在执行的程序, 进程是系统进行资源分配和调度的基本单位;
 线程是程序执行的最小单元, 一个进程可以包含多个线程;
 golang中的协程是用户级线程, golang的一大特色就是语言层面原生支持协程;
 golang中的协程占用的内存单元远比C/Java中的线程少, 多协程间的切换调度的开销也远比线程少;
 golang在主线程(main)中开启多个协程;
-2, 并发与并行
+2)并发与并行
 同一时间多个线程同时执行, 叫并行, 如多核CPU上的多任务并行执行;
 同一时间只有一个线程执行, 多个线程分片轮流执行, 叫并发, 如单核CPU上的多任务并发执行;
-3, 协程同步
+2, 协程同步
 sync.WaitGroup 可以实现主线程等待协程执行完毕;
 Add(1)  //开启新协程时, 将WaitGroup的计数器加1
 Done()  //一个协程结束时, 将WaitGroup的计数器减1, 同 Add(-1)
@@ -1029,7 +1030,130 @@ func fn() {
 	defer wg.Done()
 	//...
 }
-4, 管道(channel)
+3, 管道(channel)
+管道用于协程之间的通信;
+1)定义
+var ch chan int  //ch: nil
+var ch = make(chan int)  //开辟一块内存区域, len(ch): 0, cap(ch): 0
+var ch = make(chan int, 5)  //len(ch): 0, cap(ch): 5
+空管道: len(ch) == 0
+已满管道: len(ch) == cap(ch)
+注: 管道是引用数据类型; 
+2)基本操作
+ch <- 12  //发送
+v := <- ch  //接收
+close(ch)  //关闭管道
+//遍历管道, v是管道里的每个值, 使用for...range遍历之前要求管道必须已关闭, 否则遍历完会引起死锁
+for v := range ch {  
+	//...
+}
+向已满管道发送数据, 或者从空管道接收数据, 都会引起阻塞;
+不能向已关闭的管道发送数据, 但可以从已关闭的管道读取数据;
+3)单向管道
+//只写管道(send-only channel)
+var ch chan<-int
+ch := make(chan<-int, 3)
+//只读管道(receive-only channel)
+var ch <-chan int
+ch := make(<-chan int, 3)
+注: 双向管道可以赋值给单向管道, 反之则不可以;
+var ch chan<-int = make(chan int, 3)
+4)管道是线程安全的, 写已满管道或读已空管道, 都会导致协程阻塞等待, 从而实现协程间的通信与同步;
+4, 协程通信
+举例: 打印1-1000内的素数, 分为1个存数协程、4个取数并判断是否为素数的协程、1个打印素数协程:
+var wg sync.WaitGroup
+func main() {  //主线程
+	inChan := make(chan int)  //用于存储1-1000原始数据
+	primeChan := make(chan int)  //用于存储所有素数
+	exitChan := make(chan bool, 4)  //用于标记4个判断素数的协程是否执行完毕, 从而关闭primeChan
+	wg.Add(1)
+	go putNum(inChan)
+	for i := 0; i < 4; i++ {
+		wg.Add(1)
+		go primeNum(inChan, primeChan, exitChan)
+	}
+	wg.Add(1)
+	go printNum(primeChan)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 4; i++ {
+			<- exitChan
+		}
+		close(primeChan)
+	}()
+	wg.Wait()
+	fmt.Println("执行完毕...")
+}
+func putNum(inChan chan<-int) {  //存数协程
+	defer wg.Done()
+	for i := 1; i <= 1000; i++ {
+		inChan <- i
+	}
+	close(inChan)
+}
+func primeNum(inChan <-chan int, primeChan chan<-int, exitChan chan<-bool) {  //取数并判断是否为素数的协程
+	defer wg.Done()
+	for num := range inChan {
+		flag := true
+		for i := 2; i < num; i++ {
+			if num % i == 0 {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			primeChan <- num
+		}
+	}
+	exitChan <- true
+}
+func printNum(primeChan <-chan int) {  //打印素数的协程
+	defer wg.Done()
+	for v := range primeChan {
+		fmt.Println(v, " is prime")
+	}
+}
+5, select多路复用
+同时从多个管道并发接收数据, 有两种方法:
+1)定义多个协程分别从每个管道接收数据;
+2)使用select多路复用
+ch1 := make(chan int, 10)
+for i:= 0; i < 10; i++ {
+	ch1 <- i
+}
+ch2 := make(chan string, 5)
+for i := 0; i < 5; i++ {
+	ch2 <- fmt.Sprintf("hello-%d", i)
+}
+for {
+	select {
+	case v := <- ch1:
+		fmt.Println(v)
+	case v := <- ch2:
+		fmt.Println(v)
+	default:
+		return  //所有数据读取完毕, 必须return, 否则进入死循环
+	}
+}
+注: 使用select获取管道里的数据不需要先关闭管道;
+6, 锁
+1)互斥锁: sync.Mutex
+互斥锁用于解决并发编程中对共享资源的访问;
+互斥锁一般用于并发的协程对共享资源的写操作, 加锁后让协程串行访问共享资源;
+var count = 0;
+var mutex sync.Mutex
+func fn() { //协程的函数
+	mutex.Lock()  //对资源加锁, 加锁后同一时间只允许一个协程访问该段资源
+	count++
+	fmt.Printf("count: %d\n", count)
+	mutex.Unlock()  //解锁
+}
+2)读写锁: sync.RWMutex
+读写锁仅对写操作互斥, 多个协程的读操作可以并发执行;
+var mutex sync.RWMutex
+mutex.Lock() / mutex.Unlock()  //写互斥
+mutex.RLock() / mutex.RUnlock()  //读可并发
 
 
 
