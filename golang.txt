@@ -45,7 +45,7 @@ go get github.com/shopspring/decimal  //全局
 go env -w GOPROXY=https://goproxy.cn,direct
 5, 常用的系统内置包
 fmt, unsafe, reflect, strconv, strings, utf8, sort, errors, time, encoding/json, 
-sync, 
+sync, os, io, bufio, ioutil, 
 
 
 >>import
@@ -820,7 +820,7 @@ type Person struct {
 	Name string
 	Age int `json:"age"`
 }
-注: `json:"age"`表示序列化时给字段取一个别名;
+注: `json:"age"`表示序列化时给字段取一个别名, 底层是用反射技术来实现的;
 注: 结构体序列化时会自动省略以小写字母开头的字段;
 
 
@@ -1000,6 +1000,112 @@ var u Usber = Phone{"Redmi7"}  //×
 3)指针接收者的类型断言
 v, ok := u.(*Phone)
 fmt.Printf("%T, %v", v, v)  //*main.Phone, &{Redmi7}
+
+
+>>反射
+1, 反射指在程序运行时动态获取一个变量的类型信息和值信息;
+2, 反射可以实现的功能
+1)通过反射可以动态获取变量的类型信息和值信息, 也可以修改变量的值;
+//获取变量的类型
+fmt.printf("%T", v)
+reflect.TypeOf(v)
+//获取变量的值
+var v interface{} = 5
+r := v.(int) + 7
+r := reflect.ValueOf(v).Int() + 7
+//修改变量的值(变量必须为指针类型)
+func fn(v interface{}) {
+	reflect.ValueOf(v).Elem().setInt(88)
+}
+var a = 5
+fn(&a)
+2)如果是结构体, 通过反射可以获取结构体的字段的信息, 也可以调用结构体的方法;
+//...
+3, 反射的应用场景
+1)将空接口转换为实际类型, 可以使用断言, 也可以使用反射;
+2)将结构体序列化为json字符串, 自定义字段标签时, 底层会用到反射;
+3)ORM框架的底层会用到反射;
+
+
+>>文件操作
+1, 打开文件
+file, err := os.Open("./demo.txt")  //以只读方式打开文件
+defer file.Close()
+2, 读取文件
+1)方式一: 按字节读取
+n, err := file.Read(b)  
+读取的内容放到b中, b是[]byte类型, 返回读取的字节数n和err, 如果已到文件末尾, 则err==io.EOF;
+循环读取文件内容:
+var content []byte
+for {
+	temp := make([]byte, 100) 
+	n, err := file.Read(temp)
+	if err == io.EOF {  //读取完毕
+		break
+	}
+	content = append(content, temp...)
+}
+2)方式二: 按行读取
+reader := bufio.NewReader(file)
+s, err := reader.ReadString('\n') 
+按指定分隔符读取('\n'表示按行), 返回读取到的字符串s和err;
+循环读取文件内容:
+var content string
+reader := bufio.NewReader(file)
+for {
+	s, err := reader.ReadString('\n')
+	content += s
+	if err == io.EOF {
+		break
+	}
+}
+3)方式三: 直接读取整个文件
+b, err := ioutil.ReadFile('./demo.txt')
+直接一次性读取, 返回[]byte类型的b和err;
+这个函数封装好了文件的打开与关闭, 不需要再手动处理;
+3, 写入文件
+写操作时打开文件的方式:
+file, err := os.OpenFile("./demo.txt", os.O_CREATE|os.O_RDWR, 0666)
+defer file.Close()
+注: 打开模式有: os.O_RDONLY(只读), os.O_WRONLY(只写), os.O_RDWR(读写), 
+os.O_CREATE(创建), os.O_APPEND(追加), os.O_TRUNC(清空);
+1)方式一
+n, err := file.Write(b)  //写入[]byte
+n, err := file.WriteString(s)  //写入字符串
+2)方式二
+writer := bufio.NewWriter(file)
+n, err := writer.WriteString(s)
+writer.Flush()  //刷新缓存才能真正写入
+3)方式三
+ioutil.WriteFile("./demo.txt", []byte(s), 0666)
+4, 复制文件
+通过读取源文件再写入目标文件, 就实现了文件的复制;
+1)方式一
+b, _ := ioutil.ReadFile("./src.png")
+ioutil.WriteFile("./dest.png", b, 0666)
+2)方式二
+f1, _ := os.Open("./src.png")
+defer f1.Close()
+f2, _ := os.OpenFile("./dest.png", os.O_CREATE|os.O_WRONLY, 0666)
+defer f2.Close()
+for {
+	temp := make([]byte, 100)
+	n, err := f1.Read(temp)
+	f2.Write(temp[:n])  //[:n]保证最后一次写入的数据完全一致
+	if err == io.EOF {
+		break
+	}
+}
+5, 目录与文件的创建、删除、重命名
+1)创建
+os.Mkdir("./a")  //创建单级目录
+os.MidirAll("./a/b/c")  //创建多级目录
+os.Create("./test.txt")  //创建文件
+2)删除
+os.Remove("./a")  //删除目录或文件
+os.RemoveAll("./a/b/c")  //删除多级目录
+3)重命名
+os.Rename("./src.txt", "./dest.txt")
 
 
 >>协程(goroutine)
