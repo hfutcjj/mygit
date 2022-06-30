@@ -45,7 +45,7 @@ go get github.com/shopspring/decimal  //全局
 go env -w GOPROXY=https://goproxy.cn,direct
 5, 常用的系统内置包
 fmt, unsafe, reflect, strconv, strings, utf8, sort, errors, time, encoding/json, 
-sync, os, io, bufio, ioutil, 
+sync, os, io, bufio, ioutil, net/http, 
 
 
 >>import
@@ -117,8 +117,8 @@ func main(){
 %U: Unicode字符;
 注: %.2f表示保留小数点后2位的小数;
 %02d表示2位整数, 不足2位的前面补0;
-2, s := fmt.Sprintf("%s|%s", s1, s2)
-格式化输出到字符串;
+2, s := fmt.Sprintf("%s|%s", s1, s2)  //格式化输出到字符串;
+fmt.Fprintf(writer, "%s, %d", s, i)  //格式化输出到指定的writer变量
 
 
 >>变量
@@ -1260,6 +1260,68 @@ func fn() { //协程的函数
 var mutex sync.RWMutex
 mutex.Lock() / mutex.Unlock()  //写互斥
 mutex.RLock() / mutex.RUnlock()  //读可并发
+
+
+
+>>请求与响应
+1, http是无状态协议，也就是服务端不保留连接的相关信息;
+2, request格式
+请求行 + 请求头 + 请求体:
+请求行: POST /test/login HTTP/1.1
+请求头: request header
+请求体: request body  //header和body之间必须有一空行
+注: get请求没有请求体;
+前端页面请求后端url需要加上工程名, 如 /test/login;
+3, response格式
+响应行 + 响应头 + 响应体: 
+响应行: HTTP/1.1 200 OK
+响应头: response header
+响应体: response body  //响应头与响应体之间也要有一空行
+4, http响应状态码
+1XX: 收到请求，正在处理;
+2XX: 成功，如 200 OK;
+3XX：重定向，表示请求没有成功，需要采取进一步的动作, 如302;
+4XX：客户端错误，表示客户端提交的请求有错误，如 404 NOT Found;
+5XX：服务器错误，如 500;
+5, get与post请求方式的区别
+get将数据附加在url里显式发送, 而post将数据放在请求体里隐式发送;
+get安全性差, 常用于向服务器的查询操作, 而post安全性高, 常用于对服务器的写操作;
+get将数据附加到url，所以长度是有限制的，而post对数据长度没有限制;
+get数据能保留在浏览器历史中, 可收藏为书签, 而post不可以;
+
+
+>>go搭建web服务器
+1, 方式一(常用)
+http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {  //处理器
+	fmt.Fprintf(w, "URL: %s", r.URL)
+})
+http.ListenAndServe(":9090", nil)
+注: ListenAndServe()的第一个参数为""表示监听端口为默认的80,
+第二个参数为nil表示使用默认的多路复用器DefaultServeMux;
+2, 方式二: 使用自定义处理器对象
+http.Handle("/", &MyHandler)
+http.ListenAndServe(":9090", nil)
+type MyHandler struct {}  //自定义处理器
+func (m *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "This is customized handler")
+}
+注: HandleFunc()能将具有指定签名的函数自动转换成处理器, 而Handle()需要第二个参数对象
+实现Handler接口, 即实现ServeHTTP()方法;
+3, 方式三: 使用自定义http.Server
+通过http.Server结构体对服务器进行更详细的配置;
+server := http.Server{
+	Addr: ":9090",
+	Handler: &MyHandler{},
+	ReadTimeout: 2*time.Second,
+}
+server.ListenAndServe()
+4, 方式四: 使用自定义多路复用器
+mux := http.NewServeMux()
+mux.HandleFunc("/", handler)
+http.ListenAndServe(":9090", mux)
+
+
+
 
 
 
