@@ -1,25 +1,73 @@
->>JSX会被React转换为对象
-const elem = (
-	<div className="box" style={{color: 'blue'}}>
-		<h1>react</h1>
-		<p>this is react test page.</p>
-	</div>
-)
-内部经过React.createElement(), 会被转换为如下对象(简化后的):
-const elem = {
+>>React基本概念
+1, React由facebook开发, 是动态构建用户界面的js库, 将数据渲染成html页面;
+2, React使用组件化开发方式, 采用声明式编码, 与传统的命令式编码(如jquery)不同;
+3, React使用虚拟DOM+优秀的diffing算法, 最小化重绘页面, 尽量减少与真实dom的交互;
+
+
+>>React基本使用
+<div id="box"></div>
+<script src="/react.develepment.js"></script>  //引入React全局对象
+<script src="/react-dom.develepment.js"></script>  //引入ReactDOM全局对象
+<script src="/babel.js"></script>
+<script type="text/babel">  //此处一定要写babel
+	const vdom = <div><p>Hello world</p></div>  //创建虚拟dom
+	ReactDOM.render(vdom, document.getElementById('box'))  //渲染页面
+	//ReactDOM.createRoot(document.getElementById('box')).render(vdom)
+</script>
+注: babel.js的作用: 
+1)将es6语法转换成浏览器能识别的es5;
+2)将jsx转换成js;
+
+
+>>创建虚拟DOM的两种方式
+1, 使用JSX
+const vdom = <div id="main" className="content"><span>hello world</span></div>
+2, 使用 React.createElement(标签名, 标签属性, ...标签体)
+const vdom = React.createElement('div', {id: 'main', className: 'content'}, 
+	React.createElement('span', {}, 'hello world'));
+注: JSX就是用来创建虚拟DOM的语法糖, 而虚拟DOM就是一个对象, 如
+const vdom = {
 	type: 'div',
 	props: {
-		className: 'box',
-		style: {color: 'blue'},
-		children: [{
-			type: 'h1',
-			children: 'react'
-		}, {
-			type: 'p',
-			children: 'this is react test page.'
-		}]
+		id: 'main',
+		className: 'content',
+		children: {
+			type: 'span',
+			props: {
+				children: 'hello world'
+			}
+		}
 	}
 }
+注: 虚拟DOM的属性比真实DOM要少得多, 所以轻量级;
+虚拟DOM是存放在内存中的对象, 最终会被React转换成真实DOM渲染到页面;
+
+
+>>JSX的语法规则
+1, react定义的一种类似于XML的JS扩展语法: JS+XML;
+2, 定义虚拟DOM时, 不要写引号;
+3, 标签中混入js表达式时要用{};
+4, 引入类名, 不能用class, 要用className;
+5, 使用内联样式, 不能写成字符串, 要写成 style={{color: 'blue'}}, 或 style={myStyle};
+6, 根标签只能有一个, 如果有多个标签, 要在最外层包一个<div>或<>;
+7, 所有标签都必须闭合, 如 <input />;
+8, JSX标签如果以小写开头, 则被转换成html元素, 如果以大写开头, 则视为组件;
+注: JSX里的{}, 里面只能包含表达式, 而不能写流程控制语句, 如if等;
+
+
+>>模块与组件
+1, 模块
+提供特定功能的js程序, 一般就是一个js文件;
+仅拆分js;
+2, 组件
+用来实现局部功能的代码和资源的集合(html/css/js/image等);
+不仅拆分js, 还拆分html, css, image等;
+React是面向组件的编程;
+3, 作用
+简化代码, 提高复用性;
+
+
+
 
 
 >>通过脚手架的 npx create-react-app demo 命令创建项目, 脚手架会通过webpack创建一个
