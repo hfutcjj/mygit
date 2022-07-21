@@ -19,10 +19,11 @@
 2)将jsx转换成js;
 
 
->>创建虚拟DOM的两种方式
-1, 使用JSX
+>>虚拟DOM
+1, 创建虚拟DOM的两种方式
+1)使用JSX
 const vdom = <div id="main" className="content"><span>hello world</span></div>
-2, 使用 React.createElement(标签名, 标签属性, ...标签体)
+2)使用 React.createElement(标签名, 标签属性, ...标签体)
 const vdom = React.createElement('div', {id: 'main', className: 'content'}, 
 	React.createElement('span', {}, 'hello world'));
 注: JSX就是用来创建虚拟DOM的语法糖, 而虚拟DOM就是一个对象, 如
@@ -41,6 +42,25 @@ const vdom = {
 }
 注: 虚拟DOM的属性比真实DOM要少得多, 所以轻量级;
 虚拟DOM是存放在内存中的对象, 最终会被React转换成真实DOM渲染到页面;
+2, React元素
+React元素就是一个js对象, ReactDOM负责更新DOM来与react元素保持一致;
+React元素: const elem = <h1>hello world</h1>;
+ReactDOM: const root = ReactDOM.createRoot(document.getElementById('root'));
+渲染: root.render(elem);
+注: React元素是不可变对象, 一旦被创建，就无法更改它的子元素和属性;
+elem.props.className = 'change';  //×
+elem.props.style = {color: 'red'};  //×
+elem.props.style.color = 'red';  //√
+3, 调用组件时, 组件体作为props.children一起传递
+组件定义:
+function MyLink(props) {
+	return (
+		<a className="link" {...props} />  //等价于
+		<a className="link" {...props} >{props.children}</a>  
+	)
+}
+调用组件:
+<Mylink href="..." target="_blank">百度</MyLink>
 
 
 >>JSX的语法规则
@@ -68,37 +88,6 @@ React是面向组件的编程;
 
 
 
-
-
->>通过脚手架的 npx create-react-app demo 命令创建项目, 脚手架会通过webpack创建一个
-内置服务器devServer, public文件夹就是这台内置服务器的根路径, 然后就可以通过 
-localhost:3000来访问应用;
-注: 刷新页面, 某些静态资源会从缓存中取, 按shift键的同时刷新, 则所有资源都从后台重新取, 不走缓存;
-
-
->>React元素
-React元素就是一个js对象, ReactDOM负责更新DOM来与react元素保持一致;
-React元素: const elem = <h1>hello world</h1>;
-ReactDOM: const root = ReactDOM.createRoot(document.getElementById('root'));
-渲染: root.render(elem);
-注: React元素是不可变对象, 一旦被创建，就无法更改它的子元素和属性;
-elem.props.className = 'change';  //×
-elem.props.style = {color: 'red'};  //×
-elem.props.style.color = 'red';  //√
-
-
->>调用组件时, 组件体作为props.children一起传递
-组件定义:
-function MyLink(props) {
-	return (
-		<a className="link" {...props} />  //等价于
-		<a className="link" {...props} >{props.children}</a>  
-	)
-}
-调用组件:
-<Mylink href="..." target="_blank">百度</MyLink>
-
-
 >>组件的生命周期
 1, 初始化阶段: 由ReactDOM.render()触发--初次渲染
 1)constructor()
@@ -112,6 +101,12 @@ function MyLink(props) {
 4)componentDidUpdate()
 3, 卸载组件: 由ReactDOM.unmountComponentAtNode()触发
 1)componentWillUnmount() * //常用, 一般在这个钩子中做一些收尾的事, 例如: 关闭定时器、取消订阅消息等;
+
+
+>>通过脚手架的 npx create-react-app demo 命令创建项目, 脚手架会通过webpack创建一个
+内置服务器devServer, public文件夹就是这台内置服务器的根路径, 然后就可以通过 
+localhost:3000来访问应用;
+注: 刷新页面, 某些静态资源会从缓存中取, 按shift键的同时刷新, 则所有资源都从后台重新取, 不走缓存;
 
 
 >>消息订阅与发布
