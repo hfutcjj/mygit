@@ -458,10 +458,10 @@ delete(m, "cao")  //删除键值对, 无key也不会报错
 先将key或value保存到切片中, 通过sort包给切片排序, 然后遍历切片取值;
 5, map与切片的结合
 //元素为map类型的切片
-s := make([]map[string]string, 3, 3)
-s[0] = map[string]string{"username": "zhao", "age": "26",}
-s[1] = map[string]string{"username": "qian", "age": "28",}
-s  //map[map[age:26 username:zhao], map[age:28 username:qian], map[]]
+s := make([]map[string]interface{}, 3)
+s[0] = map[string]any{"username": "zhao", "age": 26,}
+s[1] = map[string]any{"username": "qian", "age": 28,}
+s  //[map[age:26 username:zhao], map[age:28 username:qian], map[]]
 //value为切片类型的map
 m := make(map[string][]string)
 m["skill"] = []string{"java", "golang", "js"}
