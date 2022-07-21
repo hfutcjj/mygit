@@ -658,17 +658,18 @@ func fibonacci(n int) (res int) {
 
 >>排序
 1, 快速排序
-1)基本类型的快速排序
+1)基本类型切片的快速排序
 sort.Ints(slice)  //整型切片
 sort.Strings(slice)  //字符串切片
 sort.Float64s(slice)  //浮点型切片
-2)结构体的快速排序
+2)任意类型切片的快速排序
 sort.Slice(slice, func(i, j int) bool {
 	if slice[i].age != slice[j].age {
 		return slice[i].age < slice[j].age
 	}
 	return slice[i].name < slice[j].name
 })
+注: 可用于结构体切片的排序, 或基本类型切片的降序排序;
 2, 自定义排序
 需要自定义类型来实现sort.Interface接口, 需要实现三个方法:
 type MyStringList []string
