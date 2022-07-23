@@ -857,7 +857,32 @@ Object.getPrototypeOf(demo).sub = function() {
 此时demo的原型为:
 Object.getPrototypeOf(demo):  {constructor: f, sum: f, sub: f}
 4, 通过extends实现继承
-class Child extends Father {  //... }
+class Person { 
+	constructor(name, age) {
+		this.name = name;
+		this.age = age;
+	}
+	say() {
+		console.log('My name is ' + this.name + ', I am ' + this.age + 
+			' years old.');
+	}
+	walk() {
+		console.log(this.name + ' is walking.');
+	}
+}
+class Student extends Person {
+	constructor(name, age, major) {
+		super(name, age);
+		this.major = major;
+	}
+	say() {
+		console.log('My name is ' + this.name + ', I am ' + this.age + 
+			' years old, I am majoring ' + this.major);
+	}
+	learn() {
+		console.log(this.name + ' is learning.');
+	}
+}
 
 
 >>模块

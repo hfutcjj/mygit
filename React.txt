@@ -87,6 +87,62 @@ React是面向组件的编程;
 简化代码, 提高复用性;
 
 
+>>两种形式的组件
+1, 函数组件
+function Hello(props) {
+	return <div>hello world</div>
+}
+2, 类式组件
+class Hello extends React.Component {
+	render() {
+		return <div>hello world</div>
+	}
+}
+
+
+>>组件的三大基本属性(类式组件)
+1, state
+组件一般都是有状态的, 数据驱动行为;
+class Hello extend React.Component {
+	constructor(props) {
+		super(props)
+		this.state = {
+			isHot: false
+		}
+	}
+	fn() {  //定义在原型链上
+		this.setState({
+			isHot: !this.state.isHot
+		})
+	}
+	render() {
+		return <div onClick={this.fn}>{this.state.isHot ? '太热了' : '很凉快'}</div>
+	}
+}
+该实例存在bug, 会出现fn()里面this的指向问题, 可通过以下几种方式修改:
+1)构造函数里增加如下一行, 改变fn()中this指向, 同时将fn定义到实例上:
+this.fn = this.fn.bind(this);
+2)将fn定义成箭头函数, 箭头函数中的this就等于外层this:
+fn = () => {
+	this.setState({
+		isHot: !this.state.isHot
+	})
+}
+3)在事件绑定时修改fn中的this指向:
+<div onClick={this.fn.bind(this)}>...
+注: 状态的修改必须通过this.setState()来实现, 且多个状态之间的修改是合并, 而不是替换;
+注: constructor()只调用一次, fn()调用n次, render()调用1+n次;
+2, props
+用来向组件传递数据;
+//逐个数据传递
+<Hello name="zhao" age=32 />
+//批量传递
+const p = {name: 'zhao', age: 32}
+<Hello {...p} />
+注: 组件的props是只读的, 只允许从父组件接收数据, 不允许修改;
+
+
+
 
 >>组件的生命周期
 1, 初始化阶段: 由ReactDOM.render()触发--初次渲染
