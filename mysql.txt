@@ -5,12 +5,31 @@
 4, include, 存储包含的头文件;
 5, lib, 存储库文件;
 6, share, 错误信息和字符集文件;
+注: 安装mysql会包括两个文件夹, 一个是RDBMS目录, 另一个是DB数据文件目录;
 
 
 >>启动和关闭mysql服务
 1, net start mysql //启动
 2, net stop mysql //关闭
 注: net start/stop 也能启动与关闭其他服务;
+
+
+>>字符集设置
+mysql5默认的字符集为latin, 不支持中文, 需要在配置文件中修改字符集:
+[mysql]
+default-character-set=utf8
+[mysqld]
+character-set-server=utf8
+collation-server=utf8_general_ci
+然后重启mysql服务, 可通过 show variables like 'character_%' 查看字符集;
+mysql被oracle收购后, mysql8的默认字符集就是utf8, 不需要修改;
+
+
+>>图形用户界面连接不上mysql8的解决方案
+1, 升级图像用户界面版本;
+2, 修改mysql8的解密规则:
+use mysql;
+alter user `root`@`localhost` identified with mysql_native_password by `123456`;
 
 
 >>登录与退出
