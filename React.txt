@@ -140,7 +140,50 @@ fn = () => {
 const p = {name: 'zhao', age: 32}
 <Hello {...p} />
 注: 组件的props是只读的, 只允许从父组件接收数据, 不允许修改;
+3, refs
+组件内的标签使用ref来标识自己;
+类式组件的refs使用有三种形式:
+1)字符串形式(即将废弃)
+给组件标签定义ref, 然后就可以通过类的refs属性引用;
+<input ref="ip1" />
+<input ref="ip2" />
+引用: this.refs.ip1.value;
+2)回调函数形式
+<input ref={c => this.ip1 = c} />  //c就表示input结点
+引用: this.ip1.value;
+3)createRef形式
+this.myRef = React.createRef();  //创建一个容器
+<input ref={this.myRef} />  //将input结点本身放入到容器, 一个容器只能存一个结点
+引用: this.myRef.current.value;
 
+
+>>受控表单数据绑定的几种方式(类式组件)
+1)state = {username: '', password: ''}
+handleChange = (dateType, e) => {
+	this.setState({
+		[dateType]: e.target.value
+	})
+}
+username: <input type="text" name="username" onChange={e => handleChange('username', e)} />
+password: <input type="password" name="password" onChange={e => handleChange{'password', e)} />
+2)state = {username: '', password: ''}
+handleChange = (dateType) => {  //高阶函数的形式
+	return e => {
+		this.setState({
+			[dateType]: e.target.value
+		})
+	}
+}
+username: <input type="text" name="username" onChange={handleChange('username')} />
+password: <input type="password" name="password" onChange={handleChange{'password')} />
+3)state = {username: '', password: ''}
+handleChange = e => {
+	this.setState({
+		[e.target.name]: e.target.value
+	})
+}
+username: <input type="text" name="username" onChange={handleChange} />
+password: <input type="password" name="password" onChange={handleChange} />
 
 
 
