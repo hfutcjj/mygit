@@ -202,10 +202,88 @@ password: <input type="password" name="password" onChange={handleChange} />
 1)componentWillUnmount() * //常用, 一般在这个钩子中做一些收尾的事, 例如: 关闭定时器、取消订阅消息等;
 
 
->>通过脚手架的 npx create-react-app demo 命令创建项目, 脚手架会通过webpack创建一个
+>>组件之间的通信
+1)父组件向子组件传递数据
+通过props传递;
+2)子组件向父组件传递数据
+通过props传递, 要求父给子传递一个函数;
+3)兄弟组件之间传递数据
+通过消息订阅与发布;
+
+
+>>生成唯一字符串
+通过第三方库uuid或nanoid, 后者比前者更轻量级;
+
+
+>>输入标签的value/defaultValue属性
+defaultValue只在初始化时起作用, 实时更新输入标签的值, 只能通过value属性;
+value属性必须与onChange事件一起使用, 否则标签的值无法改变;
+注: 类似的还有checked/defaultChecked属性;
+
+
+
+>>react脚手架
+1, 通过脚手架的 npx create-react-app demo 命令创建项目, 脚手架会通过webpack创建一个
 内置服务器devServer, public文件夹就是这台内置服务器的根路径, 然后就可以通过 
 localhost:3000来访问应用;
 注: 刷新页面, 某些静态资源会从缓存中取, 按shift键的同时刷新, 则所有资源都从后台重新取, 不走缓存;
+2, 修改react应用的默认端口号:
+依次打开 node_modules -> react-scripts -> scripts -> start.js, 修改
+DEFAULT_PORT的值为3001;
+3, 文件目录
+demo
+	node_modules  		//包文件夹
+	public  			//静态资源文件夹
+		index.html  		*//主页面
+		favicon.ico  		//网站图标
+		manifest.json  		//应用加壳的配置文件
+		robots.txt  		//爬虫协议文件
+	src  				//源码文件夹
+		index.js  			*//入口文件
+		App.js  			*//APP组件
+		index.css 			//样式
+		App.css  			//APP组件的样式
+	package.json		//包的说明文件
+1)index.html
+<head>
+	<link rel="icon" href="%PUBLIC_URL%/favicon.ico" />  //网站的偏爱图标
+</head>
+<body>
+	<div id="root"></div>
+</body>
+注: %PUBLIC_URL%就表示public文件夹;
+2)index.js
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './APP';
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+注: 入口文件index.js是由脚手架自动调用;
+3)App.js
+import React from 'react';
+import './App.css';
+import Hello from './Hello.js';
+function App(){
+	return (
+		<div>
+			<Hello />
+		</div>
+	)
+}
+export default App;
+注: 有两种方式区别组件与普通的js文件:
+一是将组件的首字母大写;
+二是将组件命名为.jsx, 如 Hello.jsx;
+
+
+>>组件化编码流程
+1, 拆分组件
+拆分界面, 抽取组件;
+2, 实现静态组件
+使用组件实现静态页面效果;
+3, 实现动态组件
+1)动态显示初始化数据
+2)交互(从绑定事件监听开始)
 
 
 >>消息订阅与发布
@@ -283,72 +361,6 @@ async () => {
 注: await只能等待成功的结果, 对于失败的结果使用try...catch处理;
 
 
->>react路由
-1, SPA(单页应用)
-整个应用只有一个页面, 点击链接不会刷新页面, 只做局部更新, 数据通过ajax请求并在前端异步展示;
-2, 路由
-一个路由就是一个映射关系(key: value), key就是url中的path, value就是一个function或component;
-1)后端路由
-//如nodejs中注册路由
-router.get(path, function(req, res));
-2)前端路由
-注册路由: <Route path='/test' component={Test}>
-工作过程: 当浏览器的path变为/test时, 当前路由组件就会变为Test组件;
-注: 前端路由的底层是由window.history实现;
-3, 路由的原理
-1)点击导航连接引起路径变化;
-2)路径的变化被路由器检测到, 进行匹配组件;
-4, 使用路由
-1)下载路由包, yarn add react-router-dom;
-2)引入并使用
-import {BrowserRouter, Link, Route} from 'react-router-dom';
-<BrowserRouter>
-	...
-	<Link to="/about">About</Link>  //导航链接
-	<Lint to="/home">Home</Link>
-	...
-	<Route path="/about" component={About}/>  //注册路由
-	<Route path="/home" component={Home}/>
-</BrowserRouter>
-注: react-router-dom是专用于web的路由包;
-BrowserRouter是/方式的路由器, 与之对应的HashRouter是#方式的路由器;
-5, 一般组件与路由组件
-1)写法不同
-一般组件: <Demo />
-路由组件: <Route path="/demo" component={Demo} />
-2)接收到的props不同
-一般组件: 写组件标签时传递什么就接收什么;
-路由组件: 自动接收到三个固定的属性: history, location, match;
-6, <NavLink>
-点击导航链接时高亮显式, 使用<NavLink>代替<Link>;
-<NavLink activeClassName="active" to="/about">About</Link>
-<NavLink activeClassName="active" to="/home">Home</Link>
-给.active编写一个高亮的样式;
-注: 可以通过自定义组件来封装导航链接组件, 如
-function MyNavLink(props) {
-	return (
-		<NavLink activeClassName="active" {...props} />
-	)
-}
-7, <Switch>
-将注册路由列表用<Switch>包裹起来, 就能使Route的path与component进行单一匹配;
-8, <Redirect>
-当第一次进入页面时, 没有选择任何匹配, 则默认重定向到一个指定的匹配;
-<Route path="/about" component={About} />
-<Route path="/home" component={Home} />
-<Redirect to="/home" />
-9, 嵌套路由
-在Home文件夹新建两个文件夹News和Message, 作为导航链接Home的子导航链接;
-//Home.js
-{/* 子导航区 */}
-<NavLink activeClassName='focus' to="/home/news">News</NavLink>
-<NavLink activeClassName='focus' to="/home/message">Message</NavLink>
-{/* 注册路由 */}
-<Switch>
-	<Route path="/home/news" component={News} />
-	<Route path="/home/message" component={Message} />
-	<Redirect to="/home/news" />
-</Switch>
 
 
 

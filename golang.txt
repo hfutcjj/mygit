@@ -1066,7 +1066,7 @@ for {
 	}
 }
 3)方式三: 直接读取整个文件
-b, err := ioutil.ReadFile('./demo.txt')
+b, err := ioutil.ReadFile("./demo.txt")
 直接一次性读取, 返回[]byte类型的b和err;
 这个函数封装好了文件的打开与关闭, 不需要再手动处理;
 3, 写入文件
@@ -1075,14 +1075,14 @@ file, err := os.OpenFile("./demo.txt", os.O_CREATE|os.O_RDWR, 0666)
 defer file.Close()
 注: 打开模式有: os.O_RDONLY(只读), os.O_WRONLY(只写), os.O_RDWR(读写), 
 os.O_CREATE(创建), os.O_APPEND(追加), os.O_TRUNC(清空);
-1)方式一
+1)方式一: 按字节写
 n, err := file.Write(b)  //写入[]byte
 n, err := file.WriteString(s)  //写入字符串
-2)方式二
+2)方式二: 按行写
 writer := bufio.NewWriter(file)
 n, err := writer.WriteString(s)
 writer.Flush()  //刷新缓存才能真正写入
-3)方式三
+3)方式三: 一次写入整个文件
 ioutil.WriteFile("./demo.txt", []byte(s), 0666)
 4, 复制文件
 通过读取源文件再写入目标文件, 就实现了文件的复制;
