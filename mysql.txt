@@ -235,10 +235,6 @@ update tname set cname = value where condition;
 update tname set cname1 = value1, cname2 = value2 where condition;
 //根据其他条件修改
 update student set age = age + 1 order by age desc limit 3;
-将月收入前三名的员工底薪减100元:
-update t_emp set sal = sal - 100 order by sal + ifnull(comm, 0) desc limit 3;
-举例: 比如要给主键加1, 就必须先降序排列再修改，否则会引发主键冲突, 如
-update student set sno = sno + 1 order by sno desc;
 2, 多表更新
 update 表1 [left/right] join 表2 on 条件 set 字段1 = 值1, 字段2 = 值2, ...;
 等价于
@@ -247,20 +243,6 @@ update 表1, 表2 set 字段1 = 值1, 字段2 = 值2, ... where 连接条件;
 update t1 join t2 on t1.c1 = t2.c2 set t1.c = value where condition;
 update t1 join t2 on t1.c1 = t2.c2 set t2.c = value where condition;
 update t1 join t2 on t1.c1 = t2.c2 set t1.c = value, t2.c = value where condition;
-举例: 
-把ALLEN调往RESEARCH部门, 职务调整为ANALYST: 
-update t_emp e join t_dept d 
-	set e.dno = d.dno, e.job = 'ANALYST'
-	where e.ename = 'ALLEN' and d.dname = 'RESEARCH';
-注: 此例不能写连接条件，否则修改不了任何数据，因为查不到结果;
-把底薪低于公司平均底薪的员工，底薪增加150元:
-update t_emp e1 join (select avg(sal) avgsal from t_emp) e2 on e1.sal < e2.avgsal 
-	set e1.sal = e1.sal + 150;
-使用外连接的更新: 
-把没有部门的员工，或者SALES部门低于2000元底薪的员工，都调往20部门: 
-update t_emp e left join t_dept d on e.dno = d.dno 
-	set e.dno = 20
-	where e.dno is null or (d.dname = 'SALES' and e.sal < 2000);
 
 	
 >>删除数据
@@ -274,10 +256,6 @@ delete t1 from t1 join t2 on t1.c1 = t2.c2 where condition;
 delete t2 from t1 join t2 on t1.c1 = t2.c2 where condition;
 delete t1, t2 from t1 join t2 on t1.c1 = t2.c2 where condition;
 注: 把要删除记录的表放在 delete 和 from 之间;
-举例:
-删除SALES部门的员工，以及没有部门的员工:
-delete e from t_emp e left join t_dept d on e.dno = d.dno 
-	where d.dname = 'SALES' or e.dno is null;
 3, delete与truncate
 delete是在事务机制下删除数据，删除之前要先保存日志，而truncate是直接删除，速度更快;
 truncate [table] 表名;
@@ -300,11 +278,7 @@ select * from tname limit m, n; 等价于
 select * from tname limit n offset m;
 3, 查询中各子句的执行顺序
 from -> where -> group by -> having -> select -> order by -> limit;
-注: where一定是排在group by之前执行的;
-举例: 查询每个部门中, 1982年以后入职的员工超过2个人的部门编号。
-select deptno from t_emp where hiredate >= '1982-01-01' 
-	group by deptno having count(*) >= 2 
-	order by deptno;
+注: where一定要紧跟在from之后, 而且select中列的别名不能出现在where中, 因为where执行顺序靠前, 但列的别名可以出现在order by中;
 4, where的注意事项
 当检索大数据量时，优化where子句也能加快检索速度;
 1)索引字段的条件应写在前面;
@@ -507,11 +481,13 @@ insert('hello world', 1, 2, ''); //'llo world'
 10)lpad()/rpad() //填充字符
 lpad('hello', 10, '*'); //'*****hello'
 rpad('hello', 10, '*'); //'hello*****'
-11)[not] like //模式匹配
+11)[not] like //模糊查询
 select 'hello' like 'h%'; //1
 举例: 将身份证号中的出生日期用*代替:
 set @num = '340822201505051163';
 select concat(rpad(substring(@num, 1, 6), 14, '*'), right(@num, 4));
+12)regexp 或 rlike  //模式匹配
+select * from user where username rlike '^a';
 2, 数学函数
 1)abs() //取绝对值
 2)ceil() //向上取整
@@ -551,10 +527,6 @@ user(); //root@localhost
 注: 聚合函数只能用于数据表的查询字段, 只能出现在select或者having中, 不能出现在where中;
 count(*)与count(score)的区别:
 前者统计表中所有数据条数，而count(score)不包括了score为null的数据;
-举例: 查询每个部门的名称和部门的人数:
-select d.dname, count(e.ename) from t_dept d 
-	left join t_emp e on d.deptno = e.deptno 
-	group by d.dname;
 6, 加密函数
 1)md5() //md5加密
 2)sha() //sha加密
@@ -563,10 +535,6 @@ select d.dname, count(e.ename) from t_dept d
 如果表达式的为null, 则用第二个参数的值来替代;
 2)if(表达式, 值1, 值2)
 如果表达式的值为true, 则使用值1, 否则使用值2;
-举例:
-中秋节公司发放礼品，SALES部门发放礼品A，其余部门发放礼品B，打印每名员工获得的礼品:
-select e.ename, d.dname, if(d.dname='SALES', 'A', 'B') gift 
-	from t_emp e left join t_dept d on e.dno = d.dno;
 	
 	
 >>条件语句
@@ -577,34 +545,6 @@ case
 	else 值n
 end
 这个条件语句可以写在select子句里，也可以写在where子句里;
-举例:
-公司组织旅游，SALES部门去P1地点，ACCOUNTING部门去P2地点，RESEARCH部门去P3地点；
-select e.ename, d.dname, 
-	case 
-		when d.dname = 'SALES' then 'P1'
-		when d.dname = 'ACCOUNTING' then 'P2'
-		when d.dname = 'RESEARCH' then 'P3'
-	end as place
-from t_emp e join t_dept d on e.deptno = d.deptno;
-举例:
-公司决定为员工调整基本工资，具体调整方案如下:
-1)SALES部门中工龄超过20年，涨幅10%;
-2)SALES部门中工龄不满20年，涨幅5%;
-3)ACCOUNTING部门，+300元;
-4)RESEARCH部门里低于部门平均底薪，+200元;
-5)没有部门的员工，+100元;
-update t_emp e left join t_dept d on e.deptno = d.deptno 
-	left join (select deptno, avg(sal) avgsal from t_emp group by deptno) t on e.deptno = t.deptno
-	set e.sal = (
-		case 
-			when d.dname='SALES' and datediff(now(), e.hiredate)/365>=20 then e.sal*1.1
-			when d.dname='SALES' and datediff(now(), e.hiredate)/365<20 then e.sal*1.05
-			when d.dname='ACCOUNTING' then e.sal+300
-			when d.dname='RESEARCH' and e.sal < t.avgsal then e.sal+200
-			when d.deptno is null then e.sal+100
-			else e.sal  //默认情况不能漏掉, 否则值被置为NULL
-		end
-	);
 
 	
 >>修改mysql默认分隔符
@@ -890,8 +830,64 @@ select t1.name, t1.datestr, t1.times from kills t1 join kills t2 on t1.sid = t2.
 注: 聚合函数只能出现在having中，不能出现在where中;
 5, 如何查询每个人打怪数量排名前三的日期
 ？
-
-
-
+6, 将月收入前三名的员工底薪减100元:
+update t_emp set sal = sal - 100 order by sal + ifnull(comm, 0) desc limit 3;
+7, 比如要给主键加1, 就必须先降序排列再修改，否则会引发主键冲突, 如
+update student set sno = sno + 1 order by sno desc;
+8, 把ALLEN调往RESEARCH部门, 职务调整为ANALYST: 
+update t_emp e join t_dept d 
+	set e.dno = d.dno, e.job = 'ANALYST'
+	where e.ename = 'ALLEN' and d.dname = 'RESEARCH';
+注: 此例不能写连接条件，否则修改不了任何数据，因为查不到结果;
+9, 把底薪低于公司平均底薪的员工，底薪增加150元:
+update t_emp e1 join (select avg(sal) avgsal from t_emp) e2 on e1.sal < e2.avgsal 
+	set e1.sal = e1.sal + 150;
+10, 使用外连接的更新: 
+把没有部门的员工，或者SALES部门低于2000元底薪的员工，都调往20部门: 
+update t_emp e left join t_dept d on e.dno = d.dno 
+	set e.dno = 20
+	where e.dno is null or (d.dname = 'SALES' and e.sal < 2000);
+11, 删除SALES部门的员工，以及没有部门的员工:
+delete e from t_emp e left join t_dept d on e.dno = d.dno 
+	where d.dname = 'SALES' or e.dno is null;
+12, 查询每个部门中, 1982年以后入职的员工超过2个人的部门编号。
+select deptno from t_emp where hiredate >= '1982-01-01' 
+	group by deptno having count(*) >= 2 
+	order by deptno;
+13, 查询每个部门的名称和部门的人数:
+select d.dname, count(e.ename) from t_dept d 
+	left join t_emp e on d.deptno = e.deptno 
+	group by d.dname;
+14, 中秋节公司发放礼品，SALES部门发放礼品A，其余部门发放礼品B，打印每名员工获得的礼品:
+select e.ename, d.dname, if(d.dname='SALES', 'A', 'B') gift 
+	from t_emp e left join t_dept d on e.dno = d.dno;	
+15, 公司组织旅游，SALES部门去P1地点，ACCOUNTING部门去P2地点，RESEARCH部门去P3地点；
+select e.ename, d.dname, 
+	case 
+		when d.dname = 'SALES' then 'P1'
+		when d.dname = 'ACCOUNTING' then 'P2'
+		when d.dname = 'RESEARCH' then 'P3'
+	end as place
+from t_emp e join t_dept d on e.deptno = d.deptno;
+16, 公司决定为员工调整基本工资，具体调整方案如下:
+1)SALES部门中工龄超过20年，涨幅10%;
+2)SALES部门中工龄不满20年，涨幅5%;
+3)ACCOUNTING部门，+300元;
+4)RESEARCH部门里低于部门平均底薪，+200元;
+5)没有部门的员工，+100元;
+update t_emp e left join t_dept d on e.deptno = d.deptno 
+	left join (select deptno, avg(sal) avgsal from t_emp group by deptno) t on e.deptno = t.deptno
+	set e.sal = (
+		case 
+			when d.dname='SALES' and datediff(now(), e.hiredate)/365>=20 then e.sal*1.1
+			when d.dname='SALES' and datediff(now(), e.hiredate)/365<20 then e.sal*1.05
+			when d.dname='ACCOUNTING' then e.sal+300
+			when d.dname='RESEARCH' and e.sal < t.avgsal then e.sal+200
+			when d.deptno is null then e.sal+100
+			else e.sal  //默认情况不能漏掉, 否则值被置为NULL
+		end
+	);
+	
+	
 
 	

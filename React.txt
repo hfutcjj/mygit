@@ -287,7 +287,7 @@ export default App;
 
 
 >>消息订阅与发布
-通过消息订阅与发布, 可以在兄弟组件之间传递数据, 从而更改状态;
+通过消息订阅与发布, 可以在任意组件之间传递数据, 从而更改状态;
 1, 下载消息订阅插件
 yarn add pubsub-js [--save] 或 npm install pubsub-js [--save]
 引入插件
@@ -296,10 +296,8 @@ import PubSub from 'pubsub-js';
 function A() {
 	const [data, setData] = useState({ //... });
 	useEffect(() => {
-		PubSub.subscribe('atguigu', (_, data) => {  //第一个参数为消息名, 此处同'atguigu'所以省略
-			setData(preData => {
-				return {...preData, ...data}
-			});
+		PubSub.subscribe('atguigu', (_, v) => {  //第一个参数为消息名, 此处同'atguigu'所以省略
+			setData(v);
 		};
 		return () => {  //组件解挂后取消消息订阅
 			PubSub.unsubscribe('atguigu');
@@ -308,43 +306,46 @@ function A() {
 }
 3, B组件发布消息
 function B() {
-	PubSub.publish('atguigu', {
-		//...传递的数据
-	});
+	PubSub.publish('atguigu', value);
 }
 注: 当B发布'atguigu'消息时, 订阅该消息的A组件就会收到B发布的数据, 从而实现更改状态;
 
 
 >>请求数据的几种方式
+const url = 'https://unidemo.dcloud.net.cn/api/news';
+const url = 'https://api.github.com/search/users?q=hfutcjj';
 1, XMLHttpRequest
 2, jQuery.ajax({
 	//...
 })
+注: jQuery请求是对xhr的封装, 如果嵌套多次请求会产生回调地狱的问题;
 3, axios
-axios.get(url).then(res=>{
-	//...
+axios(url).then(res=>{  //axios(url)是Promise对象
+	console.log('success: ', res)
 }, err=>{
-	//...
+	console.log('error: ', err)
 });
-或
-axios(url).then(res=>{
-	//...
+等价于
+axios.get(url).then(res=>{
+	console.log('success: ', res)
 }).catch(err=>{
-	//...
+	console.log('error: ', err)
 });
-注: jQuery.ajax()和axios(url)都是对XMLHttpRequest的封装, 而且都是第三方库, 需要先下载后使用;
-axios可以避免jQuery.ajax()产生的回调地狱的问题;
+注: axios也是对xhr的封装, 能避免回调地狱的问题, axios是第三方库, 需要先下载并引入:
+npm i axios 或 yarn add axios;
+import axios from 'axios';
+注: axios比fetch更好用, fetch在处理错误时容易出现问题;
 4, fetch
-fetch(url).then(response => {
-	return response.json()  //response.json()也是Promise对象
-}).then(res => {
-	//...
-}).catch(err => {
-	//...
+fetch(url).then(response => {  //fetch(url)是Promise对象
+	return response.json()  
+}).then(res => {			//fetch(url).then()也是Promise对象
+	console.log('success: ', res)
+}).catch(err => {  //统一处理每个then里面可能的错误
+	console.log('error: ', err)
 });
-注: fetch是js的原生方法, 并不是对XMLHttpRequest的封装, 可以直接使用;
+注: fetch是js的原生方法, 并不是对xhr的封装, 可以直接使用;
 5, 使用async...await对.then的优化
-async () => {
+const handleClick = async () => {
 	try {
 		const resp = await fetch(url)
 		const data = await resp.json()
@@ -354,7 +355,7 @@ async () => {
 	}
 }
 或者
-async () => {
+const handleClick = async () => {
 	try {
 		const data = await fetch(url).then(res => {
 			return res.json()
