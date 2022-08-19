@@ -369,6 +369,23 @@ const handleClick = async () => {
 注: await只能等待成功的结果, 对于失败的结果使用try...catch处理;
 
 
+>>antd
+1, 蚂蚁金服开发的React UI组件库, 主要用于研发企业级中后台产品;
+安装: npm install antd 或 yarn add antd;
+引入: 
+import {Button, DatePicker} from 'antd';
+import {WechatOutlined} from '@ant_design/icons';
+import 'antd/dist/antd.css'; 
+注: 一定要在项目的某个位置引入css样式, 这个容易忘记;
+2, 样式的按需引入以及自定义主题, 属于高级配置, 在antd的3.x版本中有详细说明;
+
+
+
+
+
+
+
+
 
 
 

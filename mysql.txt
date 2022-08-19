@@ -391,7 +391,7 @@ select * from student t1 left [outer] join dept t2 on t1.Dno = t2.Dno;
 3)右外连接
 select * from student t1 right [outer] join dept t2 on t1.Dno = t2.Dno;
 4)全连接
-mysql不支持全连接，可合并左外连接与右外连接的结果得到:
+mysql不支持全连接(full join)，可合并左外连接与右外连接的结果得到:
 select * from student t1 left [outer] join dept t2 on t1.Dno = t2.Dno
 union (all)
 select * from student t1 right [outer] join dept t2 on t1.Dno = t2.Dno;
@@ -407,6 +407,13 @@ select * from t1 join t2 on t1.name = t2.name;
 select t1.* from t1 left join t2 on t1.name = t2.name where t2.name is null;
 选择在t2表中但不在t1表中的人的记录：
 select t2.* from t1 right join t1 on t1.name = t2.name where t1.name is null;
+6)连接的分类
+可以从不同角度对连接进行分类, 如
+按连接条件, 分为等值连接与非等值连接;
+按连接源, 分为自连接与非自连接;
+按是否包含null值的行, 分为内连接、外连接(左连接、右连接、全连接)等;
+7)等值连接的另一种写法: 自然连接
+select * from t1 natural join t2 using c;  //c为t1和t2的同名字段
 
 
 >>连接举例

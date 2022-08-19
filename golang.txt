@@ -1320,7 +1320,7 @@ http.ListenAndServe(":9090", nil)
 注: ListenAndServe()的第一个参数为""表示监听端口为默认的80,
 第二个参数为nil表示使用默认的多路复用器DefaultServeMux;
 2, 方式二: 使用自定义处理器对象
-http.Handle("/", &MyHandler)
+http.Handle("/", &myHandler)
 http.ListenAndServe(":9090", nil)
 type MyHandler struct {}  //自定义处理器
 func (m *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
