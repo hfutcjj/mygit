@@ -283,7 +283,7 @@ from -> where -> group by -> having -> select -> order by -> limit;
 当检索大数据量时，优化where子句也能加快检索速度;
 1)索引字段的条件应写在前面;
 2)筛选掉记录最多的条件写在前面;
-5, having
+5, group by ... having
 having是group by的条件，having里只能放分组字段或者聚合函数，
 不过建议把分组字段的条件放到where中，where是在分组之前执行，提高效率;
 6, 按多个字段分组
@@ -505,17 +505,19 @@ round(3.14159, 2); //3.14
 5)power() //幂运算
 power(2, 3); //8
 3, 日期时间函数
-1)now() //当前日期和时间
+1)now(), curdate(), curtime() //当前日期时间、日期、时间
 now(); //'2020-05-07 10:56:00'
-2)curdate() //当前日期
 curdate(); //'2020-05-07'
-3)curtime() //当前时间
 curtime(); //'10:56:00'
-4)date_format() //对日期时间进行格式化
+2)year()/month()/day()/week()/hour()/minute()/second()  //指定日期时间字段
+等价于 
+extract(year from now());
+extract(hour from '2022/8/21');
+3)date_format() //对日期时间进行格式化
 date_format('2020-5-1', '%m/%d/%Y'); //'05/01/2020'
-5)date_add() //对日期时间进行增减
+4)date_add() //对日期时间进行增减
 date_add('2020-5-1', interval 2 year/month/week/day/hour/minute/second);
-6)datediff() //计算两个日期相差的天数
+5)datediff() //计算两个日期相差的天数
 datediff('2020-6-1', '2020-5-1'); //31
 4, 信息函数
 1)connection_id() //当前连接的ID
@@ -534,6 +536,7 @@ user(); //root@localhost
 注: 聚合函数只能用于数据表的查询字段, 只能出现在select或者having中, 不能出现在where中;
 count(*)与count(score)的区别:
 前者统计表中所有数据条数，而count(score)不包括了score为null的数据;
+注: 聚合函数都会自动忽略NULL值;
 6, 加密函数
 1)md5() //md5加密
 2)sha() //sha加密
@@ -545,13 +548,20 @@ count(*)与count(score)的区别:
 	
 	
 >>条件语句
-case 	
-	when 表达式 then 值1
-	when 表达式 then 值2
-	....
-	else 值n
+1)类似于switch结构
+case deptno
+	when '100' then '研发部'
+	when '101' then '运营部'
+	when '102' then '财务部'
+	else '市场部'
 end
-这个条件语句可以写在select子句里，也可以写在where子句里;
+2)类似于if...else...if结构
+case 
+	when grade >= 90 then 'A'
+	when grade >= 80 then 'B'
+	when grade >= 60 then 'C'
+	else 'D'
+end
 
 	
 >>修改mysql默认分隔符
