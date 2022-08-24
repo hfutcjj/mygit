@@ -351,6 +351,7 @@ where not expression;
 
 >>子查询
 子查询可以写在select、from、where子句中，分别称为select子查询、from子查询、where子查询;
+子查询也可以出现在having子句中;
 1)出现在其他sql语句内的select子句, 叫子查询;
 用于where中的比较时，子查询返回一条结果可以用于比较运算符，返回多条结果则必须用[not] in;
 select * from teacher where Salary > (select avg(Salary) from teacher);
@@ -904,7 +905,49 @@ update t_emp e left join t_dept d on e.deptno = d.deptno
 			else e.sal  //默认情况不能漏掉, 否则值被置为NULL
 		end
 	);
-	
-	
+17, 查询工资高于本部门平均工资的员工信息:
+1)方式一(使用连接):
+select e1.ename, e1.salary, e1.deptno from employee e1 
+	join (select deptno, avg(salary) avg from employee group by deptno) e2
+	on e1.deptno = e2.deptno and e1.salary > e2.avg;
+2)方式二(使用相关子查询, 不推荐):
+select e1.ename, e1.salary, e1.deptno from employee e1 
+	where salary > 
+	(select avg(salary) from employee where deptno = e1.depntno);
+注: 使用连接的方式, 比使用相关子查询的方式快一个数量级;
+18, 查询部门平均工资最低的部门:
+1)使用连接的方式(推荐):
+select e1.dno, avg(e1.salary) avg_sal from employee e1 group by dno 
+	join (select avg(salary) avg_sal from employee group by dno order by avg_sal desc 1) e2 
+	on e1.dno = e2.dno;
+2)使用(having)子查询的方式:
+select dno from employee group by dno having avg(salary) = (
+	select min(avg_sal) min_avg_sal from (
+		select avg(salary) avg_sal from employee group by dno 
+	) e1
+);
+3)使用 <= all 子查询的方式:
+select dno from employee group by dno having avg(salary) <= all (
+	select avg(salary) avg_sal from employee group by dno 
+);
+4)使用排序的方式:
+select dno from employee group by dno having avg(salary) = (
+	select avg(salary) avg_sal from employee group by dno order by avg_sal desc limit 1
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	
