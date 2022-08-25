@@ -914,26 +914,17 @@ select e1.ename, e1.salary, e1.deptno from employee e1
 select e1.ename, e1.salary, e1.deptno from employee e1 
 	where salary > 
 	(select avg(salary) from employee where deptno = e1.depntno);
-注: 使用连接的方式, 比使用相关子查询的方式快一个数量级;
-18, 查询部门平均工资最低的部门:
-1)使用连接的方式(推荐):
-select e1.dno, avg(e1.salary) avg_sal from employee e1 group by dno 
-	join (select avg(salary) avg_sal from employee group by dno order by avg_sal desc 1) e2 
-	on e1.dno = e2.dno;
-2)使用(having)子查询的方式:
-select dno from employee group by dno having avg(salary) = (
-	select min(avg_sal) min_avg_sal from (
-		select avg(salary) avg_sal from employee group by dno 
-	) e1
-);
-3)使用 <= all 子查询的方式:
-select dno from employee group by dno having avg(salary) <= all (
-	select avg(salary) avg_sal from employee group by dno 
-);
-4)使用排序的方式:
-select dno from employee group by dno having avg(salary) = (
-	select avg(salary) avg_sal from employee group by dno order by avg_sal desc limit 1
-);
+注: 使用连接的方式, 比使用相关子查询的方式快一个数量级:
+18, 查询部门平均工资最低的部门信息:
+首先查询平均工资最低的部门号:
+select eno, avg(salary) avg_sal from employee group by dno order by avg_sal limit 1;
+然后将上面的查询结果作为临时表, 与部门表进行连接查询:
+select e.eno, e.avg_sal, d.* 
+	from (
+		select eno, avg(salary) avg_sal from employee group by dno order by avg_sal limit 0
+	) e
+	join department d on e.dno = d.dno;
+
 
 
 
