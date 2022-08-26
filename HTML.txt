@@ -801,6 +801,20 @@ img{filter: ...}
 6)hue-rotate(0deg); //色相旋转, 0deg: 原图
 
 
+>>举例: 定制单选按钮
+通过将原生单选按钮隐藏, 对label标签进行样式设置;
+<label for="rbtn">select red</label>
+<input type="radio" id=rbtn" name="color" value="red" hidden="hidden">
+label{
+	display: inline-block; width: 160px; height: 40px; line-height: 40px;
+	font-size: 20px; margin: 20px; border: 1px solid #999; border-radius: 20px;
+	transition: all 0.5s;
+}
+label:hover{
+	box-shadow: 0 0 10px #333;
+}
+
+
 
 
 
