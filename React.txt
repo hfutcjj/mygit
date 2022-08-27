@@ -387,6 +387,65 @@ import 'antd/dist/antd.css';
 action: 动作对象, 如{type: 'ADD', data: {name: 'zhao', age: 30}};
 reducer: 用于初始化状态、加工状态;
 store: 将state、action、reducer联系在一起的对象;
+3, 使用redux的步骤
+1)下载redux
+npm install redux / yarn add redux;
+2)新建redux文件
+src
+	redux 
+		store.js
+		count_action.js
+		count_reducer.js
+//store.js
+import {createStore} from 'redux';
+import countReducer from './count_reducer';
+export default const store = createStore(countReducer);
+//count_action.js
+export const Increment = data => ({type: 'increment', data});
+export const Decrement = data => ({type: 'decrement', data});
+//count_reducer.js
+export default countReducer(preState, action) {
+	const {type, data} = action
+	switch(type) {
+		case 'increment': 
+			return preState + data;
+		case 'decrement':
+			return preState - data;
+		default: 
+			return 0;
+	}
+}
+3)在组件中使用
+//取得store中存储的状态值
+store.getState()  //api-1
+//通知store更新状态
+store.dispatch(Increment(5))  //api-2
+4)在合适的位置(如index.js)通知组件重绘(当store中状态改变时)
+store.subscribe(() => {  //api-3
+	root.render(<App />);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
