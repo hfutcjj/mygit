@@ -1314,35 +1314,39 @@ http1.0版本中, 浏览器请求一个带有图片的网页, 会因为下载图
 而http1.1版本, 允许浏览器在拿到当前请求对应的全部资源后再断开连接, 提高了效率;
 
 
->>go搭建web服务器
-1, 方式一(常用)
-http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {  //处理器
-	fmt.Fprintf(w, "URL: %s", r.URL)
+>>go搭建简单的服务器
+http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { 
+	w.Write([]byte("hello world"))
 })
-http.ListenAndServe(":9090", nil)
-注: ListenAndServe()的第一个参数为""表示监听端口为默认的80,
-第二个参数为nil表示使用默认的多路复用器DefaultServeMux;
-2, 方式二: 使用自定义处理器对象
-http.Handle("/", &myHandler)
-http.ListenAndServe(":9090", nil)
-type MyHandler struct {}  //自定义处理器
-func (m *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This is customized handler")
-}
-注: HandleFunc()能将具有指定签名的函数自动转换成处理器, 而Handle()需要第二个参数对象
-实现Handler接口, 即实现ServeHTTP()方法;
-3, 方式三: 使用自定义http.Server
-通过http.Server结构体对服务器进行更详细的配置;
+http.ListenAndServe("localhost:9090", nil)
+或
 server := http.Server{
-	Addr: ":9090",
-	Handler: &MyHandler{},
-	ReadTimeout: 2*time.Second,
+	Addr: "localhost:9090",
+	Handler: nil,
 }
 server.ListenAndServe()
-4, 方式四: 使用自定义多路复用器
-mux := http.NewServeMux()
-mux.HandleFunc("/", handler)
-http.ListenAndServe(":9090", mux)
+注: 1, ListenAndServe的第一个参数表示网络地址, 为""则表示所有网络接口的80端口;
+第二个参数是Handler, 为nil就是DefaultServeMux(默认的多路复用器), 
+它是一个Handler, 用来接收HTTP请求, 然后将请求转交给其他具体的Handler来处理;
+2, Handler是一个接口, 内部定义了一个方法ServeHTTP();
+type Handler interface {
+	ServeHTTP(ResponseWriter, *Request)
+}
+3, 可自定义Handler
+type myHandler struct{}
+func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("多路复用器"))
+}
+mh := myHandler{}
+server := http.Server{
+	Addr: "localhost:9090",
+	Handler: &mh,
+}
+server.ListenAndServe()
+4, http.Handle()
+可以使用http.HandleFunc()为具体路径绑定处理函数, 也可以使用http.Handle()来为
+具体路径绑定具体Handler;
+http.Handle("/hello", &mh)
 
 
 
