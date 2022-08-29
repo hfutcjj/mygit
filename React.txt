@@ -424,13 +424,90 @@ store.dispatch(Increment(5))  //api-2
 store.subscribe(() => {  //api-3
 	root.render(<App />);
 });
+4, react中集成了redux: react-redux插件
+1)下载react-redux
+2)所有UI组件都包裹一个容器组件, 容器组件连接UI组件与redux, 所有与redux的交互都在容器组件里完成, 
+容器组件再将 redux中保存的状态 与 用于操作状态的方法 传递给UI组件;
+文件结构:
+src 
+	index.js
+	APP.js
+	components    //UI组件
+		Count.js
+	containers    //容器组件
+		Count.js
+	redux
+		store.js
+		actions
+			count_action.js
+		reducers
+			count_reducer.js
+//App.js
+<Count store={store} />  //APP中调用容器组件, 并在此处绑定redux
+//containers/Count.js
+import {connect} from 'react-redux';
+const mapStateToProps = state => {  //传递状态
+	return {count: state};  
+}
+const mapDispatchToProps = dispatch => {  //传递操作状态的方法
+	return {
+		incre: data => dispatch(Increment(data)),
+		decre: data => dispatch(Decrement(data)),
+	}
+}
+export default connect(mapStateToProps, mapDispatchToProps)(Count)  //容器组件连接UI组件与redux
+//components/Count.js
+UI组件通过props.count得到状态值, 通过props.incre(value)来间接改变状态;
+3)优化一: 简写
+//containers/Count
+import {connect} from 'react-redux';
+export default connect(
+	state => ({count: state}),
+	dispatch => ({  //mapDispatchToProps的一般写法
+		incre: data => dispatch(Increment(data)),
+		decre: data => dispatch(Decrement(data)),
+	}), 
+	{  //或, mapDispatchToProps的最简写法
+		incre: Increment,
+		decre: Decrement,
+	}
+)(Count)
+4)优化二: 引入<Provider>组件
+不用在App组件里为每个容器组件绑定store, 直接在index.js里给<Provider>组件绑定store;
+Provider会自动检测容器组件, 给每个容器组件传递store;
+//index.js
+import {Provider} from 'react-redux;
+ReactDOM.createRoot(document.getElementById('root').render(
+	<Provider store={store}>
+		<App />
+	</Provider>
+);
+5)优化三: 整合UI组件与容器组件
+将UI组件和容器组件写在同一个文件里, 默认暴露容器组件;
+//containers/Count.js
+export default connect(...)(Count);
+function Count(props){
+	//...
+}
+5, redux管理多个组件的状态
+此时就有1个store, n个action, n个reducer, store中需要用combineReducers合并连接多个reducer, 
+此时redux中的最终state是一个对象;
+//store.js
+import {createStore, combineReducers} from 'redux';
+import countReducer from './reducers/count';
+import personReducer from './reducers/person';
+const allReducers = combineReducers({
+	sum: countReducer,
+	persons: personReducer,
+});
+const store = createStore(allReducers);
+export default store;
+//组件
+此时给组件传递状态以及组件取状态得用 state.sum 的形式;
 
 
-
-
-
-
-
+>>项目打包运行
+终端输入: npm run build, 会在项目下生成build文件夹, 将build文件夹部署到服务器即可;
 
 
 
