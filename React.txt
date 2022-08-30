@@ -63,6 +63,19 @@ function MyLink(props) {
 <Mylink href="..." target="_blank">百度</MyLink>
 
 
+>>组件的调用
+function Hello(){
+	return (
+		<>
+			<h1>这是Hello组件</h1>
+			<A name="Tom" age={30}>hello</A>
+		</>
+	)
+}
+此时Hello组件中包含A组件, 系统调用A函数组件, 并且给A组件传递参数 props:
+{name: 'Tom', age: 30, children: 'hello'};
+
+
 >>JSX的语法规则
 1, react定义的一种类似于XML的JS扩展语法: JS+XML;
 2, 定义虚拟DOM时, 不要写引号;
@@ -157,6 +170,112 @@ this.myRef = React.createRef();  //创建一个容器
 引用: this.myRef.current.value;
 
 
+>>hooks
+1, useState()  //初始化和设置状态值
+import {useState} from 'react';
+const [count, setCount] = useState(0);
+setCount()的两种写法:
+1)直接形式: setCount(count+1)
+2)回调函数的形式: setCount(n => n+1)  //这种形式通用性更好
+2, useEffect()  //生命周期钩子
+import {useEffect} from 'react';
+相当于componentDidMount()、componentDidUpdate()、componentWillUnmount()的组合, 有如下几种形式:
+1)没有第二个参数, 表示监测所有状态值, 即在组件挂载与每次更新时都调用
+useEffect(() => {
+	//...
+})
+2)第二个参数为空数组, 表示不监测任何状态值, 即仅在组件挂载时调用
+useEffect(() => {
+	//...
+}, [])
+3)第二个参数为非空数组, 表示监测数组里的状态值, 即在组件挂载以及数组里的状态值改变时都调用
+useEffect(() => {
+	//...
+}, [count])  //count值改变就调用
+useEffect(() => {
+	//...
+}, [count, title])  //count或title值改变就调用
+4)执行副作用参数, 相当于组件卸载前执行收尾操作, 如清除定时器或取消订阅
+useEffect(() => {
+	//...
+	return () => {
+		//...
+	}
+})
+3, useRef()  //取其他组件的值
+import {useRef} from 'react';
+<input ref={c} type="text" /><button onClick={show}>显示</button>
+const show = () => {
+	const c = useRef()
+	alert(c.current.value)
+}
+
+
+>>Context: 用于祖先组件给子孙组件传递数据
+import {createContext} from 'react';
+//1, 声明: 创建一个保存用户名的上下文容器
+const UsernameContext = createContext();
+function A(){
+	const [username, setUsername] = useState('Tom')
+	const [age, setAge] = useState(20)
+	return (
+		<>
+			<h2>我是A组件</h2>
+			//2, 传: 给B组件绑定数据, 以后B以及B的子孙组件都能拿到这个数据
+			<UsernameContext.Provider value={{username: username, age: age}}>
+				<B/>
+			</UsernameContext.Provider>
+		</>
+	)
+}
+function B() {
+	return (
+		<>
+			<h2>我是B组件</h2>
+			<C/>
+		</>
+	)
+}
+function C() {
+	return (
+		<>
+			<h2>我是C组件</h2>
+			<div>从A组件接收到的数据: 
+				//3, 取: 后代组件取数据
+				<UsernameContext.Consumer>
+					{
+						value => {
+							return `用户名: ${value.username}, 年龄: ${value.age}`;
+						}
+					}
+				</UsernameContext.Consumer>
+			</div>
+		</>
+	)
+}
+
+
+
+>>Fragment 或 <>
+可以使用Fragment或<>代替组件顶层的<div>;
+import {Fragment} from 'react'
+function Demo(props){
+	return (
+		<Fragment>
+			//...
+		</Fragment>
+	)
+	或
+	return (
+		<>
+			//...
+		</>
+	)
+}
+两者的区别是Fragment里面可以包含key属性;
+
+
+
 >>受控表单数据绑定的几种方式(类式组件)
 1)state = {username: '', password: ''}
 handleChange = (dateType, e) => {
@@ -203,12 +322,14 @@ password: <input type="password" name="password" onChange={handleChange} />
 
 
 >>组件之间的通信
-1)父组件向子组件传递数据
-通过props传递;
-2)子组件向父组件传递数据
-通过props传递, 要求父给子传递一个函数;
-3)兄弟组件之间传递数据
+1, 父子组件通信
+1)父->子: 通过props传递;
+2)子->父: 通过props传递, 要求父给子传递一个函数;
+2, 兄弟组件之间
 通过消息订阅与发布;
+3, 祖先与子孙组件通信
+Context: 生产者-消费者模式;
+4, 集中式状态管理: redux;
 
 
 >>生成唯一字符串
