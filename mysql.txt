@@ -57,6 +57,7 @@ commit, rollback;
 3)DML 数据操作语言
 表的数据;
 select, insert, update, delete;
+注: 只有DML操作是可以回滚的, DDL不可以回滚, 所以执行DDL一定要小心;
 
 
 >>操作数据库
@@ -137,7 +138,7 @@ create table t1(
 	id int unsigned primary key auto_increment,
 	pname varchar(20) not null,
 	page tinyint unsigned
-) select age page, name pname from t;
+) [as] select age page, name pname from t;
 create...select结构，要复制的列名一定要相同，顺序可以不同;
 3)直接复制表结构到新表
 create table tnewname like toldname;
@@ -257,8 +258,9 @@ delete t2 from t1 join t2 on t1.c1 = t2.c2 where condition;
 delete t1, t2 from t1 join t2 on t1.c1 = t2.c2 where condition;
 注: 把要删除记录的表放在 delete 和 from 之间;
 3, delete与truncate
-delete是在事务机制下删除数据，删除之前要先保存日志，而truncate是直接删除，速度更快;
-truncate [table] 表名;
+delete from t: 属于DML, 在设置了(set autocommit=false)后是可以回滚的;
+truncate [table] t: 属于DDL, DDL是不可以回滚的;
+后者比前者速度更快, 但实际中一般使用delete, 因为更安全;
 
 
 >>查询数据

@@ -244,6 +244,7 @@ div{
 用户设置的样式 > 网页制作者的样式 > 浏览器默认样式;
 一般情况下，<link>放在<style>之前，所以，
 内联样式 > 嵌入样式 > 外部样式；
+注: 子元素默认只继承父元素的文字样式, 其他样式不继承;
 
 
 >>选择器的优先级
@@ -287,6 +288,7 @@ list-style:
 1, em
 给非font-size属性设置em单位时，是相对于自身font-size的比值；
 给font-size设置em单位时，则是相对于父元素的font-size的比值;
+注: rem是相对于根元素(也就是html)font-size的比值;
 2, %
 给元素的width, height, padding, margin属性设置百分比，是参照父元素的宽度和高度的比值；
 给transform: translate(50%, 50%), 是按照元素自身的宽度和高度的比值；
@@ -295,6 +297,7 @@ list-style:
 >>盒模型
 1, width / height
 注：默认情况下，盒子的宽度和高度指的是内容的尺寸，不包括边框和内外边距;
+注: min-width / max-width 限制当页面尺寸改变时盒子的最小和最大宽度;
 2, border
 border: 2px solid red;
 border由三个具体属性组成：
@@ -720,6 +723,81 @@ div:hover{animation-play-state: running;}
 animation: myframe 5s ease 0.5s infinite; 
 
 
+>>弹性布局
+1, 弹性容器
+设置了 display: flex; 的元素为弹性容器, 里面的直接子元素会按照弹性布局的方式进行布局;
+2, 弹性子元素
+弹性容器只会对直接子元素进行弹性布局, 对孙元素不会;
+//html
+<div class="parent">
+	<div class="child item1">1</div>
+	<div class="child item2">2</div>
+	<div class="child item3">3</div>
+</div>
+//css
+.parent{
+	display: flex; //在父元素上设置弹性盒模型, 必选
+}
+.item1{flex: 1;} //给子元素设置相对占比，可选
+.item2{flex: 2;}
+.item3{width: 200px;}
+属性按照常用的次序如下:
+1)父元素 display: flex 
+当显式设置的子元素宽度和加起来超过了父元素的宽度, 会对子元素按比例压缩, 并不会换行;
+2)子元素 flex: n
+可以设置子元素的占比，只能为整数值，设置了flex值后子元素的宽度属性会失效;
+3)父元素 flex-direction
+主轴方向: row(默认) / column / row-reverse / column-reverse;
+4)父元素 justify-content
+子元素在主轴上的排列方式: flex-start(默认)/flex-end/center/space-between/space-around;
+5)父元素 align-items
+子元素在侧轴上的对齐方式(与主轴垂直的轴): flex-start/flex-end/center/baseline/stretch(默认);
+6)父元素 flex-wrap
+设置子元素的宽度超出弹性容器时是否换行: nowrap(默认)/wrap;
+7)子元素 order
+设置子元素的次序, 按从小到大的顺序进行排序;
+8)子元素 align-self
+设置单独子元素的侧轴对齐方式;
+注: 弹性容器里的直接子元素都成为了块元素, 如<a>与<span>, 都可以设置宽度与高度;
+
+
+>>弹性布局实现水平居中与垂直居中
+<div class="parent">
+	<div class="child"></div>
+	<div class="child"></div>
+	<div class="child"></div>
+</div>
+.parent{
+	display: flex;
+	justify-content: center;  //水平居中
+	align-items: center;  //垂直居中
+}
+
+
+>>媒体查询
+1, 媒体类型
+主要是十种, 常见的有all, screen, print, handheld, tv等;
+2, 媒体特性
+主要有13种, 常见的有
+max-width, min-width, max-device-width, min-device-width等;
+3, 引入媒体查询
+1)<link rel="stylesheet" href="style.css" media="screen">
+2)@import
+<style>
+	@importurl(reset.css) screen;
+</style>
+3)@media(最常用)
+<style>
+	@media screen{
+		/*样式代码*/
+	}
+</style>
+4, 举例
+1)@media only screen and (min-width: 1200px) { //PC端设定 }
+@media only screen and (min-width: 600px) and (max-width: 1200px) { //平板设定 }
+@media only screen and (max-width: 600px) { //移动端设定 }
+
+
 >>多列布局
 1, column-width
 每列的宽度, auto / 200px, 如为auto则由其他属性决定;
@@ -735,71 +813,6 @@ column-rule: 2px dotted gray;
 默认值为none, 表示不跨任何列，all表示跨所有列;
 总: columns综合设置, 如
 columns: 200px 3;
-
-
->>flex弹性盒模型
-//html
-<div class="parent">
-	<div class="child item1">1</div>
-	<div class="child item2">2</div>
-	<div class="child item3">3</div>
-</div>
-//css
-.parent{height: 600px; border: 1px solid red;
-	display: flex; //在父元素上设置弹性盒模型, 必选
-	flex-direction: row; //横向排列，可选
-	justify-content: flex-start; //横向对齐，可选
-	align-items: flex-start; //纵向对齐，可选
-}
-.child{width: 200px; height: 200px; border: 1px solid gray;}
-.item1{flex: 1;} //给子元素设置相对占比，可选
-.item2{flex: 2;}
-.item3{flex: 3;}
-注：
-1, 给父元素设置 display: flex; 可使所有子元素显示在一行；
-2, flex-direction设置排列方向，默认为row, 有如下可选值
-row / column;
-3, justify-content设置横向对齐，默认为flex-start，有如下可选值
-flex-start/flex-end/center/space-between/space-around;
-4, align-items设置纵向对齐，默认为flex-end，有如下可选值
-flex-start/flex-end/center/baseline/stretch;
-5, 给子元素设置flex值，可以设置子元素的占比，只能为整数值，设置了flex值后子元素的宽度属性会失效;
-
-
->>媒体查询
-1, 媒体类型
-主要是十种, 常见的有all, screen, print, handheld, tv等;
-2, 媒体特性
-主要有13种, 常见的有
-max-width, min-width, max-device-width, min-device-width等;
-3, 引入媒体查询
-1)<link rel="stylesheet" href="style.css" media="screen">
-2)@import方法
-<style>
-	@importurl(reset.css) screen;
-</style>
-3)@media方法
-成为媒体查询, 现在比较常用;
-<style>
-	@media screen{
-		/*样式代码*/
-	}
-</style>
-4, 举例
-@media screen and (max-width: 480px){
-	.ads{display: none;}
-}
-<link rel="stylesheet" media="screen and (max-device-width:480px)" href="iphone.css">
-//省略媒体类型默认为all
-<link rel="stylesheet" media="(max-device-width:480px)" href="iphone.css">
-//不同的媒体类型和媒体特性
-<link rel="stylesheet" media="handheld and (max-width:480px), screen and (min-width:960px)" href="iphone.css">
-@media screen and (min-width: 600px) and (max-width: 900px){
-	body{background-color: #f5f5f5;}
-}
-@media not print and (max-width: 1200px){
-	/**/
-} //not关键词表示取反
 
 
 >>使用css进行图像处理
@@ -825,6 +838,21 @@ label{
 label:hover{
 	box-shadow: 0 0 10px #333;
 }
+
+
+>>移动端
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
+该声明仅适用于移动端, 其中各个属性的意义如下:
+width=device-width  //宽度等于设备宽度
+initial-scale=1  	//初始化比例是1
+minimum-scale=1  	//最小的缩放比例是1
+maximum-scale=1  	//最大的缩放比例是1
+user-scalable=no  	//不允许用户缩放
+
+
+
+
+
 
 
 
