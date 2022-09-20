@@ -19,6 +19,74 @@
 2)将jsx转换成js;
 
 
+>>react脚手架
+1, 通过脚手架的 npx create-react-app demo 命令创建项目, 脚手架会通过webpack创建一个
+内置服务器devServer, public文件夹就是这台内置服务器的根路径, 然后就可以通过 
+localhost:3000来访问应用;
+注: 刷新页面, 某些静态资源会从缓存中取, 按shift键的同时刷新, 则所有资源都从后台重新取, 不走缓存;
+注: 也可以先把create-react-app这个命令安装到全局环境: npx install create-react-app -g; 然后直接
+调用create-react-app这个命令来创建项目: create-react-app demo; 速度会快一点;
+2, 修改react应用的默认端口号:
+依次打开 node_modules -> react-scripts -> scripts -> start.js, 修改
+DEFAULT_PORT的值为3001;
+3, 文件目录
+demo
+	node_modules  		//包文件夹
+	public  			//静态资源文件夹
+		index.html  		*//主页面
+		favicon.ico  		//网站图标
+		manifest.json  		//应用加壳的配置文件
+		robots.txt  		//爬虫协议文件
+	src  				//源码文件夹
+		index.js  			*//入口文件
+		App.js  			*//APP组件
+		index.css 			//样式
+		App.css  			//APP组件的样式
+	package.json		//包的说明文件
+1)index.html
+<head>
+	<link rel="icon" href="%PUBLIC_URL%/favicon.ico" />  //网站的偏爱图标
+</head>
+<body>
+	<div id="root"></div>
+</body>
+注: %PUBLIC_URL%就表示public文件夹;
+2)index.js
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './APP';
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+注: 入口文件index.js是由脚手架自动调用;
+3)App.js
+import React from 'react';
+import './App.css';
+import Hello from './Hello.js';
+function App(){
+	return (
+		<div>
+			<Hello />
+		</div>
+	)
+}
+export default App;
+注: 有两种方式区别组件与普通的js文件:
+一是将组件的首字母大写;
+二是将组件命名为.jsx, 如 Hello.jsx;
+注: 刚开始拿到一个新项目时, 本地电脑里并没有项目中使用的包, 要先运行: npm install; 将
+package.json里面的依赖下载到node_modules里;
+
+
+>>组件化编码流程
+1, 拆分组件
+拆分界面, 抽取组件;
+2, 实现静态组件
+使用组件实现静态页面效果;
+3, 实现动态组件
+1)动态显示初始化数据
+2)交互(从绑定事件监听开始)
+
+
 >>虚拟DOM
 1, 创建虚拟DOM的两种方式
 1)使用JSX
@@ -340,71 +408,6 @@ Context: 生产者-消费者模式;
 defaultValue只在初始化时起作用, 实时更新输入标签的值, 只能通过value属性;
 value属性必须与onChange事件一起使用, 否则标签的值无法改变;
 注: 类似的还有checked/defaultChecked属性;
-
-
-
->>react脚手架
-1, 通过脚手架的 npx create-react-app demo 命令创建项目, 脚手架会通过webpack创建一个
-内置服务器devServer, public文件夹就是这台内置服务器的根路径, 然后就可以通过 
-localhost:3000来访问应用;
-注: 刷新页面, 某些静态资源会从缓存中取, 按shift键的同时刷新, 则所有资源都从后台重新取, 不走缓存;
-2, 修改react应用的默认端口号:
-依次打开 node_modules -> react-scripts -> scripts -> start.js, 修改
-DEFAULT_PORT的值为3001;
-3, 文件目录
-demo
-	node_modules  		//包文件夹
-	public  			//静态资源文件夹
-		index.html  		*//主页面
-		favicon.ico  		//网站图标
-		manifest.json  		//应用加壳的配置文件
-		robots.txt  		//爬虫协议文件
-	src  				//源码文件夹
-		index.js  			*//入口文件
-		App.js  			*//APP组件
-		index.css 			//样式
-		App.css  			//APP组件的样式
-	package.json		//包的说明文件
-1)index.html
-<head>
-	<link rel="icon" href="%PUBLIC_URL%/favicon.ico" />  //网站的偏爱图标
-</head>
-<body>
-	<div id="root"></div>
-</body>
-注: %PUBLIC_URL%就表示public文件夹;
-2)index.js
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './APP';
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-注: 入口文件index.js是由脚手架自动调用;
-3)App.js
-import React from 'react';
-import './App.css';
-import Hello from './Hello.js';
-function App(){
-	return (
-		<div>
-			<Hello />
-		</div>
-	)
-}
-export default App;
-注: 有两种方式区别组件与普通的js文件:
-一是将组件的首字母大写;
-二是将组件命名为.jsx, 如 Hello.jsx;
-
-
->>组件化编码流程
-1, 拆分组件
-拆分界面, 抽取组件;
-2, 实现静态组件
-使用组件实现静态页面效果;
-3, 实现动态组件
-1)动态显示初始化数据
-2)交互(从绑定事件监听开始)
 
 
 >>消息订阅与发布
