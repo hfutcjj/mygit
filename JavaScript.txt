@@ -2,14 +2,24 @@
 原始类型: boolean, number, string, undefined, null;
 对象: object;
 
+
 >>isNaN()
 判断一个变量是否是数字类型;
+
+
+>>typeof与instanceof
+1, typeof一般用来判断基本类型, instanceof用来判断具体的对象类型;
+2, typeof的返回值可能有:
+'boolean', 'number', 'string', 'undefined', 'function';
+3, 对null的变量使用typeof, 返回的是'object';
+
 
 >>javascript没有块级作用域；
 for(var i = 0; i < 10; i++){
 	//...
 }
 console.log(i); //10
+
 
 >>连续赋值的陷阱
 function foo(){
@@ -20,6 +30,7 @@ console.log(typeof a); //'undefined'
 console.log(typeof b); //'number'
 这里的b隐式的创建为一个全局变量，应该改为:
 var a = 1, b = 1;
+
 
 >>try...catch
 //抛出基本类型如字符串
@@ -40,6 +51,7 @@ try{
 }
 注：finally语句可有可无, 无论是否抛出异常，finally都会被执行;
 
+
 //for...in
 var obj = {x: 1, y: 2};
 for(var p in obj){
@@ -49,6 +61,7 @@ for(var p in obj){
 1, 属性顺序不确定;
 2, 属性标签enumerable为false时不会出现;
 3, 属性受原型链的影响;
+
 
 >>with
 with可以关联一个对象到当前作用域。
@@ -64,6 +77,7 @@ with(document.forms[0]){
 var form = document.form[0];
 console.log(form.name.value);
 
+
 >>对象的创建
 1, 对象字面量
 var obj = {x: 1, y: 2};
@@ -74,6 +88,7 @@ var obj = new foo();
 3, Object.create(o);
 该方法创建了一个以o为原型的空对象;
 
+
 >>读对象的属性前要判断对象是否存在
 var yz, obj = {};
 if(obj.y){
@@ -81,6 +96,7 @@ if(obj.y){
 }
 上面的程序段可以简写如下：
 var yz = obj && obj.y && obj.y.z;
+
 
 >>对象属性的标签
 1, 四个静态标签和两个读写的方法:
@@ -156,6 +172,7 @@ person.salary; //10000
 person.promote = 2;
 person.salary; //12000
 
+
 >>对象的序列化
 1, JSON.stringify(obj)
 将对象序列化为字符串
@@ -175,10 +192,12 @@ var obj = {
 };
 JSON.stringify(obj); //'{"x":1,"y":2,"o":3}'
 
+
 >>对象转换为基本类型的过程
 首先查找对象的valueOf()方法，如果valueOf()方法不存在或者返回对象，
 则继续查找toString()方法，如果toString()方法也不存在或者返回对象，
 则报错；
+
 
 >>String对象
 1, 常用方法
@@ -219,6 +238,7 @@ r; //['a1', 'a', index: 0]
 var r = 'a1b2c3d4'.match(/(\w)\d/g);
 r; //['a1', 'b2', 'c3', 'd4']
 
+
 >>Math对象
 1, 常用方法
 1)Math.floor(), Math.ceil(), Math.round();
@@ -227,6 +247,7 @@ r; //['a1', 'b2', 'c3', 'd4']
 注；四舍五入到指定小数点位数用 toFixed();
 var a = 3.146;
 a.toFixed(2); //3.15
+
 
 >>Date对象
 1, 创建Date对象
@@ -249,11 +270,13 @@ d.setTime();
 举例: 
 d.setTime(d.getTime()+24*60*60*1000); //将时间设置为一天后
 
+
 >>数组的创建
 1, 数组字面量
 var arr = [1, 2, 4];
 2, 构造函数
 var arr = new Array(1, 2, 4);
+
 
 >>常用的数组方法
 1, Array.isArray()
@@ -318,12 +341,14 @@ arr; //[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 17，arr.some()
 判断数组中是否存在元素满足某个条件
 
+
 >>函数的创建
 1，函数声明
 function foo(){}
 2, 函数表达式
 var foo = function(){}
 注：函数声明可以提前调用，而函数表达式不可以；
+
 
 >>函数的调用方式
 1，直接调用
@@ -335,8 +360,10 @@ new Foo();
 4, call/apply/bind
 func.call(o);
 
+
 >>this
 一般情况下，this绑定到调用该函数的对象上；
+
 
 >>js函数作为一般函数调用和作为构造函数的区别
 作为一般函数调用时，如果有return返回值则取返回值，没有则是undefined；
@@ -354,6 +381,7 @@ function f2(){
 f2(); //{b: 2}
 new f2(); //{b: 2}
 
+
 >>call/apply
 call()和apply()可以将函数中的this绑定到指定的对象
 function add(c, d){
@@ -363,6 +391,7 @@ var o = {a: 10, b: 20};
 add.call(o, 1, 2); //33
 add.apply(o, [1, 2]); //33
 注：call()与apply()的作用一样，区别是call()以扁平化的方式传参，而apply()是以数组的方式传参；
+
 
 >>bind()
 1, 将函数中的this绑定到指定的对象, bind()返回的仍然是一个函数
@@ -379,6 +408,7 @@ var f1 = add.bind(null, 100);
 f1(1, 2); //103
 var f2 = f1.bind(null, 1000);
 f2(1); //1101
+
 
 >>闭包
 内部函数包含了外部变量的引用，就是闭包。
@@ -468,6 +498,7 @@ var person = new function(){
 2)内存泄漏
 3)性能消耗
 
+
 >>原型
 function Foo(){
 	this.x = 1;
@@ -484,6 +515,7 @@ Foo.prototype的初始结构:
 	__proto__: Object.prototype,
 	y: 2
 }
+
 
 >>基于原型的继承
 function Person(name, age){ 
@@ -515,6 +547,7 @@ Student.prototype.learn = function(){
 通过Student.prototype = Object.create(Person.prototype)继承基类的原型;
 Student的原型链如下：
 Student.prototype -> Person.prototype -> Object.prototype -> null;
+
 
 >>BOM
 1, window对象
@@ -584,6 +617,7 @@ history.length; //浏览器历史列表中的url数量
 1)width/height //屏幕的宽度与高度
 2)availWidth/availHeight //屏幕的可用宽度与可用高度
 3)colorDepth //颜色位数
+
 
 >>各种对象的尺寸
 1, offsetParent

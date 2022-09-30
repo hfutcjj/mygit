@@ -169,3 +169,9 @@ git config alias.st status
 git的图形界面工具(GUI);
 
 
+>>实际工作中的操作流程
+先add, commit本地的文件 -> 再pull远程的文件, 有冲突就进行合并 -> 然后再add, commit本地
+的文件 -> 最后 push;
+
+
+
