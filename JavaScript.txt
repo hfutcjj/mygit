@@ -206,9 +206,9 @@ JSON.stringify(obj); //'{"x":1,"y":2,"o":3}'
 
 
 >>对象转换为基本类型的过程
-首先查找对象的valueOf()方法，如果valueOf()方法不存在或者返回对象，
-则继续查找toString()方法，如果toString()方法也不存在或者返回对象，
-则报错；
+首先查找对象的valueOf()方法, 如果valueOf()方法不存在或者返回对象,
+则继续查找toString()方法, 如果toString()方法也不存在或者返回对象,
+则报错;
 
 
 >>String对象
@@ -376,6 +376,7 @@ func.call(o);
 >>this
 一般情况下，this绑定到调用该函数的对象上, 如果没有显式的调用者, 则其调用者为window;
 
+
 >>回调函数
 1, 回调函数的三要素
 你自己定义的; 你并没有调用; 函数最终执行了;
@@ -432,15 +433,82 @@ var f2 = f1.bind(null, 1000);
 f2(1); //1101
 
 
->>闭包
-内部函数包含了外部变量的引用，就是闭包。
-function outer(){
-	var localVar = 30;
-	return function(){
-		return localVar;
+>>变量提升与函数提升
+1, 通过var定义的变量或函数表达式, 在定义之前就可以访问到, 但是值为: undefined;
+通过函数声明定义的函数, 在定义之前就可以调用;
+2, 下面两段程序的输出不同可以看出变量提升的效果;
+1)var a = 1;
+function fn() {
+	console.log(a); //输出: 1
+}
+fn();  
+2)var a = 1;
+function fn() {
+	console.log(a);  //输出: undefined
+	var a = 2;
+}
+fn();
+3, 变量的赋值在变量提升和函数提升之后
+var c = 1;
+function c(c) {
+	console.log(c)
+}
+c(2);  //报错: c不是函数
+
+
+>>执行上下文
+1, 全局执行上下文
+全局执行上下文对象就是window, 在正式执行代码前会进行预处理, 将全局定义的变量和函数添加为window的属性;
+2, 函数执行上下文
+function fn(x, y) {
+	var a = 1;
+	function f1() {
+		console.log('f1');
+	}
+	var f2 = function() {
+		console.log('f2');
 	}
 }
-var func = outer();
+fn(2, 3); 
+在正式执行函数前, 会预处理形成函数执行上下文:
+{
+	a: undefined,
+	f1: f,
+	f2: undefined,
+	arguments: 实参列表的伪数组,
+	this: 函数的调用者,
+}
+注: 函数执行上下文是在函数调用时产生, 而不是函数定义时;
+3, 执行上下文栈
+全局执行上下文和多个嵌套的函数执行上下文, 形成执行上下文栈;
+
+
+>>作用域与作用域链
+1, 分为全局作用域、函数作用域, ES6之前没有块级作用域(ES6之后有了);
+作用域用来隔离变量, 同一作用域中的变量不能重复;
+2, 多个作用域形成作用域链, 变量由内而外进行查找, 如果都不存在则报错;
+3, 作用域与执行上下文的区别
+作用域是在函数定义时确定的, 是静态的; 而执行上下文是在函数调用时确定, 是动态的;
+4, var obj = {
+	fn: function() {
+		console.log(fn);  //报错
+		console.log(this.fn);  //正常
+	}
+}
+第一条语句报错是因为先在函数作用域中查找fn, 没有则再去全局作用域中查找, 仍然没有, 则报错;
+
+
+>>闭包(closure)
+满足以下两个条件就构成闭包:
+1)函数嵌套;
+2)内部函数引用了外部函数的变量;
+function outer(){
+	var a = 30;
+	return function(){
+		return a;
+	}
+}
+var func = outer(); 
 func(); //30
 1, 闭包的常见例子：
 1)事件点击
@@ -460,8 +528,8 @@ func(); //30
 		}
 	});
 })();
-2, 闭包的陷阱
-以下程序段是应用闭包常见的陷阱：
+2, 循环监听
+以下程序段是循环遍历监听常见的错误：
 document.body.innerHTML = '<div id="div1">aaa</div>' + 
 	'<div id="div2">bbb</div><div id="div3">ccc</div>';
 for(var i = 1; i < 4; i++){
@@ -469,7 +537,7 @@ for(var i = 1; i < 4; i++){
 		alert(i); //all are 4!
 	});
 }
-可改写为:
+可使用闭包改写为:
 for(var i = 1; i < 4; i++){
 	(function(k){
 		document.getElementById('div'+k).addEventListener('click', function(){
@@ -519,9 +587,52 @@ var person = new function(){
 1)空间浪费
 2)内存泄漏
 3)性能消耗
+使用完闭包后, 为避免内存泄漏, 应及时释放引用:
+var func = outer();
+func();
+func = null;  //释放引用
+5, 内存溢出与内存泄漏的区别
+1)内存溢出 
+是一种程序运行时错误, 当程序运行需要的内存超过了剩余的内存时, 就会抛出内存溢出的错误;
+2)内存泄漏
+不是错误, 而是占用的内存没有及时释放, 累计的内存泄漏会导致内存溢出;
+常见的内存泄漏有几下几种:
+(i)意外的全局变量;
+(ii)没有及时清理的计时器或回调函数;
+(iii)闭包;
 
 
->>原型
+>>无闭包与有闭包举例
+1, 无闭包
+var name = 'the window';
+var obj = {
+	name: 'the object',
+	func: function() {
+		return function() {
+			return this.name;
+		}
+	}
+}
+obj.func()();  //'the window'
+只满足闭包的条件(1)函数嵌套, 并不满足条件(2), 内部函数并没有引用外部函数的变量, 
+所以不是闭包;
+2, 有闭包
+var name = 'the window';
+var obj = {
+	name: 'the object',
+	func: function() {
+		var that = this;
+		return function() {
+			return that.name;
+		}
+	}
+}
+obj.func()();  //'the object'
+同时满足闭包的两个条件, 所以是闭包;
+
+
+>>原型(prototype)
+每个js函数都有一个prototype属性, 每个实例对象都有一个__proto__属性;
 function Foo(){
 	this.x = 1;
 }
@@ -569,6 +680,82 @@ Student.prototype.learn = function(){
 通过Student.prototype = Object.create(Person.prototype)继承基类的原型;
 Student的原型链如下：
 Student.prototype -> Person.prototype -> Object.prototype -> null;
+
+
+>>原型链
+构造函数Student的prototype属性和实例对象stu的__proto__属性都指向Student.prototype;
+Student.prototype:
+{
+	study: f,
+	constructor: Student,
+	__proto__: Person.prototype
+}
+Person.prototype:
+{
+	walk: f,
+	constructor: Person,
+	__proto__: Object.prototype
+}
+Object.prototype:
+{
+	constructor: Object,
+	__proto__: null,
+	toString: f,
+	hasOwnProperty: f,
+	...
+}
+每个原型对象中的__proto__属性依次指向上一层原型对象, 就构成了原型链;
+
+
+>>Object与Function
+var p = new Person('zhao', 30), 其中,
+p是Person的实例对象, 同时Person也是Function的实例对象;
+Object与Function的关系比较微妙, 它们互为对方的实例对象;
+有如下关系成立:
+p.__proto__ === Person.prototype;  //true
+Person.__proto__ === Function.prototype;  //true
+Object instanceof Function;  //true
+Function instanceof Object;  //true
+Function.prototype.hasOwnProperty('bind');  //true
+
+
+>>进程与线程
+1, 进程是操作系统分配资源的最小单位, 线程是程度执行与调度的最小单位, 一个进程一般包含多个线程;
+进程占有独立的一段内存, 多个进程之间的数据不能共享, 一个进程内的数据可以供多个线程共享;
+2, js是单线程运行, 但使用H5中的 Web Workers 可以多线程运行;
+3, 浏览器是多线程运行, 浏览器内核常用的模块:
+1)主线程模块: js引擎模块、html/css文档解析模块、dom解析模块、布局和渲染模块等等;
+2)分线程模块: 定时器模块、事件响应模块、网络请求模块等等;
+注: 定时器回调函数是在主线程执行, 因为js是单线程的, 所以定时器并不能保证定时执行, 有可能会延迟;
+
+
+>>Web Workers
+1, h5提供的一个js多线程解决方案, 可以将计算量大的代码交由Web Workers完成,
+但是子线程完全受主线程控制, 且不得操作DOM, 这个新标准并没有改变js单线程的本质;
+2, 使用步骤
+1)主线程
+document.getElementById('btn').onclick = function() {
+	var num = document.getElementById('num').value;
+	//创建一个Worker对象
+    var worker = new Worker('worker.js');
+	//接收分线程传过来的数据函数
+    worker.onmessage = function(e) {
+        console.log(e.data);
+    }
+    //向分线程发送数据
+    worker.postMessage(num);
+}
+2)分线程 worker.js
+var onmessage = function(e) { 
+    var num = e.data;  //主线程传过来的数据
+    var r = fn(num);
+    postMessage(r); //把结果传给主线程
+}
+function fn(n) {
+    return n <= 2 ? 1 : fn(n-1) + fn(n-2);
+}
+注: 分线程中的全局对象不是window, 所以分程序只能用于计算, 不能操作界面;
+目前并不是所有浏览器都支持, 所有应用较少;
 
 
 >>BOM
