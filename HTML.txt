@@ -367,7 +367,7 @@ float: left / right;
 </div>
 1, 给父元素设置高度(不推荐)
 2, 增加一个子div用来清除浮动
-.clear{clera: both;}
+.clear{clear: both;}
 3, 使用伪元素::after来清除浮动
 .parent::after{content: ''; display: block; clear: both;}
 4, 父容器使用 overflow: hidden; 来阻止塌陷;
@@ -497,6 +497,7 @@ x轴偏移量，y轴偏移量，模糊半径，模糊颜色;
 div{
 	font-family: 'my font';
 }
+
 
 >>文本溢出时显示省略号
 text-overflow: ellipsis; //文本溢出部分显示方式
