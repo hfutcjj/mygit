@@ -856,7 +856,7 @@ window.innerHeight;
 7, 字符串、数组、对象新增的方法
 8, Map和Set类型
 9, Symbol
-10, 异步操作(Iterator, Generator, Promise, async+await, fetch)
+10, 异步操作(Promise, async await)
 
 
 >>let和const
@@ -1158,31 +1158,21 @@ Object.defineProperty(o3, a, {value: 'zhao'});
 
 
 >>异步操作
-1, Iterator(迭代器)
-const a = ['one', 'two', 'three'];
-const iterator = a[Symbol.iterator]();
-iterator.next();  //{value: 'one', done: false}
-iterator.next();  //{value: 'two', done: false}
-iterator.next();  //{value: 'three', done: false}
-iterator.next();  //{value: undefined, done: true}
-2, Generator(生成器)
-通过在function关键字后加*表示定义生成器;
-Generator在函数内部使用yield表达式来将函数挂起, 为异步编程提供基础;
-调用生成器并不会执行生成器里的内容, 只是返回一个迭代器对象;
-function* func() {
-	console.log('222');
-	yield 2;
-	console.log('333');
-	yield 3;
-	console.log('end');
-	return 88;
-}
-const fn = func();  
-const a = fn.next();  //222   a: {value: 2, done: false}
-const b = fn.next();  //333   b: {value: 3, done: false}
-const c = fn.next();  //end   c: {value: 88, done: true}
-3, Promise
-4,async+await
+1, Promise
+new Promise((resolve, reject) => {
+	let flag = Math.random()
+	if(flag >= 0.5) {
+		resolve('big enough')  //成功的时候调用resolve()
+	} else {
+		reject('too small')  //失败的时候调用rejecct()
+		//throw new Error('too small')  等价
+	}
+}).then(res => {  //处理成功的逻辑
+	console.log(res)
+}).catch(err => {  //处理失败的逻辑
+	console.log(err)
+})
+2,async await
 async放在函数前表示该函数是一个异步操作, await后面的值自动转换为Promise对象;
 async函数里可以包含多个异步操作, 等所有await执行完, 再执行then操作;
 async function f() {
@@ -1201,68 +1191,6 @@ f().then(res => {
 }).catch(err => {
 	console.log(err);  //'请求数据失败'
 });
-5, fetch
-
-
->>举例: 解决回调地狱的几种异步方案
-js中的异步请求、定时器、事件处理等操作常会引起回调地狱, 有以下几种解决方法;
-1, 使用Generator
-function* gn() {
-	showLoading();
-	yield getData();
-	hideLoading();
-}
-const g = gn();
-g.next();  //执行
-function showLoading() {
-	console.log('show loading...');
-}
-function getData() {
-	setTimeout(() => {
-		console.log('get data');
-		g.next();  //此处控制获取到数据后程序再往下走
-	}, 2000);
-}
-function hideLoading() {
-	console.log('hide loading...');
-}
-2, 使用Promise
-function getJson() {
-	return new Promise((resolve, reject) => {
-		setTimeout(() => {  //使用定时器来模拟异步请求
-			let flag = Math.floor(Math.random() + 0.5);
-			if(flag == 1) {  //请求成功
-				resolve({
-					status: 200,
-					data: [{name: 'zhao', age: 30}, {name: 'qian', age: 32}]
-				});
-			} else {  //请求失败
-				reject({
-					status: 400,
-					message: 'get data error'
-				});
-			}
-		}, 2000);
-	});
-}
-getJson().then(res => { //请求成功时的处理
-	console.log(res);
-}).catch(err => {  //请求失败时的处理
-	console.log(err);
-});
-3, 使用async+await
-function process() {
-	return new Promise((resolve, reject) => {
-		setTimeout(() => {
-			resolve('获取数据成功');
-		}, 2000);
-	});
-}
-async function test() {
-	let a = await process(); 
-	console.log(a);
-}
-test();
 
 
 
