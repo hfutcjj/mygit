@@ -856,7 +856,7 @@ window.innerHeight;
 7, 字符串、数组、对象新增的方法
 8, Map和Set类型
 9, Symbol
-10, 异步操作(Iterator, Generator, Promise, async+await)
+10, 异步操作(Iterator, Generator, Promise, async+await, fetch)
 
 
 >>let和const
@@ -1201,6 +1201,7 @@ f().then(res => {
 }).catch(err => {
 	console.log(err);  //'请求数据失败'
 });
+5, fetch
 
 
 >>举例: 解决回调地狱的几种异步方案
@@ -1258,7 +1259,7 @@ function process() {
 	});
 }
 async function test() {
-	let a = await process();
+	let a = await process(); 
 	console.log(a);
 }
 test();
