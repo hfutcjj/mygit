@@ -849,17 +849,14 @@ window.innerHeight;
 >>ES6的新特性
 1, let和const命令
 2, 模板字符串
-3, 箭头函数
-4, 解构赋值
-5, 字符串、数组、对象新增的方法
-6, Symbol
-7, Map和Set类型
-8, 迭代器和生成器
-9, Promise对象
-10, Proxy对象
-11, async的用法
-12, 类 class
-13, 模块化实现
+3, 解构赋值与解构运算符
+4, 箭头函数
+5, 类(class)
+6, 模块化
+7, 字符串、数组、对象新增的方法
+8, Map和Set类型
+9, Symbol
+10, 异步操作(Iterator, Generator, Promise, async+await)
 
 
 >>let和const
@@ -877,8 +874,15 @@ for(let i = 0; i < 10; i++){ b[i] = () => i; }  b[1]()  //1
 2, const必须在声明时初始化, const声明的基本类型就是常量, 声明的复杂类型只是引用不变;
 
 
->>解构赋值
-可对任何可遍历的对象进行解构, 如数组、对象、字符串等;
+>>模板字符串
+``可以作为定义普通字符串、多行字符串, 也可以在其中用{}包含js的变量、表达式或函数调用;
+let s1 = `My name is ${name}, I am ${age+1} years old next year`;
+let s2 = `Game start, ${f()}`;
+注: 模板字符串中的空格和换行都会原样保留;
+
+
+>>解构赋值与解构运算符(又叫拓展运算符)
+1, 可对任何可遍历的对象进行解构, 如数组、对象、字符串等;
 const [a, b] = [1, 2];  //完全解构
 const [a, b] = 'hi';
 const {name: a, age: b} = {name: 'zhao', age: 30}; 
@@ -890,111 +894,46 @@ const obj = {name: 'zhao', age: 32, major: 'maths', addr: 'hefei'};
 const [name, ...o2} = obj;  //o2: {age: 32, major: 'maths', addr: 'hefei'}  //剩余解构
 const arr = [1, [2], 3];
 const [a, [b], c] = arr;  //嵌套解构
-
-
->>...(拓展运算符)的用法
-1, 将数组的各个元素分离出来传递给函数
+2, ...(解构运算符)的用法
+1)将数组的各个元素分离出来传递给函数
 如求数组的最大值, const a = [2, 5, 1, 9, 2],
 es5中的做法:
 const maxNum = Math.max.apply(null, a);
 es6中的做法:
 const maxNum = Math.max(...a);
-2, 将字符串、集合等转换为数组
+2)将字符串、集合等转换为数组
 const a1 = new Set([1, 2, 3]), a2 = 'hello';
 const b1 = [...a1];  //集合 -> 数组
 const b2 = [...a2];  //字符串 -> 字符数组
-3, 数组、对象的复制
+3)数组、对象的复制
 const a1 = [1, 2, 3], b1 = {name: 'zhao', age: 32};
 const a2 = [...a1];  //复制数组
 const b2 = {...b1};  //复制对象
-4, 数组、对象的合并
+4)数组、对象的合并
 const a1 = [1, 2], a2 = [2, 3]
 [...a1, ...a2];  //[1, 2, 2, 3]
 [...a1, 2, 3];  //[1, 2, 2, 3]
 const c1 = {name: 'zhao', age: 32}, c2 = {name: 'qian', major: 'maths'}
 {...c1, ...c2};  //{name: 'qian', age: 32, major: 'maths'}
 {...c1, name: 'qian', major: 'maths'}
-5, 用在函数的形参前表示可变参数;
+5)用在函数的形参前表示可变参数;
 function f(...names) {
 	//names等价于数组
 }
-6, 结合部分解构
+6)结合部分解构
 const props = {name: 'zhao', age: 30, major: 'maths'};
 const {name, ...other} = props;  //name: 'zhao', other: {age: 30, major: 'maths'}
 
 
->>字符串
-1, es6新增了一些字符串的方法:
-s.includes(s1);  //判断字符串中是否包含指定的子串, 返回布尔值
-s.startsWith(s1);  //判断字符串是否以指定的字符串开头
-s.endsWith(s1);  //判断字符串是否以指定的字符串结尾
-s.repeat(n);  //将字符串重复n次
-'hh'.padStart(5, 'o');  //开头填充, ooohh
-'hh'.padEnd(5, 'o');  //结尾填充, hhooo
-2, ``(模板字符串)
-``可以作为定义普通字符串、多行字符串, 也可以在其中用{}包含js的变量、表达式或函数调用;
-let s1 = `My name is ${name}, I am ${age+1} years old next year`;
-let s2 = `Game start, ${f()}`;
-注: 模板字符串中的空格和换行都会原样保留;
-
-
->>数值
-1, parseInt()和parseFloat()从全局移到Number对象;
-2, Math对象扩展了很多新方法;
-3, Number.isFinite()  //判断一个数值是否是有限的
-Number.isInteger()  //判断是否为整数
-4, a ** b  //指数运算符
-
-
->>函数
-1, 默认参数
-function fn(name, age=20) { //... }
-es5中的做法:
-function add(a, b) {
-	a = a || 10;
-	b = b || 20;
-	return a + b;
-}
-es6中的做法:
-const add = (a = 10, b = 20) => a + b;
-2, 不定参数
-function fn(...args) { //... }  //es6中...args代替了es5中的arguments;
-es5中的做法:
-const person = {name: 'zhao', age: 32, major: 'maths', addr: 'hefei'};
-function pick() {
-	const rs = Object.create(null);
-	for(let i = 1; i < arguments.length; i++) {  //第一个参数为对象, 所以跳过
-		rs[arguments[i]] = person[arguments[i]];
-	}
-	return rs;
-}
-es6中的做法:
-const pick = (obj, ...params) => {
-	const rs = Object.create(null);
-	for(let i = 0; i < params.length; i++) {
-		rs[params[i]] = obj[params[i]];
-	}
-	return rs;
-}
-pick(person, 'name', 'age')  //{name: 'zhao', age: 32}
-pick(person, 'name', 'major', 'addr')  //{name: 'zhao', major: 'maths', addr: 'hefei'}
-3, 箭头函数
-var fn = (id, name) => ({id: id, name: name});
-注: 当只有一个参数时, 参数可以省略(), 当函数体只有一条语句时, 可以省略{};
-如果返回一个对象, 为了区分于代码块, 要用()将对象包裹起来;
-注: 返回函数的函数, 使用箭头函数来简写:
-const f = () => () => console.log('hello bing');
-f()() //hello bing
-4, 箭头函数中的this
-1)箭头函数中this没有自身的作用域, 它会向外查找最近的外层作用域;
-function fn() {
-	setTimeout(() => {
-		console.log(this.a);
-	}, 1000);
-}
-var a = 20;
-fn.call({a: 18});  //18
-2)箭头函数不适合的场景, 看下面的例子:
+>>箭头函数
+1, 基本形式
+const f1 = (a) => { return a*2; }
+const f2 = a => { return a*2; }  //只有一个参数时, 可以省略()
+const f3 = a => a*2		//函数体只有一条语句时, 可以省略{}
+const f4 = a => ({age: a})  //如果返回对象, 必须用()包裹起来
+const f5 = () => () => console.log('hello');  //返回函数的函数
+2, 箭头函数中的this
+箭头函数中this没有自身的作用域, 它会向外查找最近的外层作用域;
 var o1 = {
 	age: 20,
 	say: function(){
@@ -1007,60 +946,10 @@ var o2 = {
 		console.log(this.age);  //此处的 this == window
 	}
 }
-3)箭头函数不能作为构造函数;
-const o = () => {};
-new o();  //×
-5, 高阶函数
-1)如果一个函数的参数或者返回值也为函数, 则该函数成为高阶函数;
-2)常见的高阶函数:
-Promise, setTimeout, 数组的方法(如arr.filter, arr.forEach)
-
-
->>对象
-1, 属性和方法都可以简写
-const name = 'zhao', age = 32;
-const person = {
-	name, 
-	age, 
-	say() {
-		//...
-	}
-}
-2, 属性的计算值
-const prop = 'name';
-const o1 = {
-	[prop]: 'zhao',
-	['age'+1]: 32
-};
-3, 拓展运算符(...)写在对象前面, 可进行对象的复制和合并;
-const o2 = {...o1};  //复制
-const o3 = {...o1, ...o2};  //两个对象合并
-const o3 = {...o1, name: 'qian', major: 'maths'};  //对象与其他属性的合并
-4, 对象的新方法
-1)Object.assign(target, source1, ...) 
-将后面对象的属性复制进第一个对象, 并返回第一个对象;
-const p1 = Object.assign({}, {name: 'zhao'}, {age: 32});
-p1  //{name: 'zhao', age: 32}
-
-
->>数组
-1, 数组的创建
-1)Array.of() 
-let a = Array.of(1, 2, 4);  //等价于 new Array()
-2)Array.from()
-用于将类数组、字符串、Set、Map等可迭代对象转化为数组;
-var a1 = Array.from([1, 2, 3], n => n*n);  //[1, 4, 9]
-var a2 = Array.from('hello');  //字符串->字符数组
-var a3 = Array.from(new Set([1, 2, 1, 3, 1, 4]));  //[1, 2, 3, 4], 可用于数组的去重
-2, 扩展运算符(...)写在数组前面, 可进行数组的复制与合并;
-const a2 = [...a1];  //复制
-const a3 = [...a1, ...a2];  //两个数组的合并
-const a3 = [...a1, 4, 5];  //数组与其他值的合并
 
 
 >>类
-1, es6中的Class底层就是函数实现;
-类中的成员包括静态属性、静态方法、实例属性、构造方法、原型方法等;
+1, 类中的成员包括静态属性、静态方法、实例属性、构造方法、原型方法等;
 class Demo {
 	static a = 1;  //静态属性
 	b = 2;  //实例属性
@@ -1073,37 +962,13 @@ class Demo {
 	f2() {  //原型方法
 		//...
 	}
-}
-注: 类中的方法不用写function, 类中定义的方法会被放到prototype中; 调用静态方法需要用类名来调用;
-注: 类定义不会被提升, 必须在使用之前定义;
-2, 方法的默认写法是定义在原型上, 如果采用箭头的写法则是定义在类的实例上;
-class Person {
-	name = 'zhao';  //定义在实例上
-	say() {  //定义在原型上
-		console.log('my name is ' + this.name);
-	}
-	walk = () => {  //定义在实例上
-		console.log(this.name + ' is walking');
+	f3 = () => {  //实例方法
+		//...
 	}
 }
-住: 箭头函数中的this不进行绑定, 所以等于外层的this;
-3, 给类添加新的方法也可以通过原型来添加
-class Demo {
-	constructor(a, b) {
-		this.a = a;
-		this.b = b;
-	}
-	sum() {
-		return this.a + this.b;
-	}
-}
-let demo = new Demo(10, 20);
-Object.getPrototypeOf(demo).sub = function() {
-	return this.a - this. b;
-}
-此时demo的原型为:
-Object.getPrototypeOf(demo):  {constructor: f, sum: f, sub: f}
-4, 通过extends实现继承
+注: 类中的方法默认是定义在原型上的; f3的写法是作为实例属性, 所以定义在类的实例上;
+es6中的class底层就是函数实现;
+2, 通过extends实现继承
 class Person { 
 	constructor(name, age) {
 		this.name = name;
@@ -1153,6 +1018,70 @@ export class Component {
 	//...
 }
 export default React;
+
+
+>>es6中新增的属性或方法
+1, 字符串
+s.includes(s1);  //判断字符串中是否包含指定的子串, 返回布尔值
+s.startsWith(s1);  //判断字符串是否以指定的字符串开头
+s.endsWith(s1);  //判断字符串是否以指定的字符串结尾
+s.repeat(n);  //将字符串重复n次
+'hh'.padStart(5, 'o');  //开头填充, ooohh
+'hh'.padEnd(5, 'o');  //结尾填充, hhooo
+2, 数值
+parseInt()和parseFloat()从全局移到Number对象
+Number.isFinite()  //判断一个数值是否是有限的
+Number.isInteger()  //判断是否为整数
+a ** b  //指数运算符
+3, 函数
+1)默认参数
+function fn(name, age=20) { //... }
+es5中的做法:
+function add(a, b) {
+	a = a || 10;
+	b = b || 20;
+	return a + b;
+}
+es6中的做法:
+const add = (a = 10, b = 20) => a + b;
+2)不定参数
+function fn(...args) { //... }  
+es6中...args代替了es5中的arguments;
+3)高阶函数
+如果一个函数的参数或者返回值也为函数, 则该函数成为高阶函数;
+常见的高阶函数: Promise, setTimeout, 数组的方法(如arr.filter, arr.forEach)
+4, 对象
+1)属性和方法都可以简写
+const name = 'zhao', age = 32;
+const person = {
+	name, 
+	age, 
+	say() {
+		//...
+	}
+}
+2)属性的计算值
+const prop = 'name';
+const o1 = {
+	[prop]: 'zhao',
+	['age'+1]: 32
+};
+3)拓展运算符(...)写在对象前面, 可进行对象的复制和合并;
+const o2 = {...o1};  //复制
+const o3 = {...o1, ...o2};  //两个对象合并
+const o3 = {...o1, name: 'qian', major: 'maths'};  //对象与其他属性的合并
+5, 数组
+1)Array.of() 
+let a = Array.of(1, 2, 4);  //等价于 new Array()
+2)Array.from()
+用于将类数组、字符串、Set、Map等可迭代对象转化为数组;
+var a1 = Array.from([1, 2, 3], n => n*n);  //[1, 4, 9]
+var a2 = Array.from('hello');  //字符串->字符数组
+var a3 = Array.from(new Set([1, 2, 1, 3, 1, 4]));  //[1, 2, 3, 4], 可用于数组的去重
+3)扩展运算符(...)写在数组前面, 可进行数组的复制与合并;
+const a2 = [...a1];  //复制
+const a3 = [...a1, ...a2];  //两个数组的合并
+const a3 = [...a1, 4, 5];  //数组与其他值的合并
 
 
 >>Map和Set类型
@@ -1226,28 +1155,18 @@ Symbol('kk') == Symbol('kk');  //false
 var o1 = {}; o1[a] = 'zhao';  o1  //{Symbol(kk): 'zhao'}
 var o2 = {[a]: 'zhao'};
 Object.defineProperty(o3, a, {value: 'zhao'}); 
-3, 遍历
-对于一般的对象, 可以通过如下放下进行遍历:
-for(let key in o){ //... }
-Object.keys(o)
-Object.getOwnPropertyNames(o)
-Reflect.ownKeys(o)
-而如果属性是Symbol类型, 则只能通过如下方式才能遍历到:
-Object.getOwnPropertySymbols(o)
-Reflect.ownKeys(o)
 
 
->>Iterator(迭代器)
+>>异步操作
+1, Iterator(迭代器)
 const a = ['one', 'two', 'three'];
 const iterator = a[Symbol.iterator]();
 iterator.next();  //{value: 'one', done: false}
 iterator.next();  //{value: 'two', done: false}
 iterator.next();  //{value: 'three', done: false}
 iterator.next();  //{value: undefined, done: true}
-
-
->>Generator(生成器)
-1, 通过在function关键字后加*表示定义生成器;
+2, Generator(生成器)
+通过在function关键字后加*表示定义生成器;
 Generator在函数内部使用yield表达式来将函数挂起, 为异步编程提供基础;
 调用生成器并不会执行生成器里的内容, 只是返回一个迭代器对象;
 function* func() {
@@ -1262,19 +1181,15 @@ const fn = func();
 const a = fn.next();  //222   a: {value: 2, done: false}
 const b = fn.next();  //333   b: {value: 3, done: false}
 const c = fn.next();  //end   c: {value: 88, done: true}
-
-
->>Promise
-
-
->>async await
-1, async放在函数前表示该函数是一个异步操作, await后面的值自动转换为Promise对象;
+3, Promise
+4,async+await
+async放在函数前表示该函数是一个异步操作, await后面的值自动转换为Promise对象;
 async函数里可以包含多个异步操作, 等所有await执行完, 再执行then操作;
 async function f() {
 	let s = await 'hello world';  //异步操作1(假设)
 	let data = await s.split(' ');  //异步操作2
-	let flag = Math.floor(Math.random() + 0.5);
-	if(flag == 1) {  //模拟成功
+	let flag = Math.random()
+	if(flag >= 0.5) {  //模拟成功
 		return data;
 	} else {  //模拟失败
 		throw new Error('请求数据失败');
@@ -1288,7 +1203,7 @@ f().then(res => {
 });
 
 
->>解决回调地狱的几种异步方案
+>>举例: 解决回调地狱的几种异步方案
 js中的异步请求、定时器、事件处理等操作常会引起回调地狱, 有以下几种解决方法;
 1, 使用Generator
 function* gn() {
