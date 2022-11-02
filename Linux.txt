@@ -10,20 +10,20 @@ Linux的免费发行版，与之对应的收费版是 Red Hat Enterprise Linux;
 
 
 >>Linux系统目录
-/ 根目录
-/bin 二进制命令目录
-/boot 内核与系统引导程序目录
-/dev 设备文件目录
-/etc yum、rpm方式安装应用程序的默认配置文件路径
-/home 用户数据的目录
-/var 系统与软件服务运行日志目录
-/lib 共享库目录
-/proc 进程信息目录
-/root 超级用户目录
-/sbin root可执行命令(系统管理命令)的存放目录
-/usr 用户应用程序的目录, 最常用的目录, 尤其是下面这两个子目录
-/usr/local 编译方式安装程序的默认目录
-/usr/src 程序源码目录
+/ 			根目录
+/root 		超级用户目录
+/home 		用户数据的目录
+/bin 		二进制命令目录
+/sbin 		超级用户可执行命令(系统管理命令)的存放目录
+/usr 		用户应用程序的目录, 最常用的目录, 尤其是下面这两个子目录
+/usr/local 	编译方式安装程序的默认目录
+/usr/src 	程序源码目录
+/boot 		内核与系统引导程序目录
+/dev 		设备文件目录
+/etc 		yum、rpm方式安装应用程序的默认配置文件路径
+/lib 		共享库目录
+/proc 		进程信息目录
+/var 		系统与软件服务运行日志目录 
 
 
 >>Xshell与Xftp
@@ -49,9 +49,11 @@ ls /home 显示/home目录下的内容
 
 
 >>vim
-vim是Linux自带的文本编辑工具;
+1, vim是Linux自带的文本编辑工具;
 vim的三种模式: 普通模式、编辑模式、命令模式;
-常用操作快捷键:
+2, 创建文件
+vim test.txt
+3, 常用操作快捷键:
 i  //进入编辑模式;
 esc  //退出编辑模式;
 /test  //查找字符test, 按n定位到下一个目标位置;
@@ -210,9 +212,9 @@ zhao	ALL=(ALL)	ALL
 
 
 >>Linux防火墙
-1, centos6基于iptables来实现防火墙, 是在网络层, 而centos7基于firewall实现防火墙, 是在应用层;
+1, centos6基于ip 实现防火墙, 是在网络层, 而centos7基于firewall实现防火墙, 是在应用层;
 2, 核心命令: firewall-cmd;
-firewall-cmd state   //查看防火墙是否启动(running表示已启动)
+firewall-cmd --state   //查看防火墙是否启动(running表示已启动)
 firewall-cmd --list-ports   //查看防火墙开放了哪些端口
 firewall-cmd --zone=public --permanent --add-port=8080/tcp   //开放8080端口
 firewall-cmd --zone=public --permanent --remove-port=8080/tcp  //关闭8080端口
