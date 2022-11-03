@@ -187,7 +187,7 @@ rune可表示一个utf-8字符, 如汉字 var c rune = '佳';
 bool
 注: 与其他语言不同, go语言不允许将其他类型转化为布尔类型;
 3, 字符串类型string (编码统一为"UTF-8")
-布尔类型占1个子节, 字符串类型占4个子节;
+布尔类型占1个字节, 字符串类型占4个字节;
 
 
 >>引用类型
@@ -290,10 +290,6 @@ if sum := calSum(); sum > 100 {
 }
 2)switch
 switch语句分为表达式switch和类型switch;
-switch 中可以包含初始化语句, 如 
-switch age := 32, age { 
-	case age < 24:
-}
 case 可以写多个值, 如 case 2, 4, 6, 8, 10:
 case 也可以写表达式, 如 
 switch {
