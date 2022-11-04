@@ -464,7 +464,7 @@ m["skill"] = []string{"java", "golang", "js"}
 m["hobby"] = []string{"阅读", "音乐", "跑步"}
 m  //map[skill:[java golang js] hobby:[阅读 音乐 跑步]]
 6, 举例: 统计一个段落中每个单词出现的次数
-func (s string) map[string]int {
+func fn(s string) map[string]int {
 	m := make(map[string]int)
 	bs := strings.Split(s, " ")
 	for _, v := range bs {
@@ -924,7 +924,7 @@ func (m MyInt) Add(other int) int {
 
 
 >>接口
-重点: 实现结构体; 类型断言; 空接口;
+重点: 值类型与指针类型结构体实现接口; 类型断言; 空接口;
 1, 接口是一组行为规范, 接口只含有一组抽象方法, 由具体的结构体实现这些抽象方法;
 type Usber interface {
 	start(string)
