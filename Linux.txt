@@ -14,6 +14,11 @@ Linux的免费发行版，与之对应的收费版是 Red Hat Enterprise Linux;
 2, Linux不关心文件后缀, 文件的类型通过权限位(-/d)来表示, 可通过ll命令查看;
 
 
+>>挂载(mount)
+把文件夹(如/mnt/test)绑定到硬盘的分区上(如/dev/sd1), 以后在该文件夹里创建的文件, 
+就存放在绑定的分区里;
+
+
 >>linux中常用的扩展名
 1, 压缩文件
 .gz, .bz2, .zip, .tar.gz, .tar.bz2, .tgz等;
@@ -26,8 +31,13 @@ Linux的免费发行版，与之对应的收费版是 Red Hat Enterprise Linux;
 
 
 >>Linux系统目录
+.			当前目录
+..			上级目录
+-			上一次的工作目录
+~			当前用户的家目录, root用户为/root, zhao用户为/home/zhao
 / 			根目录
-/root 		超级用户目录
+/root 		root用户的家目录
+/home/zhao 	普通用户zhao的家目录
 /home 		用户数据的目录
 /bin 		二进制命令目录
 /sbin 		超级用户可执行命令(系统管理命令)的存放目录
@@ -36,7 +46,7 @@ Linux的免费发行版，与之对应的收费版是 Red Hat Enterprise Linux;
 /usr/src 	程序源码目录
 /boot 		内核与系统引导程序目录
 /dev 		设备文件目录
-/etc 		yum、rpm方式安装应用程序的默认配置文件路径
+/etc 		配置文件的目录
 /lib 		共享库目录
 /proc 		进程信息目录
 /var 		系统与软件服务运行日志目录 
@@ -48,13 +58,17 @@ Xftp是Xshell的配套组件, 用于向服务器上传/下载文件;
 SSH客户端: 专为远程登陆和其他网络服务提供的安全性协议, 基于SSH远程连接工具常见的有Xshell与SecureCRT;
 
 
->>文件操作命令
+>>Linux命令格式
+命令 + 条件/参数 + 对象/文件/目录
+如: rm -f /tmp/test.txt
+
+
+>>Linux常用命令
 命令格式: 命令 [参数选项] [文件或路径]
 1)cd  //切换目录
 2)pwd  //查看当前目录
 3)ls、ll  //显示目录内容, ll显示详细信息
-ls 显示当前目录下的内容
-ls /home 显示/home目录下的内容
+ls --help 查看ls命令的帮助信息
 4)mkdir [-p] 目录  //-p表示创建多级目录
 rmdir 目录  //删除空目录
 5)touch test  //创建文件
@@ -63,6 +77,14 @@ vim text  //创建文件并在vim中打开
 7)mv 源文件或目录 移动或更名后的文件或目录
 8)rm [-rf] 删除文件  //-r表示迭代删除目录, -f直接删除无需询问
 9)find /usr -name *.jpg //在指定目录下按指定格式查找文件
+10)clear	//清屏
+11)history  //显示历史命令
+12)su - zhao  //切换用户
+13)logout  //退出当前用户, 回到上一次的用户
+14)exit  //退出终端
+15)shutdown  //关机
+16)hostname、hostnamectl  //查看主机名, hostnamectl主机的详细信息
+17)man  //查看命令的帮助文档
 注: 使用键盘Tab命令可以进行自动补全;
 使用--help可以查看命令的帮助, 如 mkdir --help;
 
