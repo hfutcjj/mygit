@@ -661,6 +661,26 @@ drop procedure sp1;
 存储过程需要通过call来调用;
 
 
+>>视图 
+1，视图是虚拟表，并不保存实际数据，视图的本质是保存起来的select语句;
+2，创建视图
+create view view_name as select ……
+为视图的列指定别名有两种方式：
+1)在select语句中指定别名。
+2)在view_name后定义别名: view_name(c1, c2);
+3，查看视图
+show tables;
+desc view_name;
+show create view view_name;
+4，视图数据的增删改
+修改视图数据实际修改的是底层基表的数据，只有视图与基表的字段一一对应时才能修改成功。
+5，修改视图结构
+alter view view_name as select   ……
+6，删除视图
+drop view view_name
+
+
+
 >>存储引擎
 1, 定义
 mysql用不同的技术将数据保存在内存中，就是存储引擎;

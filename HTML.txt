@@ -760,6 +760,15 @@ animation: myframe 5s ease 0.5s infinite;
 8)子元素 align-self
 设置单独子元素的侧轴对齐方式;
 注: 弹性容器里的直接子元素都成为了块元素, 如<a>与<span>, 都可以设置宽度与高度;
+9)子元素 flex-grow
+控制子元素的放大显示(分配剩余空间), 默认值0表示不放大, n表示将剩余空间按比例n分配;
+10)子元素 flex-shrink
+控制子元素的缩小显示, 默认值1表示空间不够时所有项目同比缩小, 0表示该子元素不缩小;
+11)子元素 flex-basis
+子元素占据主轴空间的值, 默认值auto表示当前默认的大小;
+注: flex属性是flex-grow、flex-shrink、flex-basis的简写, 默认值为 0 1 auto, 后两个属性可选;
+flex的两个快捷值: auto(1 1 auto) 和 none(0 0 auto);
+flex: 1 表示等分剩余空间;
 
 
 >>弹性布局实现水平居中与垂直居中
