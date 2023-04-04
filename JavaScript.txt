@@ -249,6 +249,18 @@ var r = 'a1b2c3d4'.match(/(\w)\d/);
 r; //['a1', 'a', index: 0]
 var r = 'a1b2c3d4'.match(/(\w)\d/g);
 r; //['a1', 'b2', 'c3', 'd4']
+2, ES6中新增的方法
+1)s.includes(s1)  //判断字符串中是否包含指定的子串, 返回布尔值
+2)s.startsWith(s1)/s.endsWith(s1)  //判断字符串是否以指定的字符串开头/结尾
+3)s.repeat(n)  //将字符串重复n次
+4)'hh'.padStart(5, 'o')/'hh'.padEnd(5, 'o')  //开头/结尾填充, ooohh/hhooo
+
+
+//Number对象
+Number.parseInt()和Number.parseFloat()  //ES6中将parseInt()与parseFloat()从全局移到Number
+Number.isFinite()  //判断一个数值是否是有限的
+Number.isInteger()  //判断是否为整数
+a ** b  //指数运算符
 
 
 >>Math对象
@@ -891,7 +903,7 @@ const [a, , c] = [1, 2, 3];  //部分解构
 const [a=1, b=2, c] = [6, 7, 8];  //带默认值的解构
 const [a=1, b=a] = [6, 7];  //a=6, b=6
 const obj = {name: 'zhao', age: 32, major: 'maths', addr: 'hefei'};
-const [name, ...o2} = obj;  //o2: {age: 32, major: 'maths', addr: 'hefei'}  //剩余解构
+const {name, ...o2} = obj;  //o2: {age: 32, major: 'maths', addr: 'hefei'}  //剩余解构
 const arr = [1, [2], 3];
 const [a, [b], c] = arr;  //嵌套解构
 2, ...(解构运算符)的用法
@@ -1020,20 +1032,8 @@ export class Component {
 export default React;
 
 
->>es6中新增的属性或方法
-1, 字符串
-s.includes(s1);  //判断字符串中是否包含指定的子串, 返回布尔值
-s.startsWith(s1);  //判断字符串是否以指定的字符串开头
-s.endsWith(s1);  //判断字符串是否以指定的字符串结尾
-s.repeat(n);  //将字符串重复n次
-'hh'.padStart(5, 'o');  //开头填充, ooohh
-'hh'.padEnd(5, 'o');  //结尾填充, hhooo
-2, 数值
-parseInt()和parseFloat()从全局移到Number对象
-Number.isFinite()  //判断一个数值是否是有限的
-Number.isInteger()  //判断是否为整数
-a ** b  //指数运算符
-3, 函数
+>>ES6中函数、对象、数组新增的功能
+1, 函数
 1)默认参数
 function fn(name, age=20) { //... }
 es5中的做法:
@@ -1048,7 +1048,7 @@ const add = (a = 10, b = 20) => a + b;
 function fn(...args) { //... }  
 es6中...args代替了es5中的arguments;
 3)高阶函数
-如果一个函数的参数或者返回值也为函数, 则该函数成为高阶函数;
+如果一个函数的参数或者返回值也为函数, 则该函数称为高阶函数;
 常见的高阶函数: Promise, setTimeout, 数组的方法(如arr.filter, arr.forEach)
 4, 对象
 1)属性和方法都可以简写
