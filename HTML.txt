@@ -505,6 +505,18 @@ overflow: hidden;
 white-space: nowrap; //文本在一行内显示
 
 
+>>去除图片之间的默认空隙
+<div>
+	<img src="" alt="">
+	<img src="" alt="">
+	<img src="" alt="">
+</div>
+默认空隙的大小与字体大小有关, 可将父容器的font-size设为0:
+div{
+	font-size: 0;
+}
+
+
 >>CSS3背景
 元素的背景包括边框，内边距和内容区域，不包括外边距;
 1, background-color 

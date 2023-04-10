@@ -1,9 +1,35 @@
+>>Go语言的应用领域
+1，服务端开发
+2，区块链
+3，云计算（CDN ，消息推送，分布式文件系统等）
+
+
+>>Go语言的优点
+1, 属于静态语言, 既有静态语言的执行效率和安全性, 又有动态语言的简单易学和开发效率;
+2, 语言层面支持高并发;
+
+
 >>go的安装及开发工具
 1, go语言下载安装后不需要配置环境变量, 以前的gopath模式改成go mod了, 所以代码
 可以放在任何位置, 直接终端输入go run(运行) / go build(编译)即可;
 cmd输入go version查看go的版本;
 go env查看go的环境变量;
 2, 下载vscode后安装汉化包扩展以及go语言扩展, 即可进行go语言开发;
+
+
+>>Go语言命令行工具
+1, go env
+查看go的环境变量;
+2, go build
+将源码文件(.go)编译成可执行文件(.exe);
+3, go run
+编译并运行源码文件(.go);
+4, go install
+用于编译并安装代码包或源码文件;
+安装代码包会在当前工作区的pkg/<平台相关目录>下生成归档文件;
+安装命令源码文件会在当前工作区的bin目录下生成可执行文件;
+5, go get
+用来动态获取远程代码包;
 
 
 >>package
@@ -88,21 +114,6 @@ func main(){
 	my.B()
 	fmt.Println("main.main()")
 }
-	
-
->>Go语言命令行工具
-1, go env
-查看go的环境变量;
-2, go build
-将源码文件(.go)编译成可执行文件(.exe);
-3, go run
-编译并运行源码文件(.go);
-4, go install
-用于编译并安装代码包或源码文件;
-安装代码包会在当前工作区的pkg/<平台相关目录>下生成归档文件;
-安装命令源码文件会在当前工作区的bin目录下生成可执行文件;
-5, go get
-用来动态获取远程代码包;
 
 
 >>格式化输出
@@ -188,6 +199,9 @@ bool
 注: 与其他语言不同, go语言不允许将其他类型转化为布尔类型;
 3, 字符串类型string (编码统一为"UTF-8")
 布尔类型占1个字节, 字符串类型占4个字节;
+注: golang中整数默认为int, 浮点数默认为float64;
+var a = 12   //int
+var b = 1.2  //float64
 
 
 >>引用类型
@@ -1278,6 +1292,26 @@ var rwMutex sync.RWMutex
 rwMutex.Lock() / rwMutex.Unlock()  //写互斥
 rwMutex.RLock() / rwMutex.RUnlock()  //读可并发
 
+
+//DOS基本操作
+1, 目录操作
+dir 			 //查看当前目录下的直接子目录和直接子文件
+cd test或..或/   //切换到test目录或上级目录或根目录
+mkdir(或md) d1 d2 d3  //创建目录, 多个目录用空格隔开
+rmdir(或rd) d1		  //删除空目录
+rmdir /s d1  		  //删除非空目录, 会先询问
+rmdir /s/q 		      //删除非空目录, 不询问
+2, 文件操作
+cd > my.txt		//创建空文件
+echo hello world > my.txt  //写内容到文件, 如果文件不存在则先创建
+del my.txt  //删除文件
+del *.txt   //删除所有文件文件
+del d2/*	//删除d2文件夹里的所有文件
+copy my.txt d2  //将my.txt文件拷贝到d2文件夹
+move d2\my.txt d3  //移动文件
+3, 其他操作
+cls  //清屏
+exit //退出
 
 
 >>请求与响应

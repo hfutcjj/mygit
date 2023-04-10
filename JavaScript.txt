@@ -110,6 +110,10 @@ var yz = obj && obj.y && obj.y.z;
 3, 属性名通过计算得到, 如 var key = 'age'; obj['get'+key];
 
 
+>>Object.keys(obj)
+返回对象obj的所有可枚举属性组成的数组;
+
+
 >>对象属性的标签
 1, 四个静态标签和两个读写的方法:
 configurable, writable, enumerable, value;
