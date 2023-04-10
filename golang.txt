@@ -615,69 +615,37 @@ func main() {
 
 
 >>异常处理: 宕机(panic)与恢复(recover)
-1, panic抛出一个异常, recover捕获异常并处理; recover()必须跟在defer后面;
-只有加上defer...recover(), 当程序遇到异常时, 才可以继续往下执行;
-func f() {
+1, panic抛出异常, recover捕获异常; 
+recover()必须放在defer要执行的函数里面, 才能被执行到;
+func main() {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("处理f抛出的异常")
+			//...
+			fmt.Println("处理异常后结束...")
+			
 		}
 	}()
-	panic("f抛出一个异常")
+	fmt.Println("开始...")
+	fn(6, 2)
+	//fn(6, 0)
+	fmt.Println("正常结束...")
 }
-2, 举例
-func f(a, b int) int {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println("发生错误", err)
-		} else {
-			fmt.Println("一切正常", err)
-		}
-	}()
+func fn(a, b int) int {
+	if b == 0 {
+		panic("除数不能为0")
+	}
 	return a / b
 }
-func main() {
-	f(2, 1)  //一切正常 <nil>
-	f(2, 0)  //发生错误 runtime error: integer divide by zero
-}
+注: 也可以在fn()函数内对异常进行处理, 要注意的是defer()必须放在panic前面, 否则
+执行不到defer()程序就异常退出了;
 
 
->>通过内存缓存来提升性能
-1, 普通的斐波那契数列生成
-func fibonacci(n int) (res int) {
-	if n == 1 || n == 2 {
-		res = 1
-	} else {
-		res = fibonacci(n-1) + fibonacci(n-2)
-	}
-	return
-}
-2, 通过内存缓存改进后的斐波那契生成
-const LIMIT = 100
-var cache [LIMIT]uint64
-func fibonacci(n int) (res int) {
-	if cache[n] != 0 {  //检查数组中是否已知斐波那契n
-		res = cache[n]
-		return 
-	}
-	if n == 1 || n == 2 {
-		res = 1
-	} else {
-		res = fibonacci(n-1) + fibonacci(n-2)
-	}
-	cache[n] = res  //将生成的斐波那契n保存到数组
-	return
-}
-注: 优化后的性能提升无数倍;
-
-
->>排序
-1, 快速排序
-1)基本类型切片的快速排序
+>>快速排序
+1, 基本类型切片的快速排序
 sort.Ints(slice)  //整型切片
 sort.Strings(slice)  //字符串切片
 sort.Float64s(slice)  //浮点型切片
-2)任意类型切片的快速排序
+2, 任意类型切片的快速排序
 sort.Slice(slice, func(i, j int) bool {
 	if slice[i].age != slice[j].age {
 		return slice[i].age < slice[j].age
@@ -685,20 +653,9 @@ sort.Slice(slice, func(i, j int) bool {
 	return slice[i].name < slice[j].name
 })
 注: 可用于结构体切片的排序, 或基本类型切片的降序排序;
-2, 自定义排序
-需要自定义类型来实现sort.Interface接口, 需要实现三个方法:
-type MyStringList []string
-func (m MyStringList) Len() int { 
-	return len(m)
-}
-func (m MyStringList) Less(i, j int) bool {
-	return m[i] < m[j]
-}
-func (m MyStringList) Swap(i, j int) {
-	m[i], m[j] = m[j], m[i]
-}
-names := MyStringList{"java", "go", "python", "js", "c++", "php",}
-sort.Sort(names)  //通过sort.Sort()函数来对切片序列进行排序
+3, 自定义的排序
+需要实现接口sort.Interface, 具体百度;
+
 
 
 >>内建方法
@@ -740,27 +697,6 @@ m := map[string]int{"zhao": 24, "qian": 26, "sun": 22,}
 delete(m, "qian")  //m: map[zhao:24, sun:22]
 3, panic与recover
 相当于抛出异常与捕获异常;
-func f1() {  //手动触发panic
-	fmt.Println("enter f1")
-	panic(errors.New("occur a panic"))
-	fmt.Println("quit f2")
-}	
-func f2() {  //宕机恢复
-	if p := recover(); p != nil {
-		fmt.Printf("Fatal error: %s\n", p)
-	}
-}
-func main() {
-	defer f2()
-	fmt.Println("enter main")
-	f1()
-	fmt.Println("quit main")
-}
-输出如下:
-enter main
-enter f1
-Fatal error: occur a panic
-注: defer f2()一定要放在panic()前面, 否则执行不到recover()程序就崩溃了;
 4, len, cap, close
 len用于string, array, slice, map, chan这几种类型;
 cap用于array, slice, chan这几种类型;
@@ -806,17 +742,7 @@ t2 := t1.Sub(time.Hour)
 t2.Before(t1)
 t2.After(t1)
 4, 定时器
-1)使用time.Sleep()
-time.Sleep(3*time.Second)  //睡眠3秒
-2)使用time.NewTicker()
-ticker := time.NewTicker(3*time.Second)
-for v := range ticker.C {	//无限循环, 每隔3秒执行一次
-	//...
-	if ... {
-		ticker.Stop()  //终止定时器
-		break
-	}
-}
+使用time.Sleep()
 
 
 >>json
