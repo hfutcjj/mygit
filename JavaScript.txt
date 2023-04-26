@@ -1062,12 +1062,20 @@ window.innerHeight;
 3)let不存在变量提升;
 4)var声明的全局变量都会绑定到window上, 而let不会;
 var a = 1; window.a  //1
-let b = 2; window.b  //error
-5)避免闭包中var存在的问题;
+let b = 2; window.b  //undefined
+2, let有了块级作用域, 就不需要引入闭包了
+1)举例
 const a = [], b = [];
 for(var i = 0; i < 10; i++){ a[i] = () => i; }  a[1]()  //10
 for(let i = 0; i < 10; i++){ b[i] = () => i; }  b[1]()  //1
-2, const必须在声明时初始化, const声明的基本类型就是常量, 声明的复杂类型只是引用不变;
+2)举例
+var btns = document.querySelectorAll('.btn');
+for(let i = 0; i < btns.length; i++) {
+	btns[i].onclick = function() {
+		alert(i);
+	}
+}
+3, const必须在声明时初始化, const声明的基本类型就是常量, 声明的复杂类型只是引用不变;
 
 
 >>模板字符串
@@ -1077,46 +1085,48 @@ let s2 = `Game start, ${f()}`;
 注: 模板字符串中的空格和换行都会原样保留;
 
 
->>解构赋值与解构运算符(又叫拓展运算符)
-1, 可对任何可遍历的对象进行解构, 如数组、对象、字符串等;
-const [a, b] = [1, 2];  //完全解构
+>>解构赋值
+可对任何可遍历的对象进行解构, 如数组、对象、字符串等;
+1, 完全解构
+const [a, b] = [1, 2];
 const [a, b] = 'hi';
 const {name: a, age: b} = {name: 'zhao', age: 30}; 
 const {name, age} = {name: 'zhao', age: 30};
-const [a, , c] = [1, 2, 3];  //部分解构
-const [a=1, b=2, c] = [6, 7, 8];  //带默认值的解构
-const [a=1, b=a] = [6, 7];  //a=6, b=6
-const obj = {name: 'zhao', age: 32, major: 'maths', addr: 'hefei'};
-const {name, ...o2} = obj;  //o2: {age: 32, major: 'maths', addr: 'hefei'}  //剩余解构
-const arr = [1, [2], 3];
-const [a, [b], c] = arr;  //嵌套解构
-2, ...(解构运算符)的用法
-1)将数组的各个元素分离出来传递给函数
+const {name, ...o2} = {name: 'zhao', age: 32, major: 'maths'};
+2, 部分解构
+const {age} = {name: 'zhao', age: 30};
+const [a, , c] = [1, 2, 3]; 
+3, 嵌套解构
+const [a, [b], c] = [1, [2], 3]; 
+
+
+>>解构运算符...(又叫拓展运算符)
+1, 将数组的各个元素分离出来传递给函数
 如求数组的最大值, const a = [2, 5, 1, 9, 2],
 es5中的做法:
 const maxNum = Math.max.apply(null, a);
 es6中的做法:
 const maxNum = Math.max(...a);
-2)将字符串、集合等转换为数组
+2, 将字符串、集合等转换为数组
 const a1 = new Set([1, 2, 3]), a2 = 'hello';
 const b1 = [...a1];  //集合 -> 数组
 const b2 = [...a2];  //字符串 -> 字符数组
-3)数组、对象的复制
+3, 数组、对象的复制
 const a1 = [1, 2, 3], b1 = {name: 'zhao', age: 32};
 const a2 = [...a1];  //复制数组
 const b2 = {...b1};  //复制对象
-4)数组、对象的合并
+4, 数组、对象的合并
 const a1 = [1, 2], a2 = [2, 3]
 [...a1, ...a2];  //[1, 2, 2, 3]
 [...a1, 2, 3];  //[1, 2, 2, 3]
 const c1 = {name: 'zhao', age: 32}, c2 = {name: 'qian', major: 'maths'}
 {...c1, ...c2};  //{name: 'qian', age: 32, major: 'maths'}
 {...c1, name: 'qian', major: 'maths'}
-5)用在函数的形参前表示可变参数;
+5, 用在函数的形参前表示可变参数;
 function f(...names) {
 	//names等价于数组
 }
-6)结合部分解构
+6, 结合部分解构
 const props = {name: 'zhao', age: 30, major: 'maths'};
 const {name, ...other} = props;  //name: 'zhao', other: {age: 30, major: 'maths'}
 
