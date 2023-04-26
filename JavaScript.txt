@@ -114,6 +114,25 @@ var yz = obj && obj.y && obj.y.z;
 返回对象obj的所有可枚举属性组成的数组;
 
 
+>>对象的属性和方法都可以简写
+const name = 'zhao', age = 32;
+const person = {
+	name, 
+	age, 
+	say() {
+		//...
+	}
+}
+
+
+>>属性的计算值
+const prop = 'name';
+const o1 = {
+	[prop]: 'zhao',
+	['age'+1]: 32
+};
+
+
 >>对象属性的标签
 1, 四个静态标签和两个读写的方法:
 configurable, writable, enumerable, value;
@@ -215,49 +234,53 @@ JSON.stringify(obj); //'{"x":1,"y":2,"o":3}'
 则报错;
 
 
->>String对象
-1, 常用方法
-1)charAt()
+>>String对象的常用方法
+1, s.charAt()
 指定位置的字符
-2)indexOf()/lastIndexOf()
+2, s.indexOf() / s.lastIndexOf()
 指定的字符第一次出现的位置
 var s = 'hello,world';
 s.indexOf('o'); //4
 s.indexOf('o', 5); //7
 s.lastIndexOf('o'); //7
-3)substring()
+3, s.includes()  
+判断字符串中是否包含指定的子串, 返回布尔值
+4, s.substring()
 提取指定起止的子字符串
-4)substr()
+5, s.substr()
 提取指定数目的子字符串
 var s = 'hello,world';
 s.substring(2, 6); //'llo,'
 s.substr(2, 6); //'llo,wo'
-5)search()
+6, s.startsWith(s1) / s.endsWith(s1)  
+判断字符串是否以指定的字符串开头/结尾
+7, s.repeat(n)  
+将字符串重复n次
+8, s.padStart() / s.padEnd()
+开头填充 / 结尾填充
+'hh'.padStart(5, 'o') / 'hh'.padEnd(5, 'o')  //ooohh / hhooo
+9, search()
 查找指定子串的位置，不存在则返回-1
 'aaa123bbb'.search('123'); //3
 'aaa123bbb'.search(/\w\d/); //2
-6)replace()
+10, replace() / replaceAll()
 对指定的子串进行替换
 'a1b1c1'.replace('1', 'X'); //'aXb1c1'
 'a1b1c1'.replace(/1/g, 'X'); //'aXbXcX'
-7)split()
+'a1b1c1'.replaceAll('1', 'X');  //'aXbXcX'
+11, split()
 字符串分割
 var s = 'hello,world';
 s.split(','); //['hello', 'world']
 s.split(''); //['h', 'e', 'l', 'l', 'o', ',', 'w', 'o', 'r', 'l', 'd']
 s.split('', 5); //['h', 'e', 'l', 'l', 'o']
 'a1b2c3d4'.split(/\d/); //['a', 'b', 'c', 'd', '']
-8)match()
+12, match()
 正则匹配
 var r = 'a1b2c3d4'.match(/(\w)\d/);
 r; //['a1', 'a', index: 0]
 var r = 'a1b2c3d4'.match(/(\w)\d/g);
 r; //['a1', 'b2', 'c3', 'd4']
-2, ES6中新增的方法
-1)s.includes(s1)  //判断字符串中是否包含指定的子串, 返回布尔值
-2)s.startsWith(s1)/s.endsWith(s1)  //判断字符串是否以指定的字符串开头/结尾
-3)s.repeat(n)  //将字符串重复n次
-4)'hh'.padStart(5, 'o')/'hh'.padEnd(5, 'o')  //开头/结尾填充, ooohh/hhooo
 
 
 //Number对象
@@ -310,36 +333,38 @@ var arr = new Array(1, 2, 4);
 1, Array.isArray()
 判断一个对象是否为数组；
 注意该方法属于Array构造器的方法，其他方法为Array.prototype的方法；
-2，arr.indexOf()，arr.lastIndexOf()
+2, arr.indexOf(), arr.lastIndexOf()
 查找元素在数组中的下标，如果不存在则返回-1;
 也可以指定查找的起始位置；
-3, arr.push()
-将元素添加到数组尾部，返回数组的长度
-4, arr.pop()
-删除数组的最后一个元素，并返回该元素
-5，arr.unshift()
-将元素添加到数组头部，返回数组的长度
-6，arr.shift()
-删除数组的第一个元素，并返回该元素
-7，arr.join()
-将数组元素以指定分隔符连接成字符串，如果不指定分隔符，默认以逗号分隔；
-8，arr.reverse()
-数组逆序，注意该方法为本地方法，会修改原数组
-9，arr.sort()
-默认按字符串的顺序来排序，如果需要按数字的顺序或者要排序对象，需要自定义函数来排序；
-该方法也是本地方法，会修改原数组；
-10，arr.concat()
+3, arr.includes()
+判断是否包含指定元素, 返回true或false
+4, arr.push()
+将元素添加到数组尾部, 返回数组的长度
+5, arr.pop()
+删除数组的最后一个元素, 并返回该元素
+6, arr.unshift()
+将元素添加到数组头部, 返回数组的长度
+7, arr.shift()
+删除数组的第一个元素, 并返回该元素
+8, arr.join()
+将数组元素以指定分隔符连接成字符串, 如果不指定分隔符, 默认以逗号分隔
+9, arr.reverse()
+数组逆序, 注意该方法为本地方法, 会修改原数组
+10, arr.sort()
+默认按字符串的顺序来排序, 如果需要按数字的顺序或者要排序对象, 需要自定义函数来排序;
+该方法也是本地方法, 会修改原数组;
+11, arr.concat()
 数组连接, 该方法不会改变原数组
 var arr = [1, 2, 3];
 arr.concat([10, 11], 13); //[1, 2, 3, 10, 11, 13]
-11, arr.slice(start, end)
+12, arr.slice(start, end)
 返回数组片段
-12，arr.splice()
-数组拼接，返回被删除的元素组成的数组，该方法为本地方法，会修改原数组
+13, arr.splice()
+数组拼接，返回被删除的元素组成的数组, 该方法为本地方法, 会修改原数组
 var arr = [1, 2, 3, 4];
 var b= arr.splice(1, 2, 'a', 'b'); //[1, 'a', 'b', 4]
 b; //[2, 3]
-13, arr.forEach()
+14, arr.forEach()
 遍历数组
 var arr = [1, 2, 3];
 arr.forEach(function(x, index, a){
@@ -348,7 +373,7 @@ arr.forEach(function(x, index, a){
 //1|0|true
 //2|1|true
 //3|2|true
-14, arr.map()
+15, arr.map()
 数组映射，该方法不修改原数组
 var arr = [1, 2, 3];
 var b= arr.map(function(x){
@@ -356,7 +381,7 @@ var b= arr.map(function(x){
 });
 b; //[11, 12, 13]
 arr; //[1, 2, 3]
-15, arr.filter()
+16, arr.filter()
 数组过滤，该方法不修改原数组
 var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 var b = arr.filter(function(x, index){
@@ -364,10 +389,21 @@ var b = arr.filter(function(x, index){
 });
 b; //[3, 6, 9]
 arr; //[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-16, arr.every()
+17, arr.every()
 判断数组中的所有元素满足某个条件
-17，arr.some()
+18, arr.some()
 判断数组中是否存在元素满足某个条件
+19, arr.find()
+接受一个回调函数, 用于找出第一个符合条件的数组成员, 没有找到则返回undefined;
+[1, 3, 6, 8].find((x, index) => x > 5);  //6
+20, arr.findIndex()
+同arr.indexOf()的区别是接受回调函数而不是具体数据;
+[1, 2, 3, 4, 5].findIndex((x, index) => x%3 == 0);  //3
+21, Array.from()
+用于将伪数组、字符串、Set、Map等可迭代对象转化为数组;
+var a1 = Array.from([1, 2, 3], n => n*n);  //[1, 4, 9], 类似于arr.map()
+var a3 = Array.from(new Set([1, 2, 1, 3, 1, 4]));  //[1, 2, 3, 4], 可用于数组的去重
+
 
 
 >>arr.forEach() 与 arr.some()的区别
@@ -517,6 +553,25 @@ fn(2, 3);
 	}
 }
 第一条语句报错是因为先在函数作用域中查找fn, 没有则再去全局作用域中查找, 仍然没有, 则报错;
+
+
+>>函数的进阶特性
+1, 默认参数
+function fn(name, age=20) { //... }
+es5中的做法:
+function add(a, b) {
+	a = a || 10;
+	b = b || 20;
+	return a + b;
+}
+es6中的做法:
+const add = (a = 10, b = 20) => a + b;
+2, 不定参数
+function fn(...args) { //... }  
+es6中...args代替了es5中的arguments;
+3, 高阶函数
+如果一个函数的参数或者返回值也为函数, 则该函数称为高阶函数;
+常见的高阶函数: Promise, setTimeout, 数组的方法(如arr.filter, arr.forEach)
 
 
 >>闭包(closure)
@@ -1088,8 +1143,8 @@ let s2 = `Game start, ${f()}`;
 >>解构赋值
 可对任何可遍历的对象进行解构, 如数组、对象、字符串等;
 1, 完全解构
-const [a, b] = [1, 2];
-const [a, b] = 'hi';
+const [a, b] = [1, 2];  //b: 2
+const [a, ...b] = [1, 2, 3, 4];  //b: [2, 3, 4]
 const {name: a, age: b} = {name: 'zhao', age: 30}; 
 const {name, age} = {name: 'zhao', age: 30};
 const {name, ...o2} = {name: 'zhao', age: 32, major: 'maths'};
@@ -1107,7 +1162,7 @@ es5中的做法:
 const maxNum = Math.max.apply(null, a);
 es6中的做法:
 const maxNum = Math.max(...a);
-2, 将字符串、集合等转换为数组
+2, 将字符串、集合、伪数组等转换为数组
 const a1 = new Set([1, 2, 3]), a2 = 'hello';
 const b1 = [...a1];  //集合 -> 数组
 const b2 = [...a2];  //字符串 -> 字符数组
@@ -1139,19 +1194,19 @@ const f3 = a => a*2		//函数体只有一条语句时, 可以省略{}
 const f4 = a => ({age: a})  //如果返回对象, 必须用()包裹起来
 const f5 = () => () => console.log('hello');  //返回函数的函数
 2, 箭头函数中的this
-箭头函数中this没有自身的作用域, 它会向外查找最近的外层作用域;
-var o1 = {
-	age: 20,
-	say: function(){
-		console.log(this.age);  //此处的 this == o1 
+箭头函数没有自身的作用域, 里面的this指向的是函数定义位置的上下文;
+function fn() {
+	console.log(this)  //这个this指向fn的调用者
+	return function() {
+		console.log(this)  //es5函数, 这个this指向window
+	}
+	return () => {
+		console.log(this)  //箭头函数, 这个this同fn中的this
 	}
 }
-var o2 = {
-	age: 20, 
-	say: () => {
-		console.log(this.age);  //此处的 this == window
-	}
-}
+const obj = {name: 'zhao'}
+const f = fn.call(obj)
+f()
 
 
 >>类
@@ -1226,118 +1281,25 @@ export class Component {
 export default React;
 
 
->>ES6中函数、对象、数组新增的功能
-1, 函数
-1)默认参数
-function fn(name, age=20) { //... }
-es5中的做法:
-function add(a, b) {
-	a = a || 10;
-	b = b || 20;
-	return a + b;
-}
-es6中的做法:
-const add = (a = 10, b = 20) => a + b;
-2)不定参数
-function fn(...args) { //... }  
-es6中...args代替了es5中的arguments;
-3)高阶函数
-如果一个函数的参数或者返回值也为函数, 则该函数称为高阶函数;
-常见的高阶函数: Promise, setTimeout, 数组的方法(如arr.filter, arr.forEach)
-4, 对象
-1)属性和方法都可以简写
-const name = 'zhao', age = 32;
-const person = {
-	name, 
-	age, 
-	say() {
-		//...
-	}
-}
-2)属性的计算值
-const prop = 'name';
-const o1 = {
-	[prop]: 'zhao',
-	['age'+1]: 32
-};
-3)拓展运算符(...)写在对象前面, 可进行对象的复制和合并;
-const o2 = {...o1};  //复制
-const o3 = {...o1, ...o2};  //两个对象合并
-const o3 = {...o1, name: 'qian', major: 'maths'};  //对象与其他属性的合并
-5, 数组
-1)Array.of() 
-let a = Array.of(1, 2, 4);  //等价于 new Array()
-2)Array.from()
-用于将类数组、字符串、Set、Map等可迭代对象转化为数组;
-var a1 = Array.from([1, 2, 3], n => n*n);  //[1, 4, 9]
-var a2 = Array.from('hello');  //字符串->字符数组
-var a3 = Array.from(new Set([1, 2, 1, 3, 1, 4]));  //[1, 2, 3, 4], 可用于数组的去重
-3)扩展运算符(...)写在数组前面, 可进行数组的复制与合并;
-const a2 = [...a1];  //复制
-const a3 = [...a1, ...a2];  //两个数组的合并
-const a3 = [...a1, 4, 5];  //数组与其他值的合并
-
-
->>Map和Set类型
-1, Map
-1)Map与Object的区别
-Map的键可以是字符串、对象、函数等任意类型, Map的键值对个数可以从size属性获取, 
-Map不会像Object那样可能产生对象上的键名与原型链上的键名相冲突的问题;
-Map通过set()和get()函数来设置和获取值;
-2)定义Map
-var map = new Map();
-var s1 = 'zhao'; map.set(s1, 30);  
-var s2 = {}; map.set(s2, 40); 
-var s3 = function(){}; map.set(s3, 50);
-var s4 = NaN; map.set(s4, 60);
-map.get({});  //undefined, 因为{}与{}是不同的对象
-map.get(Number('abc'));  //60, 虽然NaN和自己都不相等, 但对于Map来说没有区别
-map.has('zhao');  //判断map中存在指定的键
-3)遍历Map
-有两种遍历方式:
-//for...of
-for(let [k, v] of map) { //... }
-for(let k of map.keys()) { //... }
-for(let v of map.values()) { //... }
-//forEach
-map.forEach(function(value, key) { //... });
-4)Map与Array的转换
-var a1 = [['zhao', 25], ['qian', 32]];
-var m1 = new Map(a1);  //m1: {'zhao'=>25, 'qian'=>32}
-var a2 = Array.from(m1);  //a2: [['zhao', 25], ['qian', 32]]
-5)Map的克隆
-var m1 = new Map([['zhao', 25], ['qian', 32]]];  //注意传入的是二维数组
-var m2 = m1; //m2与m1指向同一个实例
-var m3 = new Map(m1);  //m3生成新的实例
-6)Map的合并
-var m1 = new Map([['zhao', 23], ['qian', 30]]);
-var m2 = new Map(['zhao', 26], ['sun', 32], ['li', 38]);
-var merged = new Map([...m1, ...m2]);  //如果有重复的键, 后面的值会覆盖前面的值
-merged.size  //4 通过size属性来取得Map的大小
-2, Set
-1)Set存储的值唯一, Set的大小也是通过size属性来获得;
-var set = new Set();
-set.add(1);
-set.add({x: 1, y: 2});
-set.add({x: 1, y: 2});
-set.size  //3 两个对象是不同的引用, 所以视为不同的元素;
-set.has('zhao');  //判断set中是否存在指定的元素
-2)Set与Array的转换
-var a = [1, 2, 3, 2];
-var s1 = new Set(a);  //s1: {1, 2, 3}
-var b = [...s1];  
-3)String转Set
-var set = new Set('hello');  //set: {'h', 'e', 'l', 'o'}
-4)Set的作用
-//数组去重
-var set = new Set([1, 2, 3, 3, 3]);
-[...set];  //[1, 2, 3]
-//进行交并补运算
-var a = new Set([1, 2, 3]);
-var b = new Set([2, 3, 4]);
-var union = new Set([...a, ...b]);
-var intersect = new Set([...a].filter(x => b.has(x)));
-var diff = new Set([...a].filter(x => !b.has(x)));
+>>集合类型Set
+Set存储的值都是唯一的;
+1, 创建Set对象
+var s = new Set([1, 2, 1, 3, 1, 4]); 
+2, Set类型的常用方法
+s.size  //集合的元素个数
+s.add()  //增加元素
+s.delete ()  //删除元素
+s.has()  //是否包含指定元素
+s.forEach(v => {...})  //遍历集合, 同数组
+4, Set的常见应用
+1)给数组去重
+var a = [1, 2, 1, 3, 1, 4]
+var b = [...new Set(a)]
+2)两个数组的交、并、补运算
+var a = [1, 2, 3], b = [1, 2, 4]
+var r1 = a.filter(v => b.includes(v))  //a ∩ b
+var r2 = [...new Set([...a, ...b])]  //a ∪ b 
+var r3 = a.filter(v => !b.includes(v))  //a - b
 
 
 >>Symbol
