@@ -132,6 +132,18 @@ func main(){
 fmt.Fprintf(writer, "%s, %d", s, i)  //格式化输出到指定的writer变量
 
 
+>>接收用户输入
+1, fmt.Scan()
+扫描用户输入, 以空格或换行间隔;
+fmt.Scan(&name, &age, &salary)  //如用户输入: zhao 32 8000
+2, fmt.Scanln()
+同Scan(), 区别是Scanln()遇到换行则全部结束;
+3, fmt.Scanf()
+格式化输入;
+fmt.Scanf("%s-%d-%f", &name, &age, &salary)  //用户输入: zhao-32-8000
+注: 以上三个函数都返回输入成功的数量和错误原因, 使用时需要对错误进行处理;
+
+
 >>变量
 1, 变量声明
 1)同一行声明多个变量和赋值
@@ -204,11 +216,16 @@ var a = 12   //int
 var b = 1.2  //float64
 
 
->>引用类型
-1, 有以下引用类型
-指针、数组、切片、map、函数、结构体、接口、chan;
-引用类型的零值为nil;
-2, 引用类型默认为nil, 不能给nil变量赋值, 必须先用new()或make()函数分配内存后才能赋值;
+>>golang中的值类型和引用类型
+1, 值类型
+golang中的值类型有: 基本数据类型、数组、结构体;
+值类型如果没有赋值, 则默认为类型零值: 
+var a [3]int  //[0, 0, 0]
+var a Person  //{ 0}
+2, 引用类型
+golang中的引用类型有: 切片、map、chan、函数、接口、指针;
+引用类型如果没有赋值, 则默认为nil;
+3, 引用类型默认为nil, 不能给nil变量赋值, 必须先用new()或make()函数分配内存后才能赋值;
 1)var p *int  //指针
 *p = 12 (×)
 var p *int = new(int)

@@ -38,6 +38,11 @@ var a = 1, b = 1;
 2)中括号开头的前一条语句;
 
 
+>>DOM中检索元素
+document.querySelector('.btn')  //查找第一个.btn元素
+document.querySelectorAll('.btn')  //查找所有.btn元素
+
+
 >>try...catch
 //抛出基本类型如字符串
 try{
@@ -67,21 +72,6 @@ for(var p in obj){
 1, 属性顺序不确定;
 2, 属性标签enumerable为false时不会出现;
 3, 属性受原型链的影响;
-
-
->>with
-with可以关联一个对象到当前作用域。
-with(document.forms[0]){
-	console.log(name.value);
-}
-注: with语句有以下缺点：
-1，可读性差；
-2，让JS引擎优化更难；
-3，严格模式下被禁用；
-4，可被变量定义代替；
-使用变量定义来代替，如下：
-var form = document.form[0];
-console.log(form.name.value);
 
 
 >>对象的创建
