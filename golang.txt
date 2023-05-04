@@ -453,6 +453,23 @@ a = a[:len(a)-n]
 a = append(a[:index], a[index+1:]...)
 
 
+>>切片的快速排序
+1, 基本类型切片的快速排序
+sort.Ints(slice)  //整型切片
+sort.Strings(slice)  //字符串切片
+sort.Float64s(slice)  //浮点型切片
+2, 任意类型切片的快速排序
+sort.Slice(slice, func(i, j int) bool {
+	if slice[i].age != slice[j].age {
+		return slice[i].age < slice[j].age
+	}
+	return slice[i].name < slice[j].name
+})
+注: 可用于结构体切片的排序, 或基本类型切片的降序排序;
+3, 自定义的排序
+需要实现接口sort.Interface, 具体百度;
+
+
 >>指针
 1, 普通变量与指针
 a := 12
@@ -504,23 +521,6 @@ func fn(s string) map[string]int {
 	return m
 }
 注: golang中没有set数据类型;
-
-
->>快速排序
-1, 基本类型切片的快速排序
-sort.Ints(slice)  //整型切片
-sort.Strings(slice)  //字符串切片
-sort.Float64s(slice)  //浮点型切片
-2, 任意类型切片的快速排序
-sort.Slice(slice, func(i, j int) bool {
-	if slice[i].age != slice[j].age {
-		return slice[i].age < slice[j].age
-	}
-	return slice[i].name < slice[j].name
-})
-注: 可用于结构体切片的排序, 或基本类型切片的降序排序;
-3, 自定义的排序
-需要实现接口sort.Interface, 具体百度;
 
 
 >>内建方法
