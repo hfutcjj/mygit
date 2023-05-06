@@ -722,42 +722,42 @@ func fn(a, b int) int {
 执行不到defer()程序就异常退出了;
 
 
->>time包和日期时间函数
-1, 当前时间、时间戳、指定字符串之间的转换
-1)获取当前Time对象
-now := time.Now()  //类型: time.Time
-2)获取各个时间字段
-now.Year() / now.Month() / now.Day() / now.Hour() / now.Minute() / now.Second();
-3)格式化输出
-//自定义输出指定格式:
-fmt.Printf("%d-%02d-%02d %02d:%02d:%02d", now.Year(), now.Month(), now.Day(), 
-	now.Hour(), now.Minute(), now.Second)
-//使用Format()
-格式: 2006-年, 01-月, 02-日, 03/15-时(12/24小时制), 04-分, 05-秒
-s := now.Format("2006-01-02 03:04:05")
-4)获取时间戳
-now.Unix()  //单位: 秒
-now.UnixMilli()  //单位: 毫秒
-5)将时间戳转换为Time对象
-utime := 1655169518
-t := time.Unix(int64(utime), 0)  //t: time.Time   //第二个参数表示纳秒的时间戳, 0表示省略
-6)将指定日期时间字符串转换为Time对象
+>>日期时间处理: time包
+1, 获取time.Time对象
+1)获取当前时间
+t := time.Now()  //类型: time.Time
+2)时间戳 -> time.Time
+u := 1655169518
+t := time.Unix(int64(u), 0)  //t: time.Time   //第二个参数表示纳秒的时间戳, 0表示省略
+3)日期时间字符串 -> time.Time
 s := "1987-07-01 15:30:00"
 template := "2006-01-02 15:04:05"  //定义模板与字符串格式匹配
 t, err := time.ParseInLocation(template, s, time.Local)
-2, 时间常量
-time.Hour  //1h0m0s
-time.Minute  //1m
-time.Second  //1s
-time.Millisecond //1ms
-3, 日期时间的操作函数
-1)将Time对象增加或减少一段时间
+2, time.Time对象的格式化输出
+1)通过t.Format()
+格式: 2006-年, 01-月, 02-日, 03/15-时(12/24小时制), 04-分, 05-秒
+s := t.Format("2006-01-02 03:04:05")
+2)通过fmt.Printf()
+fmt.Printf("%d-%02d-%02d %02d:%02d:%02d", t.Year(), t.Month(), t.Day(), 
+	t.Hour(), t.Minute(), t.Second())
+注: t.Month()得到的是英文月份, 可通过int(t.Month())将其转换为整数;
+3, time.Time对象转换为时间戳
+t.Unix()  //单位: 秒
+t.UnixMilli()  //单位: 毫秒
+4, time包中的一些常量
+time.Hour
+time.Minute
+time.Second
+time.Millisecond  //1ms
+time.May  //具体月份
+5, time.Time的常用方法
+//将Time对象增加或减少一段时间
 t2 := t1.Add(time.Hour)
 t2 := t1.Sub(time.Hour)
-2)比较两个Time对象的先后
+//比较两个Time对象的先后
 t2.Before(t1)
 t2.After(t1)
-4, 定时器
+6, 定时器
 使用time.Sleep()
 
 
