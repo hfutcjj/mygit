@@ -765,16 +765,21 @@ t2.After(t1)
 go语言中json的序列化和反序列化需要通过[]byte类型来中转;
 1, json.Marshal()  
 用于将slice, map, struct等类型序列化为[]byte, 再转换为json串;
-o := []Person{{"zhao", 26}, {"qian", 29}, {"sun", 24}}
-if b, err := json.Marsha1(o); err == nil {
-	s = string(b)
-}
+p := Person{"zhao", 32}
+m := map[string]any{"name": "zhao", "age": 32}
+b1, err := json.Marshal(p)
+b2, err := json.Marshal(m)
+fmt.Println(string(b1))  //`{"name":"zhao","age":32}`
+fmt.Println(string(b2))  //`{"name":"zhao","age":32}`
 2, json.Unmarsha1()  
 用于将json串(先转换成[]byte)反序列化为对应的slice, map, struct等类型;
-s := `{"zhao": 26, "qian": 32, "sun": 28}`
-o := make(map[string]int)  //或直接声明指针 o := new(Person)
-json.Unmarshal([]byte(s), &o)  //第二个参数为指针
-fmt.Printf("%T, %v", o, o)
+s := `{"Name":"zhao","Age":32}`
+var p Person
+var m map[string]any
+json.Unmarsha1([]byte(s), &p)  //注意第二个参数为指针
+json.Unmarsha1([]byte(s), &m)
+fmt.Printf("%#v\n", p)  //main.Person{Name:"zhao", Age:32}
+fmt.Printf("%#v\n", m)  //map[string]interface {}{"Age":32, "Name":"zhao"}
 3, 结构体的字段需要特殊处理的情形(字段标签)
 type Person struct {
 	Name string
