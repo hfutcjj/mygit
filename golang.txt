@@ -902,6 +902,7 @@ func (p Phone) call() {  //Phone的其他方法
 //调用
 var u Usber = Phone{"Redmi7"}
 u.start()
+注: u虽然声明为Usber类型, 但实际是Phone类型;
 2, 值类型接收者和指针类型接收者实现接口的区别
 1)值类型实现接口, 则值类型变量和指针类型变量都可以赋值给接口;
 func (p Phone) start() {

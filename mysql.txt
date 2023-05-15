@@ -278,39 +278,47 @@ truncate [table] t: 属于DDL, DDL是不可以回滚的;
 
 >>查询数据
 1, 查询的完整格式
-select [distinct] [tname.]cnames [as cnewnames]
-	from tname where condition
-	group by cname [having condition]
-	order by cname [asc|desc]
+select [distinct] ...
+	from t1
+	join t2 
+	on t1.c1 = t2.c2
+	where condition
+	group by c 
+	having ...
+	order by c [asc|desc]
 	limit [offset], count;
 举例:
 select Dno, avg(Sage) from Student group by Dno having avg(Sage) < 30 order by Dno desc;
 注: 进行分组查询时，查询的字段必须是分组的字段或者其他字段的聚合函数;
-limit 10; //返回查询结果的前10条
-limit 3, 10; //返回从第4条结果开始的10条记录
-2, limit可用于后端实现查询分页显示;
+注: where一定要紧跟在from之后, 而且select中列的别名不能出现在where中, 因为where执行顺序靠前, 但列的别名可以出现在order by中;
+★2, 查询中各子句的执行顺序
+from -> join -> on -> where -> group by -> having -> select -> order by -> limit;
+3, 查询条件写在where中与on中的区别
+在内连接中, 两者基本相同; 
+但在外连接中, on中只是连接条件, 不能过滤, 而where的执行是在连接之后, 能对结果进行过滤;
+大部分情况下, 过滤条件写在where中;
+4, limit可用于后端实现查询分页显示;
 select * from tname limit m, n; 等价于
 select * from tname limit n offset m;
-3, 查询中各子句的执行顺序
-from -> where -> group by -> having -> select -> order by -> limit;
-注: where一定要紧跟在from之后, 而且select中列的别名不能出现在where中, 因为where执行顺序靠前, 但列的别名可以出现在order by中;
-4, where的注意事项
+limit 10; //返回查询结果的前10条
+limit 3, 10; //返回从第4条结果开始的10条记录
+5, where的注意事项
 当检索大数据量时，优化where子句也能加快检索速度;
 1)索引字段的条件应写在前面;
 2)筛选掉记录最多的条件写在前面;
-5, group by ... having
+6, group by ... having
 having是group by的条件，having里只能放分组字段或者聚合函数，
 不过建议把分组字段的条件放到where中，where是在分组之前执行，提高效率;
-6, 按多个字段分组
+7, 按多个字段分组
 查询每个部门里，每种职位的人员数量与平均底薪:
 select deptno, job, count(*), avg(sal) from t_emp group by deptno, job order by deptno;
-7, with rollup //汇总
+8, with rollup //汇总
 select deptno, job, count(*), sum(sal), avg(sal), max(sal), min(sal) 
 	from t_emp group by deptno, job with rollup;
 对分组的结果进行汇总;
 如果按一个字段分组，则汇总成一条最终的结果;
 如果按两个字段分组，则按第一个分组字段的每个值进行汇总;
-8, group_concat()
+9, group_concat()
 把非分组字段的所有值拼接成一个字符串，让它可以出现在select中;
 查询每个部门内底薪超过2000元的人数和员工姓名:
 select deptno, group_concat(ename), count(*) from t_emp where sal >= 2000 
@@ -395,41 +403,26 @@ select eno, ename, sal from t_emp where exists(
 	);
 
 	
->>连接
-1)内连接
-select * from student t1 [inner] join dept t2 on t1.Dno = t2.Dno;
-等价于
-select * from student t1 join dept t2 where t1.Dno = t2.Dno;
-等价于
-select * from student t1, dept t2 where t1.Dno = t2.Dno;
-2)左外连接
-select * from student t1 left [outer] join dept t2 on t1.Dno = t2.Dno;
-3)右外连接
-select * from student t1 right [outer] join dept t2 on t1.Dno = t2.Dno;
-4)全连接
-mysql不支持全连接(full join)，可合并左外连接与右外连接的结果得到:
-select * from student t1 left [outer] join dept t2 on t1.Dno = t2.Dno
-union (all)
-select * from student t1 right [outer] join dept t2 on t1.Dno = t2.Dno;
-5)交叉连接(笛卡尔积)
-select * from student t1 cross join dept t2; 等价于
-select * from student t1, dept t2;
-注: 内连接中，查询条件写在on子句与where子句里的效果相同，但在外连接中，条件写在where子句里，
-不符合条件的记录会被过滤掉，而不是保留下来;
-举例：
-选择同时在t1表中和t2表中的人:
-select * from t1 join t2 on t1.name = t2.name;
-选择在t1表中但不在t2表中的人的记录：
-select t1.* from t1 left join t2 on t1.name = t2.name where t2.name is null;
-选择在t2表中但不在t1表中的人的记录：
-select t2.* from t1 right join t1 on t1.name = t2.name where t1.name is null;
-6)连接的分类
-可以从不同角度对连接进行分类, 如
-按连接条件, 分为等值连接与非等值连接;
-按连接源, 分为自连接与非自连接;
-按是否包含null值的行, 分为内连接、外连接(左连接、右连接、全连接)等;
-7)等值连接的另一种写法: 自然连接
-select * from t1 natural join t2 using c;  //c为t1和t2的同名字段
+>>七种连接
+1, A∩B(内连接)
+select * from A [inner] join B on A.c = B.c;
+2, A(左外连接)
+select * from A left [outer] join B on A.c = B.c;
+3, B(右外连接)
+select * from A right [outer] join B on A.c = B.c;
+4, A-B: 独A
+select * from A left join B on A.c = B.c where B.c is null;
+5, B-A: 独B
+select * from A right join B on A.c = B.c where A.c is null;
+6, A∪B(全连接)
+select * from A left join B on A.c = B.c 
+union
+select * from A right join B on A.c = B.c;
+7, A∪B-A∩B: 独A+独B
+select * from A left join B on A.c = B.c where B.c is null 
+union 
+select * from A right join B on A.c = B.c where A.c is null;
+注: 全连接的语法(full join)在mysql中不可用, 所以需要用union来实现;
 
 
 >>连接举例
@@ -681,6 +674,17 @@ drop view view_name
 
 
 
+>>mysql的四层结构
+1, 连接层
+与高级语言的连接, 连接池等;
+2, 服务层
+sql接口、sql解析、优化以及缓冲等;
+3, 引擎层
+存储引擎 
+4, 存储层
+文件系统, 以及日志等;
+
+
 >>存储引擎
 1, 定义
 mysql用不同的技术将数据保存在内存中，就是存储引擎;
@@ -696,7 +700,7 @@ mysql用不同的技术将数据保存在内存中，就是存储引擎;
 保证数据一致性的策略;
 4)索引
 是对数据表中一列或多列的值进行排序的一种结构;
-3, 各个存储引擎的特点
+3, MyISAM与InnoDB的区别
 MyISAM可存储的数据量为256TB, 支持表锁, 适用于读操作比较多的情形;
 InnoDB可存储的数据量为64TB, 支持事务、外键以及行锁, 适用于写操作比较多的情形;
 4, 设置存储引擎
