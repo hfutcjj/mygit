@@ -422,7 +422,7 @@ select * from A right join B on A.c = B.c;
 select * from A left join B on A.c = B.c where B.c is null 
 union 
 select * from A right join B on A.c = B.c where A.c is null;
-注: 全连接的语法(full join)在mysql中不可用, 所以需要用union来实现;
+注: 全连接的语法(full join)在mysql中不支持, 所以需要用union来实现;
 
 
 >>连接举例

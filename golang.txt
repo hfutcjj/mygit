@@ -924,12 +924,16 @@ fmt.Printf("%T, %v", v, v)  //*main.Phone, &{Redmi7}
 用于将接口转换为具体的实现类型;
 var x interface{} = "hello"
 v, ok := x.(string)  //"hello" true
-v, ok := x.(int)  //0 false
+v, ok := x.(int)  //0 false, 此时程序正常运行, 返回类型零值
+v := x.(string)  //"hello"
+v := x.(int)     //panic, 此时程序崩溃
 var u Usber = Phone{"Redmi7"}
 u.start()
 if v, ok := u.(Phone); ok {  //调用Phone的其他方法, 需要先转换为具体的Phone类型
 	v.call()
 }
+注: 注意类型断言用两个变量接收和用一个变量接收的区别, 当实际类型与要断言的类型不一致时, 
+用一个变量接收时程序会崩溃, 而用两个变量接收时则不会;
 2)x.(type)
 判断具体类型, 只能用于switch语句;
 switch x.(type) {
@@ -964,6 +968,18 @@ hobby, _ := m["hobby"].([]string)
 hobby[1]  //或 m["hobby"].([]string)[1]
 address, _ := m["address"].(Address)
 address.Name  //或 m["address"].(Address).Name
+5, 接口的嵌套
+type IEat interface {
+	eat()
+}
+type IWork interface {
+	work()
+}
+type Creature interface {
+	IEat
+	IWork
+}
+结构体实现Creature接口, 需要实现Creature接口中所有嵌套接口的方法;
 
 
 >>反射
@@ -992,10 +1008,10 @@ fn(&a)
 
 
 >>文件操作
-1, 打开文件
+1, 读取文件
+读文件打开文件的方式:
 file, err := os.Open("./demo.txt")  //以只读方式打开文件
 defer file.Close()
-2, 读取文件
 1)方式一: 按字节读取
 n, err := file.Read(b)  
 读取的内容放到b中, b是[]byte类型, 返回读取的字节数n和err, 如果已到文件末尾, 则err==io.EOF;
@@ -1023,11 +1039,11 @@ for {
 		break
 	}
 }
-3)方式三: 直接读取整个文件
-b, err := ioutil.ReadFile("./demo.txt")
+★3)方式三: 直接读取整个文件
+b, err := ioutil.ReadFile("./demo.txt")  //也可以直接用os包
 直接一次性读取, 返回[]byte类型的b和err;
 这个函数封装好了文件的打开与关闭, 不需要再手动处理;
-3, 写入文件
+2, 写入文件
 写操作时打开文件的方式:
 file, err := os.OpenFile("./demo.txt", os.O_CREATE|os.O_RDWR, 0666)
 defer file.Close()
@@ -1040,9 +1056,9 @@ n, err := file.WriteString(s)  //写入字符串
 writer := bufio.NewWriter(file)
 n, err := writer.WriteString(s)
 writer.Flush()  //刷新缓存才能真正写入
-3)方式三: 一次写入整个文件
-ioutil.WriteFile("./demo.txt", []byte(s), 0666)
-4, 复制文件
+★3)方式三: 一次写入整个文件
+ioutil.WriteFile("./demo.txt", []byte(s), 0666)  //也可以直接用os包
+3, 复制文件
 通过读取源文件再写入目标文件, 就实现了文件的复制;
 1)方式一
 b, _ := ioutil.ReadFile("./src.png")
@@ -1060,10 +1076,13 @@ for {
 		break
 	}
 }
+4, 文件三种操作方式的对比
+1)普通的小文件并且对内容没有太多操作的, 可以采用整体读取, 速度较快;
+2)大文件, 或者对文件内容又操作的, 采用分片读取或逐行读取更合适;
 5, 目录与文件的创建、删除、重命名
 1)创建
-os.Mkdir("./a")  //创建单级目录
-os.MidirAll("./a/b/c")  //创建多级目录
+os.Mkdir("./a", 0666)  //创建单级目录
+os.MidirAll("./a/b/c", 0666)  //创建多级目录
 os.Create("./test.txt")  //创建文件
 2)删除
 os.Remove("./a")  //删除目录或文件
@@ -1117,7 +1136,7 @@ ch <- 2
 ch <- 3
 ch <- 5
 close(ch)
-注: 任何时候向管道写完数据后一定要记得关闭管道, 否则后续遍历会导致死锁;
+注: ★任何时候向管道写完数据后一定要记得关闭管道, 否则后续遍历会导致死锁;
 向已满管道发送数据, 会引起阻塞;
 已关闭的管道, 不能向其发送数据, 可以从其读取数据;
 //从管道读取数据
@@ -1294,7 +1313,7 @@ http1.0版本中, 浏览器请求一个带有图片的网页, 会因为下载图
 
 >>go搭建服务器
 1, 绑定处理器
-1)方式一: HandleFunc()
+1)★方式一: HandleFunc()
 http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request){
 	w.Write([]byte("***"))
 	//fmt.Fprintln(w, "This is ", r.URL.Path)
@@ -1307,7 +1326,7 @@ func (m *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 mt := MyHandler{}
 http.Handle("/world", &mt)
 2, 定义监听
-1)方式一
+1)★方式一
 http.ListenAndServe("localhost:9090", nil)
 2)方式二: 自定义服务器
 server := http.Server{
