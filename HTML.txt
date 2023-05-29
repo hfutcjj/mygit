@@ -413,6 +413,11 @@ div.parent{height: 800px; border: 1px solid gray;
 	position: relative;}
 div.child{position: absolute; left: 50%; top: 50%;
 	transform: translate(-50%, -50%);}
+	
+
+>>vertical-align
+定义行内元素相对于该元素所在行的基线的垂直对齐, 默认为baseline;
+设置为middle可使元素居中于所在行的基线;
 
 	
 >>元素分类
@@ -429,6 +434,24 @@ div.child{position: absolute; left: 50%; top: 50%;
 
 >>两个相邻的元素边框重叠时，可设其中一个元素的外边距为负值来消除重叠，如：
 margin-top: -1px;
+
+
+>>文本溢出时显示省略号
+text-overflow: ellipsis; //文本溢出部分显示方式
+overflow: hidden; 
+white-space: nowrap; //文本在一行内显示
+
+
+>>去除图片之间的默认空隙
+<div>
+	<img src="" alt="">
+	<img src="" alt="">
+	<img src="" alt="">
+</div>
+默认空隙的大小与字体大小有关, 可将父容器的font-size设为0:
+div{
+	font-size: 0;
+}
 
 
 >>CSS3不同浏览器可能需要的前缀
@@ -496,24 +519,6 @@ x轴偏移量，y轴偏移量，模糊半径，模糊颜色;
 }
 div{
 	font-family: 'my font';
-}
-
-
->>文本溢出时显示省略号
-text-overflow: ellipsis; //文本溢出部分显示方式
-overflow: hidden; 
-white-space: nowrap; //文本在一行内显示
-
-
->>去除图片之间的默认空隙
-<div>
-	<img src="" alt="">
-	<img src="" alt="">
-	<img src="" alt="">
-</div>
-默认空隙的大小与字体大小有关, 可将父容器的font-size设为0:
-div{
-	font-size: 0;
 }
 
 

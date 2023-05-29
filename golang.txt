@@ -1311,7 +1311,7 @@ http1.0版本中, 浏览器请求一个带有图片的网页, 会因为下载图
 而http1.1版本, 允许浏览器在拿到当前请求对应的全部资源后再断开连接, 提高了效率;
 
 
->>go搭建服务器
+>>go搭建服务器(net/http包)
 1, 绑定处理器
 1)★方式一: HandleFunc()
 http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request){
@@ -1342,6 +1342,40 @@ server.ListenAndServe()
 3)HandleFunc是一个适配器, 通过类型转换让我们可以将具有指定签名的函数作为HTTP处理器来使用;
 
 
+>>go操作数据库(database/sql包)
+1, 导入database/sql包以及第三方驱动包
+import (
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+)
+2, 连接数据库
+var (
+	Db *sql.DB
+	err error
+)
+func init() {
+	Db, err := sql.Open("mysql", "root:123456@tcp(localhost:3306)/test")
+	if err != nil {
+		panic(err.Error())
+	}
+}
+注: 1)sql.DB结构体内部维护了一个连接池, 能自动创建和释放连接;
+2)Open函数只验证参数, 不创建与数据库的连接, 到后面需要时自动创建;
+3, 查询操作
+sq := "select name, dno from employee where id > ?"
+//只查询一条记录
+r := Db.QueryRow(sq, 10)  //r: *sql.Row
+r.Scan(&name, &dno)
+//查询所有记录
+r, _ := Db.Query(sq, 10)  //r: *sql.Rows 
+for r.Next() {
+	r.Scan(&name, &dno)
+}
+4, 写操作(插入、更新、删除)
+sq := "insert into employee(name, dno) values(?, ?)"
+r, _ := Db.Exec(sq, "zhao", 1)  //r: sql.Result
+r.LastInsertId() //最后插入的ID
+r.RowsAffected() //影响的行数
 
 
 
