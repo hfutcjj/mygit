@@ -5,6 +5,7 @@
 <a href="" title="" target=""> 
 注：target取值有_self, _blank, _parent, _top，默认是_self;
 3，表格
+1)结构
 <table border="1">
 	<thead>
 		<tr>
@@ -29,6 +30,18 @@
 	</tfoot>
 </table>
 注：<tbody>包含的内容会优先显示，当表格很长，可以用多个<tbody>进行分段显示;
+2)样式
+table{
+	border-spacing: 0; //边框之间的间距
+	border-collapse: collapse; //合并边框(不重叠)
+	width: 800px;  //表格的总宽度
+}
+table tr{
+	heigth: 50px;  //每行的高度
+}
+table tr td:nth-child(1){
+	width: 100px;  //第一列的宽度
+}
 4，表单
 <form method="post" action="test.php">
 	//文本框, label标签的for必须与input的id值一致
@@ -380,6 +393,11 @@ float: left / right;
 
 >>定位与浮动可以结合起来使用
 如果元素只是浮动，那么设置left/right/top/bottom这些值是无效的，如果再加上相对定位，那么这些值就有效了;
+
+
+>>使用绝对定位使子元素的宽度自适应父元素的宽度
+.parent{position: relative;}
+.son{position: absolute; left: 40px; right: 60px;}
 
 
 >>水平居中
