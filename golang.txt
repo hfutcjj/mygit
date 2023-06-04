@@ -1376,6 +1376,7 @@ sq := "insert into employee(name, dno) values(?, ?)"
 r, _ := Db.Exec(sq, "zhao", 1)  //r: sql.Result
 r.LastInsertId() //最后插入的ID
 r.RowsAffected() //影响的行数
+5, 
 
 
 
