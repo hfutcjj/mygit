@@ -5,7 +5,7 @@
 <a href="" title="" target=""> 
 注：target取值有_self, _blank, _parent, _top，默认是_self;
 3，表格
-1)html
+1)结构
 <table border="1">
 	<thead>
 		<tr>
@@ -30,7 +30,7 @@
 	</tfoot>
 </table>
 注：<tbody>包含的内容会优先显示，当表格很长，可以用多个<tbody>进行分段显示;
-2)css
+2)样式
 table{
 	border-spacing: 0; //边框之间的间距
 	border-collapse: collapse; //合并边框(不重叠)
