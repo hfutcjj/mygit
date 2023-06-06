@@ -472,6 +472,12 @@ div{
 }
 
 
+>>pointer-events属性
+默认为auto;
+当设置为none时, 元素不能对鼠标事件做出反应, 特别适用于一个元素覆盖另一个元素, 
+需要屏蔽上层元素的鼠标点击的时候;
+
+
 >>CSS3不同浏览器可能需要的前缀
 chrome和safari: -webkit
 firefox: -moz
