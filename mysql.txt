@@ -326,26 +326,26 @@ select deptno, group_concat(ename), count(*) from t_emp where sal >= 2000
 
 
 >>索引
-1, 建表时创建索引
+1, 索引的基本知识
+索引是为了提高数据的查找速度的一种数据结构, 通常为B树或B+树;
+索引只添加在经常被用作检索条件的字段上, 不要在大字段上创建索引;
+索引一般以索引文件的形式存在于磁盘上, 因为索引文件也比较大;
+因为写操作频繁, 长时间后索引会失效, 所以需要定期更新索引;
+索引用于: 排序和查找;
+2, 建表时创建索引
 create table student(
 	id int unsigned primary key auto_increment,
 	name varchar(20) not null,
 	age tinyint unsigned,
 	index id_name (name) //在name字段上创建索引
 );
-2, 表已存在时添加索引
+3, 表已存在时添加索引
 alter table student add index [id_name] (name);
 create index [id_name] on student(name);
-3, 查看索引
+4, 查看索引
 show index from student;
-4, 删除索引
+5, 删除索引
 drop index id_name on student;
-5, 索引的使用原则
-数据量很大，而且经常被查询的数据表可以设置索引;
-索引只添加在经常被用作检索条件的字段上;
-不要在大字段上创建索引;
-注: 索引默认采用btree来组织;
-索引对数据的查询很重要，但增加写数据的效率，所以对于写操作比较多的场合，索引不能太多;
 
 
 >>比较运算符
@@ -698,8 +698,6 @@ mysql用不同的技术将数据保存在内存中，就是存储引擎;
 2)事务机制
 3)外键
 保证数据一致性的策略;
-4)索引
-是对数据表中一列或多列的值进行排序的一种结构;
 3, MyISAM与InnoDB的区别
 MyISAM可存储的数据量为256TB, 支持表锁, 适用于读操作比较多的情形;
 InnoDB可存储的数据量为64TB, 支持事务、外键以及行锁, 适用于写操作比较多的情形;

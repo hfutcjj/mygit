@@ -733,6 +733,9 @@ t := time.Unix(int64(u), 0)  //t: time.Time   //第二个参数表示纳秒的�
 s := "1987-07-01 15:30:00"
 template := "2006-01-02 15:04:05"  //定义模板与字符串格式匹配
 t, err := time.Parse(template, s)
+//带时区的时间
+loc, _ := time.LoadLocation("Europe/London")
+t, _ := time.ParseInLocation(template, s, loc)
 2, time.Time对象的格式化输出
 1)通过t.Format()
 格式: 2006-年, 01-月, 02-日, 03/15-时(12/24小时制), 04-分, 05-秒

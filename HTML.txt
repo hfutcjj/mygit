@@ -307,6 +307,12 @@ list-style:
 给transform: translate(50%, 50%), 是按照元素自身的宽度和高度的比值；
 
 
+>>vw/vh 与 % 与 calc
+1, %是相对于父元素的大小设置的比例, vw、vh是视窗大小决定的;
+2, vw、vh的优势在于能够直接获取宽度和高度, 而用%在没有设置body高度情况下是无法获取可视区域的高度的;
+3, calc可对样式进行计算, 如 width: calc(100% - 100px);
+
+
 >>盒模型
 1, width / height
 注：默认情况下，盒子的宽度和高度指的是内容的尺寸，不包括边框和内外边距;
@@ -476,6 +482,11 @@ div{
 默认为auto;
 当设置为none时, 元素不能对鼠标事件做出反应, 特别适用于一个元素覆盖另一个元素, 
 需要屏蔽上层元素的鼠标点击的时候;
+
+
+>>外边距合并的情形
+只有普通文档流中块元素的垂直外边距会发生合并, 即选择外边距中的较大者;
+而行业元素、浮动元素以及绝对定位元素之间的外边距不会合并;
 
 
 >>CSS3不同浏览器可能需要的前缀
@@ -763,6 +774,12 @@ div:hover{animation-play-state: running;}
 动画开始之前与结束之后发生的动作, none / forwards / backwards / both;
 总: animation可以包含以上所有属性, 顺序如上，常用的是前5个属性的组合，如
 animation: myframe 5s ease 0.5s infinite; 
+
+
+>>盒子旋转的3D效果
+给父元素盒子加上:
+perspective: 1000px;
+transform-style: preserve-3d;
 
 
 >>弹性布局
