@@ -783,10 +783,9 @@ transform-style: preserve-3d;
 
 
 >>弹性布局
-1, 弹性容器
 设置了 display: flex; 的元素为弹性容器, 里面的直接子元素会按照弹性布局的方式进行布局;
-2, 弹性子元素
 弹性容器只会对直接子元素进行弹性布局, 对孙元素不会;
+弹性容器里的直接子元素都成为了块元素, 如<a>与<span>, 都可以设置宽度与高度;
 //html
 <div class="parent">
 	<div class="child item1">1</div>
@@ -797,40 +796,34 @@ transform-style: preserve-3d;
 .parent{
 	display: flex; //在父元素上设置弹性盒模型, 必选
 }
-.item1{flex: 1;} //给子元素设置相对占比，可选
-.item2{flex: 2;}
-.item3{width: 200px;}
-属性按照常用的次序如下:
-1)父元素 display: flex 
+.child{
+	flex: 0 1 200px;
+}
+常用属性如下: 
+1, 父元素 display: flex 
 当显式设置的子元素宽度和加起来超过了父元素的宽度, 会对子元素按比例压缩, 并不会换行;
-2)子元素 flex: n
-可以设置子元素的占比，只能为整数值，设置了flex值后子元素的宽度属性会失效;
-3)父元素 flex-direction
+2, 父元素 flex-direction
 主轴方向: row(默认) / column / row-reverse / column-reverse;
-4)父元素 justify-content
+3, 父元素 justify-content
 子元素在主轴上的排列方式: flex-start(默认)/flex-end/center/space-between/space-around;
-5)父元素 align-items
+4, 父元素 align-items
 子元素在侧轴上的对齐方式(与主轴垂直的轴): flex-start/flex-end/center/baseline/stretch(默认);
-6)父元素 flex-wrap
+5, 父元素 flex-wrap
 设置子元素的宽度超出弹性容器时是否换行: nowrap(默认)/wrap;
-7)子元素 order
-设置子元素的次序, 按从小到大的顺序进行排序;
-8)子元素 align-self
-设置单独子元素的侧轴对齐方式;
-注: 弹性容器里的直接子元素都成为了块元素, 如<a>与<span>, 都可以设置宽度与高度;
-9)子元素 flex-grow
-控制子元素的放大显示(分配剩余空间), 默认值0表示不放大, n表示将剩余空间按比例n分配;
-公式：要分配的剩余空间 = 剩余空间 * ( 所有项目的flex-grow之和 >= 1 ? 1 : 所有项目的flex-grow之和 );
-公式：每个项目分配的剩余空间 = 要分配的剩余空间 * ( 单个项目flex-grow / 所有项目的flex-grow之和 );
-10)子元素 flex-shrink
-控制子元素的缩小显示, 默认值1表示空间不够时所有项目同比缩小, 0表示该子元素不缩小;
-公式：要压缩的空间 = 超出空间 * ( 所有项目的flex-shrink之和 >= 1 ? 1 : 所有项目的flex-shrink之和 );
-公式：每个项目压缩的空间 = 要压缩的空间 * ( 单个项目flex-shrink / 所有项目的flex-shrink之和 );
-11)子元素 flex-basis
-子元素占据主轴空间的值, 默认值auto表示当前默认的大小;
-注: flex属性是flex-grow、flex-shrink、flex-basis的简写, 默认值为 0 1 auto, 后两个属性可选;
+6, 子元素 flex
+flex属性是flex-grow、flex-shrink、flex-basis的简写, 默认值为 0 1 auto, 后两个属性可选;
 flex的两个快捷值: auto(1 1 auto) 和 none(0 0 auto);
 flex: 1 表示等分剩余空间;
+1)flex-grow
+控制子元素的放大显示(分配剩余空间), 0表示不放大, n表示将剩余空间按比例n分配, 默认值为0, 默认不放大;
+公式：要分配的剩余空间 = 剩余空间 * ( 所有项目的flex-grow之和 >= 1 ? 1 : 所有项目的flex-grow之和 );
+公式：每个项目分配的剩余空间 = 要分配的剩余空间 * ( 单个项目flex-grow / 所有项目的flex-grow之和 );
+2)flex-shrink
+控制子元素的缩小显示, n表示空间不够时所有项目按比例n缩小, 0表示该子元素不缩小, 默认值为1, 默认等比缩小;
+公式：要压缩的空间 = 超出空间 * ( 所有项目的flex-shrink之和 >= 1 ? 1 : 所有项目的flex-shrink之和 );
+公式：每个项目压缩的空间 = 要压缩的空间 * ( 单个项目flex-shrink / 所有项目的flex-shrink之和 );
+3)flex-basis
+子元素占据主轴空间的值, 默认值auto表示当前默认的大小;
 
 
 >>弹性布局实现水平居中与垂直居中
