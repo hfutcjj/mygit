@@ -786,13 +786,6 @@ transform-style: preserve-3d;
 设置了 display: flex; 的元素为弹性容器, 里面的直接子元素会按照弹性布局的方式进行布局;
 弹性容器只会对直接子元素进行弹性布局, 对孙元素不会;
 弹性容器里的直接子元素都成为了块元素, 如<a>与<span>, 都可以设置宽度与高度;
-//html
-<div class="parent">
-	<div class="child item1">1</div>
-	<div class="child item2">2</div>
-	<div class="child item3">3</div>
-</div>
-//css
 .parent{
 	display: flex; //在父元素上设置弹性盒模型, 必选
 }
@@ -807,7 +800,7 @@ transform-style: preserve-3d;
 3, 父元素 justify-content
 子元素在主轴上的排列方式: flex-start(默认)/flex-end/center/space-between/space-around;
 4, 父元素 align-items
-子元素在侧轴上的对齐方式(与主轴垂直的轴): flex-start/flex-end/center/baseline/stretch(默认);
+子元素在侧轴上的对齐方式(与主轴垂直的轴): stretch(默认)/flex-start/flex-end/center/baseline;
 5, 父元素 flex-wrap
 设置子元素的宽度超出弹性容器时是否换行: nowrap(默认)/wrap;
 6, 子元素 flex
