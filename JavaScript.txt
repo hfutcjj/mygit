@@ -798,7 +798,6 @@ Function.prototype.hasOwnProperty('bind');  //true
 4, 无限级分类的查找
 
 
-
 >>浅拷贝与深拷贝
 0, 直接赋值
 直接赋值只是拷贝对象的地址, 对新对象的任何修改都会影响原对象;
@@ -1352,6 +1351,17 @@ f().then(res => {
 });
 
 
+>>记录视频播放的时间
+<video src="..." controls></video>
+const video = document.querySelector('video');
+//视频帧变化时触发, 在该事件中获取当前播放的时间, 保存到本地存储或者数据库
+video.ontimeupdate = function(){  
+	localStorage.setItem('currentTime', video.currentTime);
+}
+//页面加载时触发, 在该事件中取出视频播放记录
+video.onloadeddata = function(){  //
+	video.currentTime = localStorage.getItem('currentTime') || 0;
+}
 
 
 

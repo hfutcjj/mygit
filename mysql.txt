@@ -325,7 +325,7 @@ select deptno, group_concat(ename), count(*) from t_emp where sal >= 2000
 	group by deptno;
 
 
->>索引
+>>索引初级
 1, 索引的基本知识
 索引是为了提高数据的查找速度的一种数据结构, 通常为B树或B+树;
 索引只添加在经常被用作检索条件的字段上, 不要在大字段上创建索引;
@@ -963,7 +963,10 @@ select e.eno, e.avg_sal, d.*
 	join department d on e.dno = d.dno;
 
 
->>索引
+>>索引高级
+primary key InverterModel_PK using btree(ManufacturerID, ID)
+key Product_Name_IX using btree(Name)
+key InverterDevice_IX using btree(InverterID, DeviceID)
 1, mysql的索引使用B+树, B+树的特点:
 1)一个结点存多条数据, 通常为一页, InnoDB中一页的大小为16KB, 3层的B+树就可以保存大约
 2000万条数据;
@@ -984,6 +987,9 @@ InnoDB的主键索引与其他索引的存储方式不同;
 2)整型比较大小时速度更快;
 3)索引文件在插入时就会进行排序, 使用自增的主键可以避免插入数据时频繁移动数据, 
 大大提高性能;
+4, 联合索引的最左前缀匹配
+是指使用联合索引的最左前缀来匹配查询条件, 如联合索引为(A, B, C), 则只是用A列、
+或(A, B)列、或(A, B C)列来进行查询;
 
 
 
