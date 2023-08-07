@@ -989,8 +989,39 @@ InnoDB的主键索引与其他索引的存储方式不同;
 大大提高性能;
 4, 联合索引的最左前缀匹配
 是指使用联合索引的最左前缀来匹配查询条件, 如联合索引为(A, B, C), 则只是用A列、
-或(A, B)列、或(A, B C)列来进行查询;
+或(A, B)列、或(A, B, C)列来进行查询;
 
+
+>>事务高级
+1, 事务的四种隔离级别
+InnoDB定义了四种隔离级别, 级别越高隔离性越好, 但性能就越低;
+隔离性是由mysql的各种锁以及MVCC机制来实现的;
+client1:
+set tx_isolation = 'read-uncommitted';
+begin
+	update account set balance = balance + 500 where id = 1;  //1
+commit 
+begin 
+	update account set balance = balance + 300 where id = 1;  //2
+commit
+client2:
+set tx_isolation = 'read-uncommitted';
+begin 
+	select * from account where id = 1;  //1
+	select * from account where id = 1; //2
+commit
+1)read-uncommitted(读未提交): 有脏读问题
+执行完client1-1但未提交, client2-1就能读到修改后的500, 这是脏读;
+2)read-committed(读已提交): 有不可重复读问题
+执行完client1-1并提交, client2-1读到500, 然后执行client1-2并提交, client2-2读到800,
+这属于不可重复读;
+3)repeatable read(可重复读): 有幻读问题
+也叫快照读, 执行client1-1并提交, client2-1读到500, 然后执行client1-2并提交, 
+client2-2读到的仍然是500, 这叫可重复读; 但数据库实际存储的值是800, 读到的却是500, 
+这叫幻读;
+4)serializable(串行化): 不可并发
+串行化就是所有事务串行执行, 不存在以上并发执行的各种问题, 但效率极低, 不可用;
+注: mysql默认的隔离级别是: repeatable read; oracle默认的隔离级别是: read-committed;
 
 
 
