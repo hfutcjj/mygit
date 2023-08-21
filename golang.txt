@@ -1301,7 +1301,10 @@ exit //退出
 4, http响应状态码
 1XX: 收到请求，正在处理;
 2XX: 成功，如 200 OK;
-3XX：重定向，表示请求没有成功，需要采取进一步的动作, 如302;
+3XX：重定向，表示请求没有成功，需要采取进一步的动作, 如下:
+	301-永久重定向;
+	302-临时重定向;
+	304-Not Modified, 从缓存中取;
 4XX：客户端错误，表示客户端提交的请求有错误，如 404 NOT Found;
 5XX：服务器错误，如 500;
 5, get与post请求方式的区别
@@ -1313,36 +1316,6 @@ get数据能保留在浏览器历史中, 可收藏为书签, 而post不可以;
 http1.0版本中, 浏览器请求一个带有图片的网页, 会因为下载图片而与服务器之间开启一个新的连接;
 而http1.1版本, 允许浏览器在拿到当前请求对应的全部资源后再断开连接, 提高了效率;
 
-
->>go搭建服务器(net/http包)
-1, 绑定处理器
-1)★方式一: HandleFunc()
-http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request){
-	w.Write([]byte("***"))
-	//fmt.Fprintln(w, "This is ", r.URL.Path)
-})
-2)方式二: Handle()
-type MyHandler struct{}
-func (m *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("***"))
-}
-mt := MyHandler{}
-http.Handle("/world", &mt)
-2, 定义监听
-1)★方式一
-http.ListenAndServe("localhost:9090", nil)
-2)方式二: 自定义服务器
-server := http.Server{
-	Addr: ":9090",
-	Handler: &MyHandler{},
-}
-server.ListenAndServe()
-3, 要点
-1)ListenAndServe的第一个参数表示网络地址, 为""则表示所有网络接口的80端口;
-第二个参数是Handler, 为nil就是DefaultServeMux(默认的多路复用器), 
-它是一个Handler, 用来接收HTTP请求, 然后将请求转交给其他具体的Handler来处理;
-2)Handler是一个接口, 内部定义了一个方法ServeHTTP(), 自定义处理器需要实现Handler接口;
-3)HandleFunc是一个适配器, 通过类型转换让我们可以将具有指定签名的函数作为HTTP处理器来使用;
 
 
 >>go操作数据库(database/sql包)
@@ -1379,10 +1352,69 @@ sq := "insert into employee(name, dno) values(?, ?)"
 r, _ := Db.Exec(sq, "zhao", 1)  //r: sql.Result
 r.LastInsertId() //最后插入的ID
 r.RowsAffected() //影响的行数
-5, 
 
 
 
+>>go搭建服务器(net/http包)
+1, 绑定处理器
+1)★方式一: HandleFunc()
+http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request){
+	w.Write([]byte("***"))
+	//fmt.Fprintln(w, "This is ", r.URL.Path)
+})
+2)方式二: Handle()
+type MyHandler struct{}
+func (m *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("***"))
+}
+mt := MyHandler{}
+http.Handle("/world", &mt)
+2, 定义监听
+1)★方式一
+http.ListenAndServe("localhost:9090", nil)
+2)方式二: 自定义服务器
+server := http.Server{
+	Addr: ":9090",
+	Handler: &MyHandler{},
+}
+server.ListenAndServe()
+3, 要点
+1)ListenAndServe的第一个参数表示网络地址, 为""则表示所有网络接口的80端口;
+第二个参数是Handler, 为nil就是DefaultServeMux(默认的多路复用器), 
+它是一个Handler, 用来接收HTTP请求, 然后将请求转交给其他具体的Handler来处理;
+2)Handler是一个接口, 内部定义了一个方法ServeHTTP(), 自定义处理器需要实现Handler接口;
+3)HandleFunc是一个适配器, 通过类型转换让我们可以将具有指定签名的函数作为HTTP处理器来使用;
+
+
+>>处理请求和响应
+1, 获取请求信息
+1)r.Method 	 //请求方法
+2)r.URL	  //请求的url
+r.URL.Path: 请求路径, 如 /hello
+r.URL.RawQuery: 请求字符串, 如 name=zhao&age=30
+3)r.Proto  //http协议, 如 HTTP/1.1
+4)r.Header	//请求头
+r.Header是 map[string][]string 类型, 可以对其进行遍历:
+header := r.Header
+for key, value := range header {
+	//...
+	//value是[]string类型
+}
+也可以通过如 r.Header.Get("Accept-Encoding") 的形式获取具体请求头的信息;
+5)r.Form  
+r.Form是 map[string][]string类型, 包括get请求字符串, 和post的表单字段;
+在调用r.Form之前, 需要先调用r.ParseForm();
+6)r.FormValue() 
+直接获取某个具体的请求字段值, 该函数会自动调用r.ParseForm();
+2, 响应
+1)返回json格式
+w.Header().Set("Content-Type", "application/json")
+User := User{//...}
+json, _ := json.Marshal(user)
+w.Write(json)
+2)使用模板引擎
+t, _ := template.ParseFiles("hello.html")
+t.Execute(w, "zhao")
 
 
 

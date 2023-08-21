@@ -275,7 +275,13 @@ zhao	ALL=(ALL)	ALL
 
 >>Linux防火墙
 1, centos6基于ip 实现防火墙, 是在网络层, 而centos7基于firewall实现防火墙, 是在应用层;
-2, 核心命令: firewall-cmd;
+2, 防火墙的开启与关闭
+systemctl start firewalld  //开启
+systemctl restart firewalld  //重启
+systemctl stop firewalld  //本次关闭
+systemctl disable firewalld  //以后都关闭
+systemctl status firewalld  //查看当前防火墙的状态
+3, 核心命令: firewall-cmd;
 firewall-cmd --state   //查看防火墙是否启动(running表示已启动)
 firewall-cmd --list-ports   //查看防火墙开放了哪些端口
 firewall-cmd --zone=public --permanent --add-port=8080/tcp   //开放8080端口
