@@ -1417,7 +1417,9 @@ t, _ := template.ParseFiles("hello.html")
 t.Execute(w, "zhao")
 
 
-
+>>处理静态资源
+http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("views/static"))))
+当请求以/static开头的路径时, 会去views/static目录下查找对应文件;
 
 
 

@@ -997,7 +997,7 @@ InnoDB的主键索引与其他索引的存储方式不同;
 InnoDB定义了四种隔离级别, 级别越高隔离性越好, 但性能就越低;
 隔离性是由mysql的各种锁以及MVCC机制来实现的;
 client1:
-set tx_isolation = 'read-uncommitted';
+set transaction isolation level read uncommitted;
 begin
 	update account set balance = balance + 500 where id = 1;  //1
 commit 
@@ -1005,7 +1005,7 @@ begin
 	update account set balance = balance + 300 where id = 1;  //2
 commit
 client2:
-set tx_isolation = 'read-uncommitted';
+set transaction isolation level read uncommitted;
 begin 
 	select * from account where id = 1;  //1
 	select * from account where id = 1; //2
