@@ -1386,6 +1386,11 @@ server.ListenAndServe()
 3)HandleFunc是一个适配器, 通过类型转换让我们可以将具有指定签名的函数作为HTTP处理器来使用;
 
 
+>>处理静态资源
+http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("views/static"))))
+当请求以/static开头的路径时, 会去views/static目录下查找对应文件;
+
+
 >>处理请求和响应
 1, 获取请求信息
 1)r.Method 	 //请求方法
@@ -1417,9 +1422,32 @@ t, _ := template.ParseFiles("hello.html")
 t.Execute(w, "zhao")
 
 
->>处理静态资源
-http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("views/static"))))
-当请求以/static开头的路径时, 会去views/static目录下查找对应文件;
+>>模板引擎
+1, 后端给模板传值
+t.Execute(w, map[string]interface{
+	"username": "zhao",
+	"age": 32,
+})
+2, 模板接收后端传来的值
+{{.}}
+3, 条件逻辑
+{{if.}}
+	//...
+{{else}}
+	//...
+{{end}}
+4, 循环逻辑
+可对后端传来的数组、切片、map、管道等进行遍历;
+1)简单循环
+{{range .}}  //此处的.为如后端传来的结构体切片
+	{{.}}    //此处的.为如切片的每个结构体元素
+	{{.username}}  //取每个元素的username字段值
+{{end}}
+2)取键值对
+{{range $k, $v := .}}
+	{{k}} - {{v}}
+{{end}}
+	
 
 
 

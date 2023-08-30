@@ -90,28 +90,33 @@ ls -a 列出所有文件, 包括隐藏文件, 以.开头的文件就是隐藏文
 rmdir 目录  //删除空目录
 5)touch test  //创建文件
 vim text  //创建文件并在vim中打开
-6)cp [-r] 源文件路径 目的文件路径 //-r表示复制整个目录
-7)mv 剪切或修改文件名
+touch当文件不存在则创建文件, 当文件存在时则将文件的access、modified、change三个
+时间属性置为相同;
+6)stat a.txt //查看文件的详细属性信息
+7)cp [-r] 源文件路径 目的文件路径 //-r表示复制整个目录
+8)mv 剪切或修改文件名
 mv a.txt /opt  //剪切文件或文件夹到指定目录
 mv a.txt b.txt  //重命名
-8)rm [-rf] 删除文件  //-r表示迭代删除目录, -f直接删除无需询问
-9)find /usr -name *.jpg //在指定目录下按指定格式查找文件
-10)clear	//清屏
-11)history  //显示历史命令
-12)su - zhao  //切换用户
-13)logout  //退出当前用户, 回到上一次的用户
-14)exit  //退出终端
-15)shutdown  //关机
-16)hostname、hostnamectl  //查看主机名, hostnamectl主机的详细信息
-17)man  //查看命令的帮助文档
-18)which  //去PATH路径中找到命令的绝对路径
-19)whereis  //查询命令文件的位置, 文件必须是命令文件
-20)file  //文件的具体类型, 后接文件的绝对路径
-21)echo  //打印语句
-22)who  //查看当前在线的用户
-23)whoami  //我是谁
-注: 使用键盘Tab命令可以进行自动补全;
-使用--help可以查看命令的帮助, 如 mkdir --help;
+9)rm [-rf] 删除文件  //-r表示迭代删除目录, -f直接删除无需询问
+10)find /usr -name *.jpg //在指定目录下按指定格式查找文件
+11)clear	//清屏
+12)history  //显示历史命令
+13)su - zhao  //切换用户
+14)logout  //退出当前用户, 回到上一次的用户
+15)exit  //退出终端
+16)shutdown  //关机
+17)hostname、hostnamectl  //查看主机名, hostnamectl主机的详细信息
+18)man  //查看命令的帮助文档
+19)which  //去PATH路径中找到命令的绝对路径
+20)whereis  //查询命令文件的位置, 文件必须是命令文件
+21)file  //文件的具体类型, 后接文件的绝对路径
+22)echo  //打印语句
+23)who  //查看当前在线的用户
+24)whoami  //我是谁
+25)链接
+ln src hlink  //硬链接
+ln -s src slink  //软链接
+两者区别: 删除源文件后, 软链接失效, 但硬链接仍然有效;
 
 
 >>Linux特殊字符
