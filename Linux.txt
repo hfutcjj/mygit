@@ -141,7 +141,7 @@ ln -s src slink  //软链接
 
 >>vim
 1, vim是Linux自带的文本编辑工具;
-vim的三种模式: 普通模式、编辑模式、命令模式;
+vim的三种模式: 命令模式、编辑模式、末行模式;
 2, 创建文件
 vim test.txt
 3, 常用操作快捷键:
@@ -151,7 +151,7 @@ esc  //退出编辑模式;
 u  //撤销上一次修改;
 :% s/8080/9999/g  //将8080全部替换成9999 
 :q, :wq, :wq!  //退出, 保存并退出, 修改只读文件后强制保存并退出
-注: 命令快捷键只能在普通模式中使用;
+注: 命令快捷键只能在命令模式中使用;
 
 
 >>常用文本命令
@@ -163,11 +163,12 @@ echo "hello" >> a.txt  //追加
 cat a.txt  //查看文件内容
 cat -n a.txt  //查看文件内容并显示行号
 cat a.txt b.txt >> c.txt  //合并a.txt和b.txt到c.txt
-3, tail  显示文件内容尾部
-tail a.txt  //显示文件最后几行的内容
-tail -n 3 a.txt  //显示最后3行
-tail -f a.txt  //动态显示文件内容(按 ctrl+C 退出)
-注: tail命令常用于对服务器日志的监控
+3, head / tail  显示文件内容头部 / 尾部
+head / tail a.txt  //显示文件最后几行的内容
+head / tail -n 3 a.txt  //显示最后3行
+head / tail -f a.txt  //动态显示文件内容(按 ctrl+C 退出)
+注: 如何显示第八行?
+head -n 8 a.txt | tail -n 1
 4, grep  利用正则表达式对文本文件的数据进行查找
 grep 520 a.txt  //查找含有520的行, 输出到屏幕
 grep 520 a.txt > out.txt  //将结果输出到指定文件

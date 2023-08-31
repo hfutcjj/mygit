@@ -1431,7 +1431,7 @@ t.Execute(w, map[string]interface{
 2, 模板接收后端传来的值
 {{.}}
 3, 条件逻辑
-{{if.}}
+{{if .}}
 	//...
 {{else}}
 	//...
@@ -1445,8 +1445,27 @@ t.Execute(w, map[string]interface{
 {{end}}
 2)取键值对
 {{range $k, $v := .}}
-	{{k}} - {{v}}
+	{{$k}} - {{$Sv}}
 {{end}}
+5, 模板的嵌套
+//index1.html
+{{template "index2.html"}}
+6, 定义模板
+//定义模板model
+{{define "model"}}  
+	//...
+	{{template "content"}}  //包含模板content
+{{end}}
+//定义模板content
+{{define "content"}}
+	//...
+{{end}}
+//后端执行模板改为
+t.ExecuteTemplate(w, "model", "zhao")
+	
+	
+	
+	
 	
 
 
