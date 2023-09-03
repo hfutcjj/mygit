@@ -117,6 +117,15 @@ mv a.txt b.txt  //重命名
 ln src hlink  //硬链接
 ln -s src slink  //软链接
 两者区别: 删除源文件后, 软链接失效, 但硬链接仍然有效;
+26)不同系统之间的文件传递
+//windows与linux
+通过ftp客户端
+//linux与linux
+scp f1.txt cjj@192.168.10.3:/home/d1  //本地linux向远程linux传递文件
+scp -r d1 cjj@192.168..10.3:/home/d2  //本地linux向远程linux传递目录
+scp cjj@192.168.10.3:/home/f1.txt /root/d1  //从远程linux复制文件到本地
+scp -r cjj@192.168.10.3:/home/d1 /root/d2  //从远程linux复制目录到本地
+注: 远程主机可加用户名cjj, 也可以省略用户名cjj, 系统会提示你输入用户名和密码;
 
 
 >>Linux特殊字符
