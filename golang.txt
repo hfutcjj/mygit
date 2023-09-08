@@ -1464,7 +1464,22 @@ t.Execute(w, map[string]interface{
 t.ExecuteTemplate(w, "model", "zhao")
 	
 	
-	
+>>Cookie
+1, cookie的运行原理
+1)第一次向服务器发送请求时在服务器端创建cookie
+2)在服务器端创建的cookie以响应头的方式发送给浏览器
+3)以后再发送请求浏览器就会携带该cookie
+4)服务器得到cookie之后根据cookie的信息来区分不同的用户
+2, 创建与使用Cookie
+1)定义cookie
+ck := http.Cookie{
+ Name: "username",
+ Value: "cjj",
+}
+2)设置cookie
+w.Header().Set("Set-Cookie", ck1.String())
+w.Header().Add("Set-Cookie", ck2.String())
+或 http.SetCookie(w, &ck)	
 	
 	
 

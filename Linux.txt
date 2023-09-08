@@ -194,22 +194,6 @@ which ls  //输出 /usr/bin/ls
 如果修改了环境变量PATH, 则命令就找不到了;
 
 
->>文件打包与压缩
-1, tar结合gzip进行打包与压缩, 扩展名.tar.gz;
-tar用于打包(.tar), gzip用于压缩(.gz);
-2, 压缩命令: 
-tar zcvf tomcat.tar.gz /usr/local/tomcat
-3, 解压缩命令:
-tar zxvf tomcat.tar.gz [-C /usr/local/tomcat]  //可选项表示解压缩后的目录, 否则存放到当前目录
-其中, tar常用可选项:
-z: 通过gzip压缩或解压;
-c: 创建新的.tar.gz文件;
-v: 显示执行过程;
-f: 指定压缩文件名称;
-x: 解压缩.tar.gz文件;
--C 指定解压缩目录;
-
-
 >>安装与卸载应用程序
 1, 安装应用程序的两种方式:
 1)rpm与yum: 软件包管理器, 相当于应用程序安装文件的执行者;
