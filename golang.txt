@@ -1465,23 +1465,53 @@ t.ExecuteTemplate(w, "model", "zhao")
 	
 	
 >>Cookie
+cookie是在浏览器端保存用户信息;
 1, cookie的运行原理
 1)第一次向服务器发送请求时在服务器端创建cookie
 2)在服务器端创建的cookie以响应头的方式发送给浏览器
 3)以后再发送请求浏览器就会携带该cookie
 4)服务器得到cookie之后根据cookie的信息来区分不同的用户
-2, 创建与使用Cookie
+2, 创建与使用cookie
 1)定义cookie
 ck := http.Cookie{
- Name: "username",
- Value: "cjj",
+	Name: "username",
+	Value: "cjj",
+	MaxAge: 3600,  //过期时间, 单位为秒
 }
+注: 如果没有设置过期时间, 则cookie默认是会话级别, 即关闭浏览器就失效;
 2)设置cookie
-w.Header().Set("Set-Cookie", ck1.String())
-w.Header().Add("Set-Cookie", ck2.String())
+w.Header().Set("Set-Cookie", ck1.String())  //第一个cookie使用Set
+w.Header().Add("Set-Cookie", ck2.String())	//第二个cookie使用Add添加
 或 http.SetCookie(w, &ck)	
-	
-	
+3)读取cookie
+cookies := r.Header["Cookie"]  //所有cookie
+或 cookie := r.Cookie("username")  //得到一个具体的cookie
+3, cookie的用途
+1)免登录
+2)广告推荐
+4, cookie的局限
+1)浏览器对cookie数量的数量有限制;
+2)cookie只能保存字符串的值;
+3)cookie不安全;
+
+
+>>Session
+session是在服务器端保存用户信息;
+1, session的运行原理
+1)第一次向服务器发送请求时创建session, 给他设置一个唯一ID(可以通过uuid生成)
+2)将session的ID值作为cookie发送给浏览器
+3)以后再发送请求浏览器就会携带该cookie
+4)服务器获取cookie并根据它的值找到服务器中对应的session, 也就知道是哪个用户了
+
+
+
+
+
+
+
+
+
+
 
 
 
