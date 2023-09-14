@@ -249,6 +249,10 @@ tree [-d] /usr/local  //指定目录下的
 ps -ef | grep vim  //筛选包含字符串"vim"的进程
 5,shutdown -r now
 立即重启Linux;
+6, 在命令的后面添加一个 & 符号, 就成为后台进程
+ping www.baidu.com >> cao.txt &
+7, 防止后台进程被挂起
+nohup ./uhome-website-backend &
 
 
 >>应用服务化
