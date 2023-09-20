@@ -198,12 +198,9 @@ const (
 int8, int16, int32, int64, uint8, uint16, uint32, uint64
 2)浮点类型
 float32, float64
-3)复数类型
-complex64, complex128
-4)其他
+3)其他
 int(=int32或int64), uint(=uint32或uint64), 
-byte(=uint8), rune(=int32), 
-uintptr(无符号整型, 用于存放一个指针)
+byte(=uint8), rune(=int32)
 注: byte可表示一个ascii字符, 如 var c byte = 65 或 var c byte = '\x41';
 rune可表示一个utf-8字符, 如汉字 var c rune = '佳';
 2, 布尔类型
@@ -1081,7 +1078,7 @@ for {
 }
 4, 文件三种操作方式的对比
 1)普通的小文件并且对内容没有太多操作的, 可以采用整体读取, 速度较快;
-2)大文件, 或者对文件内容又操作的, 采用分片读取或逐行读取更合适;
+2)大文件, 或者对文件内容有操作的, 采用分片读取或逐行读取更合适;
 5, 目录与文件的创建、删除、重命名
 1)创建
 os.Mkdir("./a", 0666)  //创建单级目录
@@ -1266,6 +1263,7 @@ rwMutex.RLock() / rwMutex.RUnlock()  //读可并发
 //DOS基本操作
 1, 目录操作
 dir 			 //查看当前目录下的直接子目录和直接子文件
+cd 				//查看当前目录
 cd test或..或/   //切换到test目录或上级目录或根目录
 mkdir(或md) d1 d2 d3  //创建目录, 多个目录用空格隔开
 rmdir(或rd) d1		  //删除空目录
@@ -1273,9 +1271,10 @@ rmdir /s d1  		  //删除非空目录, 会先询问
 rmdir /s/q 		      //删除非空目录, 不询问
 2, 文件操作
 cd > my.txt		//创建空文件
-echo hello world > my.txt  //写内容到文件, 如果文件不存在则先创建
+echo hello world > my.txt  //覆盖写, 写内容到文件, 如果文件不存在则先创建
+echo hello world >> my.txt //追加写
 del my.txt  //删除文件
-del *.txt   //删除所有文件文件
+del *.txt   //删除所有文本文件
 del d2/*	//删除d2文件夹里的所有文件
 copy my.txt d2  //将my.txt文件拷贝到d2文件夹
 move d2\my.txt d3  //移动文件
