@@ -187,7 +187,26 @@ trample 踩伤, 践踏
 soda 苏打
 tattoo 纹身
 dessert 甜点
-
+squirrel 松鼠
+blow up 炸毁
+funeral 葬礼
+mechanic 技工
+flu 流感
+humid 潮湿的
+mask 面具
+pillow 枕头
+tore 撕开
+tore down 拆除
+concrete 混凝土, 具体的
+pit 深坑, 矿井
+penguin 企鹅
+vaccine 疫苗
+pregnant 怀孕的
+tough 艰难的
+surgery 外科手术
+check-up 检查, 体检
+carrier 载体
+vet 兽医
 
 
 
