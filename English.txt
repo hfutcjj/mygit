@@ -207,6 +207,30 @@ surgery 外科手术
 check-up 检查, 体检
 carrier 载体
 vet 兽医
+rail 铁轨
+pratical 实用的, 实践课
+feat 壮举
+soar 翱翔
+propeller 螺旋桨
+carriage 马车
+hybrid 混合的, 混合物
+teleport 远距离传送
+bite 咬
+tropical 热带的
+pineapple 菠萝
+sauce 酱汁
+chain 链条, 连锁店
+topping 配料
+ramen 拉面
+ham 火腿
+evolve 进化
+reproduce 繁殖
+populate 居住于
+upright 直立的
+famine 饥荒
+flee 逃跑
+ape 猿
+
 
 
 
