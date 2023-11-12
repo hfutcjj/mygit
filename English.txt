@@ -230,7 +230,34 @@ upright 直立的
 famine 饥荒
 flee 逃跑
 ape 猿
-
+condensation 凝结
+evaporate 蒸发
+absorb 吸收
+essential 基本的
+towel 毛巾
+puddle 水坑
+sleet 雨夹雪
+soak 浸泡
+hail 冰雹
+sow 播种
+reap 收获
+mature 成熟的
+nutrition 营养
+cultivate 培养, 耕种
+fertile 肥沃的
+recycle 回收利用
+stinky 恶臭的, 令人讨厌的
+drain 耗尽, 排水, 下水道
+crucial 关键的
+expose 暴露
+bare 裸露的
+hemisphere 半球
+orbit 轨道, 沿轨道运行
+ellipse = oval 椭圆
+pros and cons 利弊
+slightly 稍微地
+short-term/long-term 短期的/长期的
+year-round 全年的
 
 
 

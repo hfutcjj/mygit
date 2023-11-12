@@ -961,6 +961,21 @@ select e.eno, e.avg_sal, d.*
 		select eno, avg(salary) avg_sal from employee group by dno order by avg_sal limit 0
 	) e
 	join department d on e.dno = d.dno;
+19, 查询SC表的课程ID、最高分、最低分、平均分、选修人数、优秀率、良好率、中等率、及格率:
+select 
+	cid,
+	max(score) as 最高分,
+	min(score) as 最低分,
+	avg(score) as 平均分,
+	count(1) as 选修人数,
+	sum(case when score >= 90 and score <= 100 then 1 else 0 end) / count(1) as 优秀率,
+	sum(case when score >= 80 ans score < 90 then 1 else 0 end) / count(1) as 良好率,
+	sum(case when score >= 70 and score < 80 then 1 else 0 end) / count(1) as 中等率,
+	sum(case when score >= 60 then 1 else 0 end) / count(1) as 及格率
+from SC
+group by cid;
+
+
 
 
 >>索引高级

@@ -1283,6 +1283,27 @@ cls  //清屏
 exit //退出
 
 
+//命令行参数
+1, os.Args
+所有命令行参数组成的数组, 以空格分隔;
+go run main.go -u cjj -h uhome
+os.Args: ['main.go', '-u', 'cjj', '-h', 'uhome']
+2, 使用flag包对命令行进行解析
+var (
+	user string
+	host string
+	port int
+)
+flag.StringVar($user, "u", "", "")  //第三个参数为默认值, 第四个参数为说明
+flag.StringVar($host, "h", "", "")
+flag.IntVar(&port, "port", 3306, "")
+flag.Parse()  //*必须调用该方法才能解析生效
+fmt.Printf("user: %s, host: %s, port: %d\n", user, host, port)
+运行: 
+go run main.go -u cjj -h uhome
+
+
+
 >>请求与响应
 1, http是无状态协议，也就是服务端不保留连接的相关信息;
 2, request格式
