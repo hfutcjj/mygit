@@ -995,6 +995,14 @@ select
 		end as rank
 	from sc, (select @rank:=0, @sco:=null) as t 
 	order by score;
+21, 按各科成绩排序并显示排名, 不同科目都从1开始排:
+select 
+	sc.*,
+	@rank:=if(@cid=cid, if(@sco=score, @rank, @rank+1), 1) as rank,
+	@sco:=score,
+	@cid:=cid
+from sc, (select @rank:=0, @sco:=null, @cid:=null) as t
+order by cid, score desc;
 
 
 
