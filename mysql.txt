@@ -974,7 +974,27 @@ select
 	sum(case when score >= 60 then 1 else 0 end) / count(1) as 及格率
 from SC
 group by cid;
-
+20, 按各科成绩排序, 并显示排名, 分数相同时名次也相同:
+select 
+	sid, 
+	cid, 
+	score,
+	case when @sco=score then @rank
+		else @rank:=@rank+1 
+		end as rank,
+	@sco:=score
+	from sc, (select @rank:=0, @sco:=null) as t 
+	order by score;
+或者, 为了在查询的结果中不显示新引入的 @sco:=score 列, 可以写成:
+select 
+	sid,
+	cid,
+	score,
+	case when @sco=score then @rank
+		when @sco:=score then @rank:=@rank+1
+		end as rank
+	from sc, (select @rank:=0, @sco:=null) as t 
+	order by score;
 
 
 

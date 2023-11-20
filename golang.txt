@@ -1161,62 +1161,54 @@ ch := make(<-chan int, 3)
 var ch chan<-int = make(chan int, 3)
 2)管道用于协程的同步与通信举例
 打印1-1000内的素数, 分为1个存数协程、4个取数并判断是否为素数的协程、1个打印素数协程:
-var wg sync.WaitGroup
-func main() {  //主线程
-	inChan := make(chan int)  //用于存储1-1000原始数据
-	primeChan := make(chan int)  //用于存储所有素数
-	exitChan := make(chan bool, 4)  //用于标记4个判断素数的协程是否执行完毕, 从而关闭primeChan
-	wg.Add(1)
-	go putNum(inChan)
-	for i := 0; i < 4; i++ {
-		wg.Add(1)
-		go primeNum(inChan, primeChan, exitChan)
+func main() {  
+	var originChan = make(chan int, 100)  //存储原始数据
+	var primeChan = make(chan int, 20)  //存储素数
+	var finishChan = make(chan bool, 4)  //每个协程完成的标记, 用于何时关闭primeChan
+	var exitChan = make(chan bool , 1)  //退出标记, 用于阻塞main主线程, 等待其他协程完成
+	go putNum(originChan)
+	for i := 1; i <= 4; i++ {
+		go calcPrime(originChan, primeChan, finishChan)
 	}
-	wg.Add(1)
-	go printNum(primeChan)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for i := 0; i < 4; i++ {
-			<- exitChan
+	go printPrime(primeChan, exitChan)
+	go func() {  //此协程用于关闭primeChan
+		for i := 1; i <= 4; i++ {
+			<- finishChan
 		}
 		close(primeChan)
 	}()
-	wg.Wait()
-	fmt.Println("执行完毕...")
+	for {  //此循环用于阻塞main主线程, 等待其他协程完成
+		if _, ok := <- exitChan; !ok {
+			break
+		}
+	}
+	fmt.Println("main end")
 }
-func putNum(inChan chan<-int) {  //存数协程
-	defer wg.Done()
+func putNum(originChan chan int) {  //存数
 	for i := 1; i <= 1000; i++ {
-		inChan <- i
+		originChan <- i
 	}
-	close(inChan)
+	close(originChan)
 }
-func primeNum(inChan <-chan int, primeChan chan<-int, exitChan chan<-bool) {  //取数并判断是否为素数的协程
-	defer wg.Done()
-	for num := range inChan {
-		flag := true
-		for i := 2; i < num; i++ {
-			if num % i == 0 {
-				flag = false
-				break
-			}
-		}
-		if flag {
-			primeChan <- num
+func calcPrime(originChan chan int, primeChan chan int, finishChan chan bool) {
+	//计算素数
+	for v := range originChan {
+		if isPrime(v) {
+			primeChan <- v
 		}
 	}
-	exitChan <- true
-	//也可以在此处通过判断exitChan的长度来关闭primeChan
-	//if(len(exitChan) == 4) {
-	//	close(primeChan)
+	finishChan <- true
+	//也可以通过判断finishChan的长度等于4时关闭primeChan
+	//if len(finishChan) == 4 {
+		//close(primeChan)
 	//}
 }
-func printNum(primeChan <-chan int) {  //打印素数的协程
-	defer wg.Done()
+func printPrime(primeChan chan int, exitChan chan bool) {  //打印素数
 	for v := range primeChan {
-		fmt.Println(v, " is prime")
+		fmt.Printf("%d is prime\n", v)
 	}
+	exitChan <- true
+	close(exitChan)
 }
 4, select多路复用
 同时从多个管道并发接收数据, 有两种方法:
