@@ -117,10 +117,14 @@ mv a.txt b.txt  //重命名
 ln src hlink  //硬链接
 ln -s src slink  //软链接
 两者区别: 删除源文件后, 软链接失效, 但硬链接仍然有效;
-26)不同系统之间的文件传递
-//windows与linux
+26)alias //给复杂命令取别名
+alias mycmd='tail -f /workspace/inverter-cc/nohup.out'
+
+
+>>不同系统之间的文件传递
+1, windows与linux
 通过ftp客户端
-//linux与linux
+2, linux与linux
 scp f1.txt cjj@192.168.10.3:/home/d1  //本地linux向远程linux传递文件
 scp -r d1 cjj@192.168..10.3:/home/d2  //本地linux向远程linux传递目录
 scp cjj@192.168.10.3:/home/f1.txt /root/d1  //从远程linux复制文件到本地

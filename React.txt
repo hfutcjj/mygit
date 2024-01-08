@@ -280,44 +280,32 @@ const show = () => {
 
 
 >>Context: 用于祖先组件给子孙组件传递数据
-import {createContext} from 'react';
-//1, 声明: 创建一个保存用户名的上下文容器
-const UsernameContext = createContext();
+1, createContext方法创建一个上下文对象
+const MsgContext = createContext(null);
+2, 在顶层组件通过Provider组件提供数据
 function A(){
-	const [username, setUsername] = useState('Tom')
-	const [age, setAge] = useState(20)
+	const msg = "this is A component."
 	return (
 		<>
-			<h2>我是A组件</h2>
-			//2, 传: 给B组件绑定数据, 以后B以及B的子孙组件都能拿到这个数据
-			<UsernameContext.Provider value={{username: username, age: age}}>
+			<MsgContext.Provider value={msg}>
 				<B/>
-			</UsernameContext.Provider>
+			</MsgContext.Provider>
 		</>
 	)
 }
 function B() {
 	return (
 		<>
-			<h2>我是B组件</h2>
 			<C/>
 		</>
 	)
 }
+3, 在底层组件通过useContext接收数据
 function C() {
+	const msg = useContext(MsgContext)
 	return (
 		<>
-			<h2>我是C组件</h2>
-			<div>从A组件接收到的数据: 
-				//3, 取: 后代组件取数据
-				<UsernameContext.Consumer>
-					{
-						value => {
-							return `用户名: ${value.username}, 年龄: ${value.age}`;
-						}
-					}
-				</UsernameContext.Consumer>
-			</div>
+			<div>从A组件接收到的数据: {msg}</div>
 		</>
 	)
 }

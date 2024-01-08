@@ -1516,6 +1516,37 @@ session是在服务器端保存用户信息;
 4)服务器获取cookie并根据它的值找到服务器中对应的session, 也就知道是哪个用户了
 
 
+>>socket编程
+1, server.go
+func main() {
+	ln, err := net.Listen("tcp", ":8080")  //监听
+	if err != nil {
+		//监听失败
+	}
+	for {
+		conn, err := ln.Accept() //等待来自客户端的连接
+		if err != nil {
+			//本次连接失败
+			continue
+		}
+		go handleConn(conn) //处理本次连接
+	}
+}
+func handleConn(conn net.Conn) {
+	defer conn.Close()
+	var s = make([]byte, 1024)
+	n, err := conn.Read(s)
+	fmt.Println("接收到: ", string(s))
+}
+2, client.go
+func main() {
+	conn, err := net.Dial("tcp", ":8080")  //请求连接
+	if err != nil {
+		//请求连接失败
+		return 
+	}
+	conn.Write([]byte("hello world"))
+}
 
 
 
