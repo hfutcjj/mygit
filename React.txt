@@ -248,11 +248,11 @@ setCount()的两种写法:
 2, useEffect()  //生命周期钩子
 import {useEffect} from 'react';
 相当于componentDidMount()、componentDidUpdate()、componentWillUnmount()的组合, 有如下几种形式:
-1)没有第二个参数, 表示监测所有状态值, 即在组件挂载与每次更新时都调用
+1)没有第二个参数, 在组件挂载与每次更新时都调用
 useEffect(() => {
 	//...
 })
-2)第二个参数为空数组, 表示不监测任何状态值, 即仅在组件挂载时调用
+2)第二个参数为空数组, 仅在组件挂载时调用
 useEffect(() => {
 	//...
 }, [])

@@ -453,7 +453,7 @@ div.child{position: absolute; left: 50%; top: 50%;
 <var>, <cite>, <code>
 3, 内联块状元素(inline-block)
 <img>, <input>
-注：内联元素可以设置内边距和左右外边距，但不能设置宽度高度和上下外边距;
+注：内联元素只能设置左右内边距与左右外边距, 其他的如宽度、高度、上下内外边距无效;
 
 
 >>两个相邻的元素边框重叠时，可设其中一个元素的外边距为负值来消除重叠，如：
@@ -792,31 +792,29 @@ transform-style: preserve-3d;
 .child{
 	flex: 0 1 200px;
 }
-常用属性如下: 
-1, 父元素 display: flex 
-当显式设置的子元素宽度和加起来超过了父元素的宽度, 会对子元素按比例压缩, 并不会换行;
-2, 父元素 flex-direction
-主轴方向: row(默认) / column / row-reverse / column-reverse;
-3, 父元素 justify-content
-子元素在主轴上的排列方式: flex-start(默认)/flex-end/center/space-between/space-around;
-4, 父元素 align-items
-子元素在侧轴上的对齐方式(与主轴垂直的轴): stretch(默认)/flex-start/flex-end/center/baseline;
-5, 父元素 flex-wrap
-设置子元素的宽度超出弹性容器时是否换行: nowrap(默认)/wrap;
-6, 子元素 flex
-flex属性是flex-grow、flex-shrink、flex-basis的简写, 默认值为 0 1 auto, 后两个属性可选;
-flex的两个快捷值: auto(1 1 auto) 和 none(0 0 auto);
-flex: 1 表示等分剩余空间;
-1)flex-grow
-控制子元素的放大显示(分配剩余空间), 0表示不放大, n表示将剩余空间按比例n分配, 默认值为0, 默认不放大;
-公式：要分配的剩余空间 = 剩余空间 * ( 所有项目的flex-grow之和 >= 1 ? 1 : 所有项目的flex-grow之和 );
-公式：每个项目分配的剩余空间 = 要分配的剩余空间 * ( 单个项目flex-grow / 所有项目的flex-grow之和 );
-2)flex-shrink
-控制子元素的缩小显示, n表示空间不够时所有项目按比例n缩小, 0表示该子元素不缩小, 默认值为1, 默认等比缩小;
-公式：要压缩的空间 = 超出空间 * ( 所有项目的flex-shrink之和 >= 1 ? 1 : 所有项目的flex-shrink之和 );
-公式：每个项目压缩的空间 = 要压缩的空间 * ( 单个项目flex-shrink / 所有项目的flex-shrink之和 );
-3)flex-basis
-子元素占据主轴空间的值, 默认值auto表示当前默认的大小;
+1, 用于弹性容器的属性
+1)flex-direction: row(default) | column;
+设置主轴;
+2)justify-content: flex-start(default) | flex-end | center | 
+	space-between | space-around | space-evenly;
+设置元素在主轴的对齐方式;
+3)align-items: stretch(default) | flex-start | flex-end | center;
+设置元素在侧轴的对齐方式;
+4)flex-wrap: nowrap(default) | wrap;
+设置当元素总宽度过大时是否换行;
+5)gap: 0(default) | 数值;
+设置元素之间的间距, 替代margin;
+2, 用于子元素的属性
+1)flex-grow: 0(default) | 数值;
+是否允许拉升, 默认不拉升;
+2)flex-shrink: 1(default) | 数值;
+是否匀速收缩, 默认自动收缩;
+3)flex-basis: auto(default) | 数值;
+元素的宽度, 替代width;
+4)flex: flex-grow flex-shrink flex-basis;
+简写形式, 常用的缩写有: auto(1 1 auto), none(0 0 auto);
+5)align-self: auto(default) | flex-start | flex-end | center;
+重写某个子元素在侧轴的对齐方式;
 
 
 >>弹性布局实现水平居中与垂直居中
