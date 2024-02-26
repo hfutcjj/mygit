@@ -793,16 +793,16 @@ transform-style: preserve-3d;
 	flex: 0 1 200px;
 }
 1, 用于弹性容器的属性
-1)flex-direction: row(default) | column;
+*1)flex-direction: row(default) | column;
 设置主轴;
-2)justify-content: flex-start(default) | flex-end | center | 
+*2)justify-content: flex-start(default) | flex-end | center | 
 	space-between | space-around | space-evenly;
 设置元素在主轴的对齐方式;
-3)align-items: stretch(default) | flex-start | flex-end | center;
+*3)align-items: stretch(default) | flex-start | flex-end | center;
 设置元素在侧轴的对齐方式;
-4)flex-wrap: nowrap(default) | wrap;
+*4)flex-wrap: nowrap(default) | wrap;
 设置当元素总宽度过大时是否换行;
-5)gap: 0(default) | 数值;
+*5)gap: 0(default) | 数值;
 设置元素之间的间距, 替代margin;
 2, 用于子元素的属性
 1)flex-grow: 0(default) | 数值;
@@ -811,10 +811,48 @@ transform-style: preserve-3d;
 是否匀速收缩, 默认自动收缩;
 3)flex-basis: auto(default) | 数值;
 元素的宽度, 替代width;
-4)flex: flex-grow flex-shrink flex-basis;
+*4)flex: flex-grow flex-shrink flex-basis;
 简写形式, 常用的缩写有: auto(1 1 auto), none(0 0 auto);
-5)align-self: auto(default) | flex-start | flex-end | center;
+*5)align-self: auto(default) | flex-start | flex-end | center;
 重写某个子元素在侧轴的对齐方式;
+
+
+>>css grid
+弹性容器和弹性子元素, 与flex完全相同;
+.parent{
+	display: grid;
+}
+1, 用于弹性容器的属性
+*1)grid-template-columns: <size>;
+grid-template-rows: <size>;
+指定每列的宽度用来分列(分行类似), 如:
+200px 100px 200px;
+200px 100px 1fr;  //fr是自动伸缩
+200px 1fr 2fr; //伸缩的比例
+auto 1fr 2fr;  //auto: 符合内容的宽度或伸缩
+repeat(3, 100px);
+repeat(2, 200px 1fr);
+*2)gap: row-gap column-gap;
+用来指定行间距或列间距, 如 gap: 20px 10px;
+3)justify-content: start(默认) | center | end | space-between | ...; 
+align-content: start(默认) | center |end | space-between | ...;
+当弹性容器还有剩余空间时, 用来对弹性网格进行对齐;
+注: 只有当弹性容器比网格本身更大时, 该属性才有效;
+4)justify-items: stretch(默认) | start | center | end;
+align-items: stretch(默认) | start | center | end;
+设置每个弹性子元素在对应单元格内的对齐方式;
+2, 用于子元素的属性
+1)grid-column: 2 | 2 / 4 | 2 / span 2 | 2 / -1;
+grid-row: 同上;
+指定子元素的具体位置, 一般用于跨越多行或多列;
+属性值说明如下:
+2: 第二列;
+2 / 4: 跨越2、3两列;
+2 /span 3: 同上;
+2 / -1: 从第2列一直到最后;
+2)justify-self: stretch(默认) | start | center | end;
+align-self: stretch(默认) | start | center | end;
+设置某个子元素在对应单元格内的对其方式;
 
 
 >>弹性布局实现水平居中与垂直居中

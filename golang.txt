@@ -849,7 +849,7 @@ type Person struct {
 }
 p := Person{"zhao", 32,}
 fmt.Printf("name: %s, age: %d", p.string, p.int)
-7, 嵌套结构体--实现组合和继承
+7, 嵌套匿名结构体--实现继承
 //定义结构体以及方法
 type Person struct {
 	Name string
@@ -874,6 +874,7 @@ p.Major = "maths"
 p.say()
 p.study()
 注: golang中没有继承, 可以使用嵌套结构体来实现继承;
+注: 必须嵌套匿名结构体才属于继承, 否则属于普通的结构体嵌套;
 8, 可以为任意类型添加方法
 type MyInt int
 func (m MyInt) IsZero() bool {
