@@ -842,7 +842,7 @@ align-content: start(默认) | center |end | space-between | ...;
 align-items: stretch(默认) | start | center | end;
 设置每个弹性子元素在对应单元格内的对齐方式;
 2, 用于子元素的属性
-1)grid-column: 2 | 2 / 4 | 2 / span 2 | 2 / -1;
+*1)grid-column: 2 | 2 / 4 | 2 / span 2 | 2 / -1;
 grid-row: 同上;
 指定子元素的具体位置, 一般用于跨越多行或多列;
 属性值说明如下:

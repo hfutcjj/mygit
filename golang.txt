@@ -1249,8 +1249,8 @@ func fn() { //协程的函数
 2)读写锁: sync.RWMutex
 读写锁仅对写操作互斥, 多个协程的读操作可以并发执行;
 var rwMutex sync.RWMutex
-rwMutex.Lock() / rwMutex.Unlock()  //写互斥
-rwMutex.RLock() / rwMutex.RUnlock()  //读可并发
+rwMutex.Lock() / rwMutex.Unlock()  //读写都上锁
+rwMutex.RLock() / rwMutex.RUnlock()  //仅对写上锁, 可并发读
 
 
 //DOS基本操作
