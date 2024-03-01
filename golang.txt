@@ -1104,7 +1104,8 @@ golang在主线程(main)中开启多个协程;
 同一时间多个线程同时执行, 叫并行, 如多核CPU上的多任务并行执行;
 同一时间只有一个线程执行, 多个线程分片轮流执行, 叫并发, 如单核CPU上的多任务并发执行;
 2, main主线程与其他线程的同步
-sync.WaitGroup 可以实现主线程等待协程执行完毕;
+有以下三种方式:
+1)sync.WaitGroup 可以实现主线程等待协程执行完毕;
 Add(1)  //开启新协程时, 将WaitGroup的计数器加1
 Done()  //一个协程结束时, 将WaitGroup的计数器减1, 同 Add(-1)
 Wait()  //阻塞直到WaitGroup的计数器为0, 用来等待所有协程执行结束
@@ -1120,6 +1121,9 @@ func fn() {
 	defer wg.Done()
 	//...
 }
+*2)使用管道来实现主线程与协程的同步;
+3)使用runtime.Gosched()来让主进程让出时间片;
+协程中使用runtime.Goexit()来让协程退出;
 3, 协程的通信与同步
 1)管道
 协程之间的通信与同步是通过管道来完成的;
@@ -1142,7 +1146,7 @@ close(ch)
 已关闭的管道, 不能向其发送数据, 可以从其读取数据;
 //从管道读取数据
 v := <- ch  
-v, ok := <- ch  //ok为false表示管道已关闭, 此时v为0
+v, ok := <- ch  //读取一个已关闭的空管道, 会返回 0 false
 注: 从空管道读取数据, 会引起阻塞;
 //遍历管道
 var ch = make(chan int, 10)
@@ -1154,12 +1158,12 @@ for v := range ch {
 	fmt.Println(v)
 }
 //单向管道
-var ch chan<-int  //只写管道(send-only channel)
-ch := make(chan<-int, 3)
+var ch chan<- int  //只写管道(send-only channel)
+ch := make(chan<- int, 3)
 var ch <-chan int  //只读管道(receive-only channel)
 ch := make(<-chan int, 3)
 注: 双向管道可以赋值给单向管道, 反之则不可以;
-var ch chan<-int = make(chan int, 3)
+var ch chan<- int = make(chan int, 3)
 2)管道用于协程的同步与通信举例
 打印1-1000内的素数, 分为1个存数协程、4个取数并判断是否为素数的协程、1个打印素数协程:
 func main() {  
