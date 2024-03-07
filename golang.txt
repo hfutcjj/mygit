@@ -1090,6 +1090,8 @@ os.Remove("./a")  //删除目录或文件
 os.RemoveAll("./a/b/c")  //删除多级目录
 3)重命名
 os.Rename("./src.txt", "./dest.txt")
+6, 获取文件的属性信息
+os.Stat(fileName) //得到文件信息的结构体
 
 
 >>协程(goroutine)
@@ -1218,26 +1220,26 @@ func printPrime(primeChan chan int, exitChan chan bool) {  //打印素数
 4, select多路复用
 同时从多个管道并发接收数据, 有两种方法:
 1)定义多个协程分别从每个管道接收数据;
-2)使用select多路复用
-ch1 := make(chan int, 10)
-for i:= 0; i < 10; i++ {
-	ch1 <- i
-}
-ch2 := make(chan string, 5)
-for i := 0; i < 5; i++ {
-	ch2 <- fmt.Sprintf("hello-%d", i)
-}
-for {
-	select {
-	case v := <- ch1:
-		fmt.Println(v)
-	case v := <- ch2:
-		fmt.Println(v)
-	default:
-		return  //所有数据读取完毕, 必须return, 否则进入死循环
+2)使用select多路复用, 打印fabonacci数列
+func main() {
+	ch := make(chan int)
+	quit := make(chan boo)
+	go func() {
+		for i := 0; i < 10; i++ {
+			fmt.Println(<- ch)
+		}
+		quit <- true
+	}()
+	x, y := 1, 1
+	for {
+		select {
+			case ch <- x:
+				x, y = y, x + y
+			case <- quit:
+				return
+		}
 	}
 }
-注: 使用select获取管道里的数据不需要先关闭管道, 但写完就关闭是个好习惯;
 5, 锁
 1)互斥锁: sync.Mutex
 互斥锁用于解决并发编程中对共享资源的访问;
@@ -1408,6 +1410,12 @@ http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("v
 当请求以/static开头的路径时, 会去views/static目录下查找对应文件;
 
 
+>>使用http获取其他url的信息
+resp, _ := http.Get("http://www.baidu.com")
+resp.Body.Read(buf)
+注: 可用于爬取其他网站的信息;
+
+
 >>处理请求和响应
 1, 获取请求信息
 1)r.Method 	 //请求方法
@@ -1522,36 +1530,85 @@ session是在服务器端保存用户信息;
 
 
 >>socket编程
-1, server.go
+1, 步骤: 
+ln, err := net.Listen("tcp", ":8080")  //服务端监听指定端口
+conn, err := ln.Accept()  //服务端接收客户端的连接
+conn, err := net.Dial("tcp", ":8080")  //客户端请求连接
+conn.Read([]byte s)  //服务端和客户端都可以通过Read()读取数据
+conn.Write([]byte s) //服务器和客户端都可以通过Write()发送数据
+2, 示例
+1)server.go
+//监听端口
 func main() {
-	ln, err := net.Listen("tcp", ":8080")  //监听
-	if err != nil {
-		//监听失败
+	var (
+		ln net.Listener
+		conn net.Conn
+		err error
+	)
+	//监听端口
+	if ln, err = net.Listen("tcp", ":8080"); err != nil {
+		fmt.Println("Listen error:", err)
+		return
 	}
+	defer ln.Close()
+	//接收连接请求
 	for {
-		conn, err := ln.Accept() //等待来自客户端的连接
-		if err != nil {
-			//本次连接失败
-			continue
+		if conn, err = ln.Accept(); err != nil {
+			fmt.Println("Accept error:", err)
+			return
 		}
-		go handleConn(conn) //处理本次连接
+		//并发处理每个请求
+		go handleConn(conn)
 	}
 }
 func handleConn(conn net.Conn) {
 	defer conn.Close()
-	var s = make([]byte, 1024)
-	n, err := conn.Read(s)
-	fmt.Println("接收到: ", string(s))
-}
-2, client.go
-func main() {
-	conn, err := net.Dial("tcp", ":8080")  //请求连接
-	if err != nil {
-		//请求连接失败
-		return 
+	//获取客户端地址
+	addr := conn.RemoteAddr().String()
+	fmt.Println("Accept new Connection from", addr)
+	//读取客户端的请求
+	for {
+		buf := make([]byte, 1024)
+		n, _ := conn.Read(buf)
+		data := string(buf[:n])
+		fmt.Println("Received data from client:", data)
+		if strings.ToLower(data) == "exit" {  //客户端发送exit代表终止连接
+			return 
+		}
+		//给客户端发送数据
+		newData := "Hello, " + strings.ToUpper(data)
+		conn.Write([]byte(newData))
 	}
-	conn.Write([]byte("hello world"))
 }
+2)client.go
+func main() {
+	var (
+		conn net.Conn
+		err error
+	)
+	//请求连接
+	if conn, err = net.Dial("tcp", ":8080"); err != nil {
+		fmt.Println("Connect error:", err)
+		return
+	}
+	defer conn.Close()
+	//发送数据
+	for {
+		fmt.Print("Enter your data: ")
+		var data string
+		fmt.Scanln(&data)
+		conn.Write([]byte(data))
+		if strings.ToLower(data) == "exit" { //输入exit代表退出
+			return 
+		}
+		//接收服务器的数据
+		buf := make([]byte, 1024)
+		n, _ := conn.Read(buf)
+		fmt.Println("Recieved data from server:", string(buf[:n]))
+	}
+}
+
+
 
 
 

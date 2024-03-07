@@ -1,18 +1,8 @@
->>CentOS(社区企业版操作系统)
-Linux的免费发行版，与之对应的收费版是 Red Hat Enterprise Linux;
-
-
 >>VMware Workstation虚拟机
 通过该软件在windows系统上安装Linux;
 需要查看是否开启了CPU虚拟化, 查看方法: 任务管理器 -> 性能 -> 虚拟化, 如果没有开启需要先开启;
 开启CPU虚拟化: BIOS -> config -> Virtualization -> Enabled;
 然后通过VMware来安装CentOS;
-
-
->>Linux与Windows的区别
-1, Linux的文件名严格区分大小写;
-2, Linux不关心文件后缀, 文件的类型通过权限位(-/d)来表示, 可通过ll命令查看;
-3, Linux的一切皆文件, 包括硬件设备, 硬件设备必须挂载之后才能使用;
 
 
 >>挂载(mount)
@@ -32,18 +22,6 @@ mount dev/disk1 /usr/download
 disk1 500G
 
 
->>linux中常用的扩展名
-1, 压缩文件
-.gz, .bz2, .zip, .tar.gz, .tar.bz2, .tgz等;
-2, 软件安装包
-.rpm;
-3, 脚本文件
-.sh, .py, .java等;
-4, 网页相关文件
-.html, .css, .js, .jpg等;
-注: Linux中是不需要扩展名的, 扩展名仅仅是为了管理员的可读性;
-
-
 >>Linux系统目录
 .			当前目录
 ..			上级目录
@@ -54,7 +32,7 @@ disk1 500G
 /home 	 	普通用户的家目录, 如/home/zhao就是用户zhao的家目录
 /bin 		二进制命令
 /sbin 		超级用户可执行命令(系统管理命令)
-/usr 		系统软件资源(Unix Software Resource), 系统中安装的软件大多存放在这里
+*/usr 		系统软件资源(Unix Software Resource), 系统中安装的软件大多存放在这里
 /usr/local 	编译方式安装程序的默认目录
 /usr/src 	程序源码
 /boot 		内核与系统引导程序
@@ -62,94 +40,126 @@ disk1 500G
 /etc 		配置文件
 /lib 		共享库
 /proc 		进程信息, 该目录中的数据保存在内存, 而不是硬盘
-/var 		动态数据保存位置, 如缓存、日志以及软件运行所产生的文件
+*/var 		动态数据保存位置, 如缓存、日志以及软件运行所产生的文件
 /mnt		挂载目录, 可以在这个目录下建立子目录来挂载不同设备
 /tmp 		临时文件的目录, 每次开机都可以清空
 
 
->>Xshell与Xftp
-Xshell是用于在windows下对Linux服务器进行远程访问;
-Xftp是Xshell的配套组件, 用于向服务器上传/下载文件;
-SSH客户端: 专为远程登陆和其他网络服务提供的安全性协议, 基于SSH远程连接工具常见的有Xshell与SecureCRT;
-Xshell连接linux的命令: ssh 192.168.31.8:22
+>>Linux命令之文件操作
+*命令格式: 命令 [选项] [参数]
+//文件夹与文件
+1, ls 列出指定目录下所有子目录与子文件
+-l 子文件的完整信息  //等价于 ll
+-a 所有隐藏文件
+-d 仅查看本目录自身的信息
+-h 以人性化的方式显示, 如KB、MB
+注: ls后可以跟多个参数同时查看多个目录;
+2, cd 切换目录
+~ 家目录
+- 上次目录
+. 当前目录
+.. 上级目录
+3, pwd 显示当前所在目录
+4, mkdir 创建目录
+-p 递归创建多级目录
+5, rmdir 删除空目录
+-p 递归删除多级目录
+注: 该命令不常用, 一般删除目录和文件统一用rm命令;
+6, touch 创建文件或者修改文件的访问时间
+注: 另外两种方式也可以创建文件
+vim test
+echo 'hello' >> test 
+7, rm 删除文件
+-r 递归删除目录, 删除目录或文件都可以使用
+-f 强制删除无需确认
+注: rm -rf test/ 是删除整个test目录
+而 rm -rf test/* 是删除test目录下的内容, test目录本身还在
+8, cp 复制文件
+-r 递归复制目录
+注: cp demo /test/ 目标文件名也为demo
+cp demo /test/demo1 指定目标文件名为demo1
+9, mv 剪切文件或重命名文件
+注: mv的使用同cp, 但是剪切或重命名目录不用加-r;
+10, stat 查看文件的属性信息
+11, cat 查看文件的内容
+-n 显示行号
+注: 该命令不适合查看大文件, 受屏幕的显示会显示不完整;
+12, more 分屏显示文件内容
+13, less 分行显示文件内容
+14, head 显示文件的头部内容, 默认前10行
+-n 20 或 -20 显示前20行
+15, tail 显示文件的尾部信息, 默认后10行
+-n 20 或 -20 显示后20行
+-f 动态监听文件的新增内容
+16, ln /src link 创建硬连接
+-s 创建软连接
+注: 软连接相当于快捷方式, 硬连接实际应用不多;
+注: 创建软连接的源文件必须用绝对路径;
 
 
->>Linux命令格式
-命令 + 条件/参数 + 对象/文件/目录
-如: rm -f /tmp/test.txt
+>>Linux命令之文件权限
+1, 权限对于文件和目录的含义
+文件:
+r-可以读取文件内容
+w-可以修改文件内容
+x-可以执行文件
+目录:
+r-可以查看目录下有哪些子文件
+w-可以对目录下的子文件本身进行操作
+x-可以进入目录
+注: 文件拥有w权限不可删除文件, 必须目录拥有w权限才可删除文件;
+注: x是文件的最高权限, w是目录的最高权限;
+2, chmod 修改文件权限
+-r 递归修改目录下所有文件的权限
+chmod u+w,g-w,o-x,a+r test
+chmod g=rwx test
+chmod 664 test
+注: 数字权限最常用, r是4, w是2, x是1;
+常见的数字权限有644和755, 禁止随意给文件赋777的权限;
+注: 用户可以修改自己文件的权限;
+3, chown 修改文件的所有者和所属组
+-r 递归修改目录下所有文件的所有者和所属组
+chown user1 test 
+chown uset1:group1 test
+注: 只有root用户才可以修改文件的所有者和所属组, 普通用户只可以修改自己文件的权限;
+4, chgrp 修改文件的所属组
+该命令完全可以用chown代替;
 
 
->>Linux常用命令
-命令格式: 命令 [参数选项] [文件或路径]
-1)cd  //切换目录
-2)pwd  //查看当前目录
-3)ls、ll  //显示目录内容, ll显示详细信息
-ls --help 查看ls命令的帮助信息
-ls -a 列出所有文件, 包括隐藏文件, 以.开头的文件就是隐藏文件
-4)mkdir [-p] 目录  //-p表示创建多级目录
-rmdir 目录  //删除空目录
-5)touch test  //创建文件
-vim text  //创建文件并在vim中打开
-touch当文件不存在则创建文件, 当文件存在时则将文件的access、modified、change三个
-时间属性置为相同;
-6)stat a.txt //查看文件的详细属性信息
-7)cp [-r] 源文件路径 目的文件路径 //-r表示复制整个目录
-8)mv 剪切或修改文件名
-mv a.txt /opt  //剪切文件或文件夹到指定目录
-mv a.txt b.txt  //重命名
-9)rm [-rf] 删除文件  //-r表示迭代删除目录, -f直接删除无需询问
-10)find /usr -name *.jpg //在指定目录下按指定格式查找文件
-11)clear	//清屏
-12)history  //显示历史命令
-13)su - zhao  //切换用户
-14)logout  //退出当前用户, 回到上一次的用户
-15)exit  //退出终端
-16)shutdown  //关机
-17)hostname、hostnamectl  //查看主机名, hostnamectl主机的详细信息
-18)man  //查看命令的帮助文档
-19)which  //去PATH路径中找到命令的绝对路径
-20)whereis  //查询命令文件的位置, 文件必须是命令文件
-21)file  //文件的具体类型, 后接文件的绝对路径
-22)echo  //打印语句
-23)who  //查看当前在线的用户
-24)whoami  //我是谁
-25)链接
-ln src hlink  //硬链接
-ln -s src slink  //软链接
-两者区别: 删除源文件后, 软链接失效, 但硬链接仍然有效;
-26)alias //给复杂命令取别名
-alias mycmd='tail -f /workspace/inverter-cc/nohup.out'
+>>Linux命令之文件查找
+1, locate 根据文件名查找文件
+2, find 功能强大的搜索文件的命令
+格式: find 范围目录 [选项] 文件 
+1)按文件名查找
+-name 按文件名
+-iname 不区分大小写
+find . -name test
+2)按文件大小查找
+find . -size 12k
+3)按文件的时间查找
+find . -atime/mtime/ctime -5  //5天内创建或修改的文件
+4)按照权限查找
+find . -perm 644
+5)按照所有者和所属组查找
+find . -user/group/nouser cjj  //nouser表示没有所有者, 比如外来的windows文件
+6)按照文件类型查找
+find . -type d/f/l  //目录/普通文件/软链接文件
 
 
->>不同系统之间的文件传递
-1, windows与linux
-通过ftp客户端
-2, linux与linux
-scp f1.txt cjj@192.168.10.3:/home/d1  //本地linux向远程linux传递文件
-scp -r d1 cjj@192.168..10.3:/home/d2  //本地linux向远程linux传递目录
-scp cjj@192.168.10.3:/home/f1.txt /root/d1  //从远程linux复制文件到本地
-scp -r cjj@192.168.10.3:/home/d1 /root/d2  //从远程linux复制目录到本地
-注: 远程主机可加用户名cjj, 也可以省略用户名cjj, 系统会提示你输入用户名和密码;
 
 
->>Linux特殊字符
-1, .
-如果是文件的开始, 说明当前文件是一个隐藏文件;
-. 指向当前目录;
-.. 指向当前目录的上级目录;
-2, $
-这是一个变量;
-3, *
-通配符;
-4, ~
-当前用户的家目录;
-5, 空格
-命令与参数用空格隔开：
-6, /
-整个Linux的文件根目录;
-7, 命令的参数
-如果是单词, 加--;
-如果是简写, 加-;
+
+
+
+>>Linux命令之其他命令
+1, 帮助命令
+man ls
+info ls 
+ls --help
+2, 搜索系统命令的位置
+whereis ls
+which ls
+
 
 
 >>vim
@@ -191,72 +201,6 @@ ll | grep log.txt  //查找文件名为log.txt的文件
 注: > 表示将前面的结果(覆盖)写到后面的文件中, >> 表示追加;
 
 
->>环境变量
-1, echo ${PATH}  //显示环境变量
-2, ls等命令本质上是一个可执行文件, 放在系统变量的路径里, Linux自动去环境变量里寻找命令;
-which ls  //输出 /usr/bin/ls
-如果修改了环境变量PATH, 则命令就找不到了;
-
-
->>三种软件安装方式
-1, 安装包
-命令 rpm
-2, 解压缩
-命令 tar
-3, yum安装
-yum比较通用, 可以自动管理rmp包以及相关依赖, 常用命令:
-yum search 在网络搜索包
-yum install 安装
-yum info 查看已安装包的信息
-yum list 列举已安装的包
-注: 可以更换yum源;
-
-
->>Linux下的环境变量
-/etc/profile
-
-
->>安装与卸载应用程序
-1, 安装应用程序的两种方式:
-1)rpm与yum: 软件包管理器, 相当于应用程序安装文件的执行者;
-2)编译安装: 用户自己从网站下载程序源码进行编译安装;
-注: rpm与yum的关系:
-rpm需要用户自己解决依赖问题, 更高级的yum通过引入软件仓库, 联网下载rpm包及依赖, 并依次自动安装;
-如果yum仓库未提供rpm, 就需要采用编译安装方式;
-2, yum常用命令
-yum search 应用名  //在仓库中查询是否存在指定应用
-yum install [-y] 引用名  //全自动下载安装应用及其依赖, -y表示自动确认所有询问
-yum info 引用名  //查看应用详细信息
-yum list installed 应用名  //查看已安装的应用程序
-rpm -ql 应用名  //查看安装后输出的文件清单
-yum remove [-y] 应用名  //全自动卸载指定应用
-which 命令  //查看命令安装在哪个目录下
-3, 编译安装
-编译安装分两步: 
-1)将.tar.gz压缩文件解压
-tar zxvf redis_6.2.6.tar.gz
-2)进入redis目录, 编译
-cd redis_6.2.6
-make
-注: 第一次执行make之前，需要先下载gcc编译器;
-4, 两种安装方式的区别
-------------------------------------------------------------------------
-				yum安装					编译安装
-兼容性 		差, 每种发行版都要准备		好, 全平台通用
-复杂度		简单						复杂
-安装速度	快							慢
-来源		应用仓库					官网下载
-应用场景	日常系统软件				开源软件, 最新版本
-存放地点	/usr/bin/					当前的编译目录, 如redis_6.2.6
---------------------------------------------------------------------------
-
-
->>tree
-tree命令用于显示所有子孙目录及子孙文件;
-tree [-d] //当前目录下的, [-d]表示仅显示子孙目录
-tree [-d] /usr/local  //指定目录下的
-
-
 >>Linux系统管理命令
 1, ifconfig
 查看网卡的IP地址;
@@ -275,209 +219,4 @@ ps -ef | grep vim  //筛选包含字符串"vim"的进程
 ping www.baidu.com >> cao.txt &
 7, 防止后台进程被挂起
 nohup ./uhome-website-backend &
-
-
->>应用服务化
-1, 应用服务化是指让应用程序以服务方式在系统后台运行;
-Linux系统对服务化应用进行统一化管理;
-2, 服务管理命令: systemctl;
-systemctl常用指令: 
-start  //启动服务, 如 systemctl start redis
-stop  //停止服务
-restart  //重启服务
-enable  //设置开机启动
-disable  //禁止开启启动
-status  //查看服务状态
-daemon-reload  //重载服务配置文件
-list-unit-files  //列出所有服务
-3, 举例: 将redis服务化;
-手动启动redis:
-cd /usr/local/redis-6.2.6
-./src/redis-server [redis.conf]
-将redis变成系统服务: 编写redis.service文件, 具体内容可百度;
-注: 服务化的进程以.service服务描述文件保存在 /usr/lib/systemd/system 目录里;
-
-
->>Linux用户与用户组
-groupadd dev    //创建用户组
-useradd zhao   //创建新用户
-passwd zhao    //为用户zhao修改密码
-usermod -g dev zhao  //修改用户信息, 或分配组
-usermod -G dev,test zhao  //给用户zhao分配多个用户组
-groups [zhao]   //显示用户属于哪些用户组, 默认为当前用户
-newgrp test  //切换用户的当前组
-
-
->>Linux文件权限
-----------------------------------------------------------------------------
-1, 文件权限代码表: 
-d 		r 		w 		x 		r 		w 		x		r 		w 		x 	
-		4		2		1		4		2		1		4		2		1
-目录 属主读取 属主写入 属主执行 组读取 组写入 组执行 其他读取 其他写入 其他执行
-------------------------------------------------------------------------------
-注: 没有对应权限则用-代替, 如 drwxr-xr-x; 对于目录, w表示修改目录名称, x表示进入目录;
-2, 修改文件权限命令
-chown zhao:dev dev-document   //将文件dev-document的属主修改为zhao
-chmod 750 dev-document   //修改文件dev-document的权限为 drwxr-x---
-
-
->>sudo超级管理员权限
-root通过visudo命令给普通用户授权后, 普通用户才能使用sudo获取超级管理员权限;
-先通过root给普通用户授权, 执行visudo, 添加第二行: 
-root 	ALL=(ALL) 	ALL
-zhao	ALL=(ALL)	ALL
-然后执行 visudo -c;
-
-
->>Linux防火墙
-1, centos6基于ip 实现防火墙, 是在网络层, 而centos7基于firewall实现防火墙, 是在应用层;
-2, 防火墙的开启与关闭
-systemctl start firewalld  //开启
-systemctl restart firewalld  //重启
-systemctl stop firewalld  //本次关闭
-systemctl disable firewalld  //以后都关闭
-systemctl status firewalld  //查看当前防火墙的状态
-3, 核心命令: firewall-cmd;
-firewall-cmd --state   //查看防火墙是否启动(running表示已启动)
-firewall-cmd --list-ports   //查看防火墙开放了哪些端口
-firewall-cmd --zone=public --permanent --add-port=8080/tcp   //开放8080端口
-firewall-cmd --zone=public --permanent --remove-port=8080/tcp  //关闭8080端口
-firewall-cmd --zone=public --permanent --add-port=8000-9000/tcp  //开放8000-9000区间的端口
-firewall-cmd --reload  //开放和关闭端口后都要重新加载配置才能生效
-
-
->>shell
-1, shell是一个用C语言编写的脚本解释器, 文件以.sh结尾, 类似于windows中的bat;
-Linux中最常用的是 bash shell, 路径: /bin/bash;
-2, 基本语法
-1)基本结构
-#! /bin/bash
-echo "hello world"
-2)执行.sh的三种方式
-demo.sh  
-sh demo.sh  
-source demo.sh
-注: 第一种方式需要sh文件有可执行权限, 后两种不需要;
-前两种方式是新开一个bash窗口, 变量不共享, 而第三种是在原bash中执行, 变量共享;
-3)变量
-name="zhangsan"  //定义变量
-echo $name	//显示变量
-unset name	//删除变量
-export name	//将当前进程的变量传递给子进程;
-4)字符串
-s1='world'   //可以用单引号或双引号
-s2="hello $s1"  //只有双引号才解析里面的变量和转义字符
-echo ${#s2}  //字符串的长度
-5)数组
-arr=('java' 'python' 'golang')  //定义数组
-echo ${arr[1]}  //获取数组的某个元素
-echo ${arr[@]}  //获取数组的所有元素
-echo ${#arr[@]}  //数组的长度
-注: bash不支持多维数组;
-6)参数传递
-//test.sh
-echo "文件名: $0"  //$0 当前执行的文件名
-echo "参数个数: $#"  //$# 参数个数
-echo "第一个参数: $1"  //$1 第一个参数
-echo "第二个参数: $2"  //$2 第二个参数
-//执行 
-sh test.sh tangbing 8
-7)运算符
-//算术运算符
-+, -, *, /, %
-//关系运算符
-==, !=, -eq, -ne, -gt, -lt, -ge, -lt
-//逻辑运算符
-&&, ||
-8)条件 if
-if [ $a == $b ]
-then 
-	//...
-elif [ $a -gt $b ]
-then 
-	//...
-else 
-	//...
-fi
-9)循环 for
-for item in 2 5 7 8
-do 
-	echo "the value is: $item"
-done
-3, 函数
-//定义函数, function可省略
-function f1() {
-	echo 'This is my function'
-}
-//调用
-f1
-注: shell的函数不需要形参, 参数直接在函数体内通过$i来获得;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
