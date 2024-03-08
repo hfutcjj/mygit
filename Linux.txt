@@ -126,7 +126,7 @@ chown uset1:group1 test
 该命令完全可以用chown代替;
 
 
->>Linux命令之文件查找
+>>Linux命令之查找文件名
 1, locate 根据文件名查找文件
 2, find 功能强大的搜索文件的命令
 格式: find 范围目录 [选项] 文件 
@@ -144,11 +144,42 @@ find . -perm 644
 find . -user/group/nouser cjj  //nouser表示没有所有者, 比如外来的windows文件
 6)按照文件类型查找
 find . -type d/f/l  //目录/普通文件/软链接文件
+7)逻辑运算查找
+-a 逻辑与
+-o 逻辑或
+-not 逻辑非, 等价于 !
+find . -size 2k -a -type f
+find . -name zhao -o -name qian
+find . -not -name zhao
+8)链接操作 
+-exec 命令2 {} \; 将前面查找的结果作为{}由命令2接着处理
+find . -size +1000k -a -type f -exec ls -lh {} \;
+find /var/log -mtime +10 -exec rm -rf {} \;  //删除/var/log目录里10天前建立的所有文件
+-ok 命令2 {} \; 同-exec, 但在操作命令2前会先询问
+
+
+>>Linux命令之查找文件内容
+1, grep 查找文件内容, 使用正则匹配
+grep [选项] '搜索内容' 文件名
+-i 忽略大小写
+-n 输出行号
+grep -n '^a' test
+egrep -n '[0-9]?$' test //等价于 grep -E
+注: egrep是加强版的正则查找, 能识别所有的正则符号;
 
 
 
 
 
+>>Linux命令之网络命令
+1, netstat 
+-t 显示使用tcp协议端口的连接
+-u 显示使用udp协议端口的连接
+-l 仅显示监听状态的连接
+-n 使用ip地址和端口号显示, 不使用域名与服务器
+-a 列出所有网络状态
+-p 显示pid和程序名
+-r 显示路由表
 
 
 >>Linux命令之其他命令
@@ -159,6 +190,57 @@ ls --help
 2, 搜索系统命令的位置
 whereis ls
 which ls
+
+
+>>管道符
+命令1 | 命令2 命令1的输出作为命令2的操作对象
+ls -l /etc/ | more   //分屏显示内容
+ls -l /etc/ | grep yum   //只显示文件名含yum的文件
+netstat -tuln | grep :80  //查找端口号为80的服务
+netstat -an | grep ESTABLISHED  //显示当前正在登录服务器的连接
+注: 管道符的本质是文本流;
+
+
+>>命令的别名和快捷键
+1, alias 
+alias  //显示所有别名
+alias c123='grep -n 123 demo'  //给长命令创建别名
+注: 在命令行中创建的别名, 只会在当前会话中生效;
+2, 常用快捷键
+TAB 补全命令或文件名
+ctrl+C 强制终止当前命令
+ctrl+L 清屏
+ctrl+A 光标移动到命令开头
+ctrl+E 光标移动到命令结尾
+ctrl+U 剪切光标当前位置一直到命令开头的内容
+ctrl+Y 粘贴ctrl+U剪切的内容
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -175,30 +257,6 @@ u  //撤销上一次修改;
 :% s/8080/9999/g  //将8080全部替换成9999 
 :q, :wq, :wq!  //退出, 保存并退出, 修改只读文件后强制保存并退出
 注: 命令快捷键只能在命令模式中使用;
-
-
->>常用文本命令
-1, echo  文本输出
-echo "hello"  //输出到屏幕
-echo "hello" > a.txt  //把内容写到文件(重写)
-echo "hello" >> a.txt  //追加
-2, cat  查看文件内容 或 合并文件
-cat a.txt  //查看文件内容
-cat -n a.txt  //查看文件内容并显示行号
-cat a.txt b.txt >> c.txt  //合并a.txt和b.txt到c.txt
-3, head / tail  显示文件内容头部 / 尾部
-head / tail a.txt  //显示文件最后几行的内容
-head / tail -n 3 a.txt  //显示最后3行
-head / tail -f a.txt  //动态显示文件内容(按 ctrl+C 退出)
-注: 如何显示第八行?
-head -n 8 a.txt | tail -n 1
-4, grep  利用正则表达式对文本文件的数据进行查找
-grep 520 a.txt  //查找含有520的行, 输出到屏幕
-grep 520 a.txt > out.txt  //将结果输出到指定文件
-grep -E "log[0-9]{1,5}.txt" a.txt  //-E表示按正则表达式查找
-ll | grep log.txt  //查找文件名为log.txt的文件
-注: |表示通道, 将前面命令查询的结果作为后面命令的数据源;
-注: > 表示将前面的结果(覆盖)写到后面的文件中, >> 表示追加;
 
 
 >>Linux系统管理命令
