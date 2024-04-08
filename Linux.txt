@@ -168,8 +168,60 @@ egrep -n '[0-9]?$' test //等价于 grep -E
 注: egrep是加强版的正则查找, 能识别所有的正则符号;
 
 
+>>Linux命令之压缩与解压缩命令
+1, Linux常见的压缩格式: .tar.gz、.tar.bz2、tar(仅打包)、.gz(仅压缩)、.bz2(仅压缩)、.zip(兼容windows)等;
+2, 不同格式文件的压缩命令
+1).zip
+zip [选项] 压缩包名 源文件或目录 //压缩
+-r 压缩目录
+注: 源文件可以指定多个, 以空格分隔;
+unzip [选项] 压缩包名 //解压缩
+-d 指定解压缩位置
+unzip -d /tmp/ test.zip
+注: 默认解压缩到当前目录
+2).gz
+gzip [选项] 源文件
+-d 解压缩 //等价于gunzip
+注: gzip不打包仅压缩, 所以不可用于多个文件或目录;
+3).bz2
+bzip2 [选项] 源文件 
+-d 解压缩
+注: 同gzip, bzip2也是不打包仅压缩;
+4).tar
+tar [选项] [-f 压缩包名] 源文件或目录 
+-c 打包
+-x 解包
+-f 指定压缩包的文件名
+-v 显示打包过程
+tar -cvf test.tar demo1 demo2 demo3 //打包
+tar -xvf test.tar //解包
+注: tar命令只打包不压缩;
+*5).tar.gz 和 .tar.bz2
+最常用的, 打包并压缩;
+tar [选项] 压缩包 源文件或目录 
+-z 用于.tar.gz格式
+-j 用于.tar.bz2格式
+-c 打包 
+-x 解包
+-t 只查看, 不解压
+-f 指定压缩包的文件名 
+-v 显示打包过程 
+-C 指定解压位置, 该选项必须放在压缩包后面, 否则会报错
+tar -zcvf tmp.tar.gz /tmp  //吧/tmp目录打包压缩为.tar.gz格式
+tar -zxvd tmp.tar.gz  //解压并解包.tar.gz格式
+tar -ztvf tmp.tar.gz  //只查看, 不解压 
+tar -zxvf tmp.tar.gz -C /test  //解压到指定目录
+
+
 >>Linux命令之网络命令
-1, netstat 
+1, service network restart 
+重启网络服务
+2, ifconfig
+查看ip信息
+3, ping 
+查看通信情况
+4, netstat 
+查看网络情况, 如开放的端口, 以及有哪些客户端连接;
 -t 显示使用tcp协议端口的连接
 -u 显示使用udp协议端口的连接
 -l 仅显示监听状态的连接
@@ -177,6 +229,7 @@ egrep -n '[0-9]?$' test //等价于 grep -E
 -a 列出所有网络状态
 -p 显示pid和程序名
 -r 显示路由表
+注: 本地常用选项 -tuln;
 
 
 >>Linux命令之其他命令
@@ -187,6 +240,19 @@ ls --help
 2, 搜索系统命令的位置
 whereis ls
 which ls
+3, sync 
+将缓冲区的数据同步到硬盘
+4, 关机和重启
+shutdown [选项] 时间
+-h 关机 
+-r 重启
+时间一般为now, 或具体时间;
+5, who 
+查看当前正在登录的用户信息
+w 
+跟who的作用一样, 显示更详细的信息
+6, last 
+查看所有登录过的用户信息, 包括正在登录和曾经登录过的
 
 
 >>vim
@@ -217,8 +283,10 @@ p 粘贴剪切板里的内容
 /test 从光标所在位置往后查找
 n 下一个
 N 上一个
-:%s/old/new/g 替换整个文件的old为new, %代表整个文件
+:%s/old/new/g 替换整个文件的old为new, s表示替换, %代表整个文件
 :1,10s/old/new/g 替换1到10行的old为new
+:1,10s/^/#/g 注释1到10行
+:1,10s/^#//g 取消注释
 
 
 >>管道符

@@ -238,6 +238,8 @@ insert ignore into 表名 ...;
 insert: 遇到有冲突的数据则报错;
 insert ingore: 遇到有冲突的数据则跳过该数据;
 replace: 遇到有冲突的数据则替换原数据;
+7, 大批量数据的插入
+插入大批量数据时, insert的效率较低, 应该使用load指令进行本地导入;
 
 
 >>更新数据
@@ -257,6 +259,7 @@ update 表1, 表2 set 字段1 = 值1, 字段2 = 值2, ... where 连接条件;
 update t1 join t2 on t1.c1 = t2.c2 set t1.c = value where condition;
 update t1 join t2 on t1.c1 = t2.c2 set t2.c = value where condition;
 update t1 join t2 on t1.c1 = t2.c2 set t1.c = value, t2.c = value where condition;
+注: update应该根据索引字段的条件来更新, 这样就为默认的行锁, 否则就降为表锁, 降低了并发性能;
 
 	
 >>删除数据
@@ -1048,6 +1051,14 @@ create index idx_user_name_5 on user(name(5));
 注: 在业务场景中, 推荐使用联合索引, 而非单列索引, 避免回表查询;
 7, 使用explain对查询进行查询计划分析;
 explain select id, name from user where name = 'zhao';
+8, 联合排序的索引优化
+联合索引默认都是升序排列的, 所以联合排序的字段同为升序或同为降序的效率最高, 否则会不走索引：
+create index idx_user_name_phone on user(name, phone);  //索引默认为升序
+select id, name, phone from user group by name desc, phone desc;  //走索引
+select id, name, phone from user group by name asc, phone desc;  //部分不走索引
+如果建立如下索引:
+create index idx_user_name_phone_ad on user(name asc, phone desc);  //指定索引的排序规则
+则第二个查询语句就会走索引;
 
 
 >>事务高级
