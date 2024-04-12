@@ -18,8 +18,10 @@
 SATA硬盘, a表示第一块硬盘, 1表示第一个分区;
 2)挂载点: 即文件名, 如/dev/sda1。把硬件设备绑定到指定挂载点上, 就称为挂载;
 3)挂载命令
-mount dev/disk1 /usr/download
-disk1 500G
+mount [-l]	//显示系统中所有已挂载的设备
+mount [-t 文件系统] 设备文件名 挂载点  //挂载 
+如: mount /dev/sr0 /mnt/cdrom
+unmount 设备文件名或挂载点  //卸载
 
 
 >>Linux系统目录
