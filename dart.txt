@@ -1,0 +1,99 @@
+>>dart中的数据类型
+1, 常用类型
+int, double, bool, String, List, Map;
+2, 判断变量的类型
+a is String
+3, 类型转换
+1)int -> String 
+int a = 12;
+String b = a.toString();
+2)String -> int
+String a = '12';
+int b = int.parse(a);
+
+
+>>List类型
+1, 声明与初始化
+var a1 = [1, 2, 'zhao'];
+List a2 = [1, 2, 'zhao'];
+List<int> a3 = [1, 2, 3];
+var a4 = <int>[1, 2, 3];
+2, 常用属性
+length  长度
+reversed  反转
+isEmpty/isNotEmpty  是否为空
+3, 常用方法
+1)add / addAll  添加 / 拼接数组
+2)indexOf	查找
+3)remove / removeAt	删除给定值 / 删除给定索引的值
+4)insert / insertAll	插入 / 插入多个值
+var a = [1, 2, 3].insertAll(1, [4, 5, 6]);
+5)join / split	拼接数组 / 字符串分割 
+6)fillRange	修改指定起始和结束位置中间的值
+var a = [1, 2, 3, 4].fillRange(1, 3, 88); //[1, 88, 88, 4]
+7)toList 	其他类型转换成List
+8)filled  	创建固定长度的数组
+var a = List.filled(5, 'h');
+9)generate  根据索引创建给定长度的数组
+var a = List.generate(5, (i) => i * 2);
+10)forEach	遍历
+a.forEach((v){
+	//...
+});
+11)map		变换
+var b = a.map((v) => v * 2);
+12)where	过滤
+var b = a.where((v) => v % 2 == 0);
+13)any 		是否某个值满足条件
+14)every	是否所有值满足条件
+
+
+>>Set类型
+1, Set的定义
+var a = new Set();
+a.add();
+a.addAll();
+2, 用于对数组去重
+list.toSet().toList();
+
+
+>>Map类型
+1, 声明与初始化
+var a1 = {'name': 'zhao', 'age': 20};
+Map a2 = {'name': 'zhao', 'age': 20};
+Map<String, dynamic> a3 = {'name': 'zhao', 'age': 20};
+var a4 = <String, dynamic>{'name': 'zhao', 'age': 20};
+2, 常用属性
+length  键值对的个数
+keys 	获取所有的key值
+values	获取所有的value值
+isEmpty/isNotEmpty  是否为空
+3, 常用方法
+1)addAll({...})	合并映射
+2)remove(k)		删除指定key的数组
+3)containsKey() / containsValue()	是否存在指定的key/value
+4)forEach	遍历
+m.forEach((k, v){
+	print('$k : $v');
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

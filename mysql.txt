@@ -617,7 +617,7 @@ create procedure sp1() select version();
 delimiter //
 create procedure sp1(in val int unsigned)
 begin
-delete from user where id = val;
+	delete from user where id = val;
 end
 //
 delimiter ;
@@ -626,8 +626,8 @@ delimiter ;
 delimiter //
 create procedure sp1(in val int, out num int)
 begin
-delete from user where id = val;
-select count(id) from user into num;
+	delete from user where id = val;
+	select count(id) from user into num;
 end
 //
 delimiter ;
@@ -637,17 +637,27 @@ select @n;
 delimiter //
 create procedure sp1(in val int, out delNum int, out userNum int)
 begin 
-delete from user where age = val;
-select row_count() into delNum;
-select count(id) from user into userNum;
+	delete from user where age = val;
+	select row_count() into delNum;
+	select count(id) from user into userNum;
 end
 //
 delimiter ;
 调用: call sp1(3, @v1, @v2);
 select @v1, @v2;
-6, 删除存储过程
+6, 存储过程里定义局部变量
+create procedure sp1(in n int)
+begin 
+	declare sum int default 0;
+	while n > 0 do 
+		set sum := sum + n;
+		set n := n - 1;
+	end while;
+	select sum;
+end;
+7, 删除存储过程
 drop procedure sp1;
-7, 存储过程与自定义函数的区别
+8, 存储过程与自定义函数的区别
 存储过程一般针对数据表操作，而自定义函数一般封装其他用户操作；
 存储过程可以返回多个值，而自定义函数只能返回一个值；
 存储过程一般独立执行，而自定义函数往往作为其他sql语句的一部分;
