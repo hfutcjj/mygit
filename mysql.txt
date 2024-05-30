@@ -557,6 +557,36 @@ count(*)与count(score)的区别:
 如果表达式的为null, 则用第二个参数的值来替代;
 2)if(表达式, 值1, 值2)
 如果表达式的值为true, 则使用值1, 否则使用值2;
+
+
+>>mysql中的变量
+1, 系统变量
+服务器提供的, 分为全局级别(GLOBAL)和会话级别(SESSION), 默认是会话级别;
+注: 就算修改了全局系统变量, 重启mysql后也会失效, 只有修改配置文件才能永久生效;
+1)查看系统变量
+show @@[session.|global.]系统变量名;		//查看指定的变量
+show [session|global] variables like '***'; //模糊匹配
+show [session|global] variables;			//查看所有系统变量
+2)设置系统变量
+set @@[session.|global.]系统变量名 = 值;
+2, 用户自定义变量
+用户定义的, 不需要提前声明, 直接使用"@变量名"即可;
+1)查看
+select @name;
+2)赋值
+set @name := 'zhao';
+set @name = 'zhao';
+select 字段名 into @name from 表名;
+3, 局部变量
+一般用作存储过程内的局部变量和输入参数, 使用之前需要先用declare声明;
+1)声明
+declare 变量名 变量类型 [default ...];
+2)赋值
+set name := 'zhao';
+set name = 'zhao';
+select 字段名 into name from 表名;
+注: 一般系统变量用@@, 用户变量用@, 局部变量不用;
+用户变量不需要先声明, 而局部变量需要先声明后使用;
 	
 	
 >>条件语句
@@ -606,10 +636,9 @@ drop function f1;
 
 >>存储过程
 1, 优点
-sql引擎执行sql语句的流程: 语法分析->编译->执行;
-存储过程只在第一次执行时进行语法分析和编译，然后保存了编译后的结果，后面直接执行，速度更快;
-实现功能封装;
-减少网络流量;
+封装、复用;
+可以接收参数和返回数据;
+减少网络交互, 效率提升;
 2, 不带参数的存储过程
 create procedure sp1() select version();
 调用: call sp1();

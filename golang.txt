@@ -1612,10 +1612,39 @@ func main() {
 
 
 
-
-
-
-
+-------------------------Gin-----------------------------
+>>Gin
+1, 引入
+go get github.com/gin-gonic/gin 
+import "github.com/gin-gonic/gin"
+2, 搭建服务
+func main() {
+	r := gin.Default()  //创建一个默认的路由引擎
+	r.GET("/", func(c *gin.Context) {  //接收请求并响应
+		c.String(200, "...")
+	})
+	r.Post("/add", func(c *gin.Context) {
+		c.String(200, "...")
+	})
+	r.Run()  //监听并执行, 默认8080端口, 也可指定
+}
+3, 响应的不同类型
+可给前端响应不同的数据格式, 如字符串、json、jsonp、xml、html等；
+c.String(200, "hello")
+c.JSON(200, map[string]interface{}{
+	"name": "zhao",
+	"age": 20,
+})
+注: jsonp、xml等与json的写法类似;
+c.HTML(200, "index.html", map[string]interface{}{
+	"name": "zhao",
+	"age": 20,
+})
+注: 第二个参数是前端模板文件, 第三个参数是传递给前端模板文件的参数;
+一般前端模板放在模板文件夹里, 需要配置模板文件夹:
+route.loadHTMLGlob("template/*")
+4, 静态文件配置
+r.Static("/static", "./static")  //前者表示路由, 后者表示路径
 
 
 
