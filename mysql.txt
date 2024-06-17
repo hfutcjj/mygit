@@ -589,25 +589,41 @@ select 字段名 into name from 表名;
 用户变量不需要先声明, 而局部变量需要先声明后使用;
 	
 	
->>条件语句
-1)类似于switch结构
-case deptno
-	when '100' then '研发部'
-	when '101' then '运营部'
-	when '102' then '财务部'
-	else '市场部'
-end
-2)类似于if...else...if结构
+>>流程控制
+1, 条件 
+1)if
+if 条件1 then ...
+else if 条件2 then ...
+else ...
+end if;
+2)case 
+//语法1
+case 变量 
+	when 匹配值1 then ...
+	when 匹配值2 then ...
+	else ...
+end case;
+//语法2
 case 
-	when grade >= 90 then 'A'
-	when grade >= 80 then 'B'
-	when grade >= 60 then 'C'
-	else 'D'
-end
-
-	
->>修改mysql默认分隔符
-delimiter //
+	when 条件1 then ...
+	when 条件2 then ...
+end case;
+2, 循环
+1)while
+while 条件 do 
+	...
+end while
+2)repeat
+repeat 
+	... 
+until 条件
+end repeat;
+3)loop
+[label:]loop
+	...
+end loop [label];
+//iterate label; 跳过当前循环
+//leave label; 退出label循环
 
 
 >>自定义函数
@@ -630,6 +646,7 @@ end
 delimiter ;
 调用: select adduser('zhao');
 注: 函数体由多条语句组成的话需要加 begin...end 结构;
+注: 修改mysql默认分隔符: delimiter //
 4, 删除函数
 drop function f1;
 
