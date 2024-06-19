@@ -78,10 +78,51 @@ m.forEach((k, v){
 });
 
 
-
-
-
-
+>>函数
+1, 可选参数
+void fn(String name, [int age]) {
+	if(age != null){
+		//...
+	} else {
+		//...
+	}
+}
+2, 默认参数
+void fn(String name, String sex='男') {
+	//...
+}
+3, 命名参数
+void fn(String name, {int age, String sex='男'}) {
+	//...
+}
+调用: fn('zhao', age:32);
+4, 箭头函数
+List a = ['zhao', 'qian', 'sun'];
+a.forEach((v) => print(v*2));
+等价于
+a.forEach((v){
+	print(v*2);
+});
+5, 匿名函数
+var fn = (){
+	//...
+}
+匿名函数的自执行
+((int n){
+	//...
+})(12);
+6, 闭包
+闭包需要满足两个条件: 函数嵌套; 内部函数引用了外部函数的变量。
+fn(){
+	var a = 123;
+	return (){
+		a++;
+		print(a);
+	};
+}
+var b = fn();
+b(); //124
+b(); //125
 
 
 
