@@ -713,6 +713,51 @@ drop procedure sp1;
 存储过程需要通过call来调用;
 
 
+>>条件处理程序(Handler)
+是用来定义在流程控制结构执行过程中遇到问题时相应的处理步骤, 语法: 
+declare handler_action handler for condition_value statement;
+1)handler_action的取值
+continue: 继续执行当前程序
+exit: 终止执行当前程序
+2)condition_value的取值
+sqlstate sqlstate_value: 状态码, 如0200
+sqlwarning: 所有以01开头的sqlstate代码的简写
+not found: 所有以02开头的sqlstate代码的简写
+sqlexception: 所以没有被sqlwarning或not found捕获的sqlstate代码的简写
+
+
+>>游标(cursor)
+是用来存储查询结果集的数据类型, 在存储过程中可以使用游标对结果集进行遍历。
+1)声明游标
+declare 游标名称 cursor for 查询语句;
+2)打开游标
+open 游标名称;
+3)获取游标记录
+fetch 游标名称 into 变量[, 变量];
+4)关闭游标
+close 游标名称;
+5)举例: 将tb_user表中大于指定年龄的数据插入到一张新表
+create procedure p(in uage int)
+begin 
+	declare uname varchar(100);
+	declare upro varchar(100);
+	declare u_cursor cursor for select name, profession from tb_user where age <= uage;  //定义游标
+	declare exit handler for sqlstate '0200' close u_cursor;  //定义条件处理程序, 用来退出循环
+	drop table if exists tb_user_pro;
+	create table if not exists tb_user_pro(
+		id int primary key auto_increment, 
+		name varchar(100), 
+		profession varchar(100)
+	);
+	open u_cursor;  //打开游标
+	while true do 
+		fetch u_cursor into name, upro;  //获取游标记录 
+		insert into tb_user_pro values(null, uname, upro);
+	end while 
+	close u_cursor;
+end 
+
+
 >>视图 
 1，视图是虚拟表，并不保存实际数据，视图的本质是保存起来的select语句;
 2，创建视图
