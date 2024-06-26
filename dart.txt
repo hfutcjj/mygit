@@ -125,7 +125,25 @@ b(); //124
 b(); //125
 
 
-
+>>类与对象
+1, 类的定义、私有成员、静态成员、构造函数、命名构造函数
+class Person {
+	String name;
+	int _age;  //私有成员 
+	static String nation = 'USA';  //静态成员 
+	Person(String name, int age) {  //构造函数, 也有简写方式如下
+		this.name = name;
+		this._age = age;
+	}
+	Person.init(this.name, this._age) {  //命名构造函数
+		print('this is a named consturctor.');  
+	}
+	String toString() {  //非静态成员可以调用静态成员
+		return 'name: ${this.name}, age: ${this._age}, nation: $nation';
+	}
+}
+//命名构造函数的调用
+Person p = new Person.init('zhao', 32);
 
 
 
