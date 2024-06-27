@@ -144,9 +144,72 @@ class Person {
 }
 //命名构造函数的调用
 Person p = new Person.init('zhao', 32);
-
-
-
+2, 对象有关的操作符
+1)?   //非空则执行, 空不执行但并不报错
+p?.show();  
+2)is  //类型判断
+p is Person;  
+3)as  //类型转换
+Object o = new Person('zhao', 32);
+Person p = o as Person;
+p.show();
+4)..  //级联操作
+p..setName('zhao')..setAge(32)..printInfo();  
+3, 继承
+class Person {
+	String name;
+	int age;
+	Person(this.name, this.age);
+	void eat() {
+		print('$name is eating');
+	}
+}
+class Student extends Person {  //使用extends来继承
+	String major;
+	Student(String name, int age, String major): super(name, age) {  //调用父类构造函数
+		this.major = major;
+	}
+	@override
+	void eat() {  //重写父类的方法
+		print('$name is a student');
+		super.eat();  //调用父类的普通方法
+	}
+	void study() {  //子类定义其他方法
+		print('$name is studying $major');
+	}
+}
+//测试
+Person p = new Student('zhao', 32, 'maths');
+p.eat();  //多态
+(p as Student).study();  //父类指针不能调用子类独有的方法
+注: dart中没有多继承;
+4, 多态
+父类方法的不同实现; 父类的引用指向子类的实例。
+Person p = new Student('zhao', 32, 'maths');
+p.eat();
+(p as Student).study();
+p = new Teacher('qian', 50, 'english');
+p.eat();
+(p as Teacher).teach();
+5, 抽象类与接口
+dart中没有interface关键词, 接口与抽象类都用abstract来定义;
+abstract class IEater {
+	void eat();
+}
+abstract class IWorker {
+	void work();
+}
+class Employee implements IEater, IWorker {  //implements实现接口
+	@override
+	void eat() {
+		//todo
+	}
+	@override
+	void work() {
+		//todo
+	}
+}
+注: dart中没有多继承, 但可以实现多个接口;
 
 
 
