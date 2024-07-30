@@ -1257,6 +1257,10 @@ func fn() { //协程的函数
 var rwMutex sync.RWMutex
 rwMutex.Lock() / rwMutex.Unlock()  //读写都上锁
 rwMutex.RLock() / rwMutex.RUnlock()  //仅对写上锁, 可并发读
+6, 原子操作
+因为count++并不是原子操作, 需要给count++加锁来实行并发, 
+可用sync/atomic包里的函数来执行原子操作:
+atomic.AddInt32(&count, 1);
 
 
 //DOS基本操作
