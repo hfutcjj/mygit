@@ -824,17 +824,17 @@ transform-style: preserve-3d;
 	display: grid;
 }
 1, 用于弹性容器的属性
-*1)grid-template-columns: <size>;
-grid-template-rows: <size>;
-指定每列的宽度用来分列(分行类似), 如:
+*1)grid-template-rows: <size>;
+grid-template-columns: <size>;
+指定每列的宽度用来分行和分列, 如:
 200px 100px 200px;
-200px 100px 1fr;  //fr是自动伸缩
+200px 50% 1fr;  //fr是自动伸缩
 200px 1fr 2fr; //伸缩的比例
 auto 1fr 2fr;  //auto: 符合内容的宽度或伸缩
 repeat(3, 100px);
 repeat(2, 200px 1fr);
 *2)gap: row-gap column-gap;
-用来指定行间距或列间距, 如 gap: 20px 10px;
+用来指定行间距和列间距, 如 gap: 10px 20px;
 3)justify-content: start(默认) | center | end | space-between | ...; 
 align-content: start(默认) | center |end | space-between | ...;
 当弹性容器还有剩余空间时, 用来对弹性网格进行对齐;
@@ -843,13 +843,13 @@ align-content: start(默认) | center |end | space-between | ...;
 align-items: stretch(默认) | start | center | end;
 设置每个弹性子元素在对应单元格内的对齐方式;
 2, 用于子元素的属性
-*1)grid-column: 2 | 2 / 4 | 2 / span 2 | 2 / -1;
-grid-row: 同上;
+*1)grid-row: 2 | 2 / 4 | 2 / span 2 | 2 / -1;
+grid-column: 同上;
 指定子元素的具体位置, 一般用于跨越多行或多列;
 属性值说明如下:
 2: 第二列;
 2 / 4: 跨越2、3两列;
-2 /span 3: 同上;
+2 / span 2: 同上;
 2 / -1: 从第2列一直到最后;
 2)justify-self: stretch(默认) | start | center | end;
 align-self: stretch(默认) | start | center | end;
