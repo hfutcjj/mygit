@@ -785,6 +785,15 @@ on tb_name for each row  --行级触发器
 begin 
 	trigger_stmt;
 end;
+//举例, 将插入数据的记录写到日志中
+create trigger tb_user_insert_trigger 
+	after insert on tb_user for each row
+begin
+	insert into user_logs(id, operation, operation_time, operation_id, operation_params) values 
+	(null, 'insert', now(), new.id, concat('插入的参数为: id=', new.id, ',name=', new.name));
+end;
+注: new表示新增的记录对象; 
+insert只有new, delete只有old, update既有new也有old;
 2, 查看
 show triggers;
 3, 删除
