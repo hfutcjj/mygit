@@ -759,6 +759,28 @@ t2.Before(t1)
 t2.After(t1)
 6, 定时器
 使用time.Sleep()
+7, time包中与管道相关的函数
+1)time.After() //延迟执行
+2)time.Tick() //重复执行, 底层是time.Ticker
+传入指定的时间间隔, 返回: <-time.Time
+//举例: 每2秒执行一次, 10秒后结束
+entTime := time.Add(10 * time.Second)
+for t := range time.Tick(2 * time.Second) {
+	fmt.Println(t)
+	if t.After(endTime) {
+		break
+	}
+}
+3)time.Ticker结构体
+ticker := time.NewTicker(2 * time.Second)
+for t := range tikcer.C {
+	fmt.Println(t)
+	if some-condition {
+		ticker.Stop()  //自带停止计时器的方法
+		break
+	}
+}
+
 
 
 >>json
@@ -1143,13 +1165,12 @@ ch <- 2
 ch <- 3
 ch <- 5
 close(ch)
-注: ★任何时候向管道写完数据后一定要记得关闭管道, 否则后续遍历会导致死锁;
+注: 任何时候向管道写完数据后一定要记得关闭管道, 否则后续遍历会导致死锁;
 向已满管道发送数据, 会引起阻塞;
 已关闭的管道, 不能向其发送数据, 可以从其读取数据;
 //从管道读取数据
 v := <- ch  
 v, ok := <- ch  //读取一个已关闭的空管道, 会返回 0 false
-注: 从空管道读取数据, 会引起阻塞;
 //遍历管道
 var ch = make(chan int, 10)
 for i := 1; i <= 10; i++ {
@@ -1159,87 +1180,24 @@ close(ch)
 for v := range ch {
 	fmt.Println(v)
 }
-//单向管道
+2)单向管道
 var ch chan<- int  //只写管道(send-only channel)
 ch := make(chan<- int, 3)
 var ch <-chan int  //只读管道(receive-only channel)
 ch := make(<-chan int, 3)
 注: 双向管道可以赋值给单向管道, 反之则不可以;
 var ch chan<- int = make(chan int, 3)
-2)管道用于协程的同步与通信举例
-打印1-1000内的素数, 分为1个存数协程、4个取数并判断是否为素数的协程、1个打印素数协程:
-func main() {  
-	var originChan = make(chan int, 100)  //存储原始数据
-	var primeChan = make(chan int, 20)  //存储素数
-	var finishChan = make(chan bool, 4)  //每个协程完成的标记, 用于何时关闭primeChan
-	var exitChan = make(chan bool , 1)  //退出标记, 用于阻塞main主线程, 等待其他协程完成
-	go putNum(originChan)
-	for i := 1; i <= 4; i++ {
-		go calcPrime(originChan, primeChan, finishChan)
-	}
-	go printPrime(primeChan, exitChan)
-	go func() {  //此协程用于关闭primeChan
-		for i := 1; i <= 4; i++ {
-			<- finishChan
-		}
-		close(primeChan)
-	}()
-	for {  //此循环用于阻塞main主线程, 等待其他协程完成
-		if _, ok := <- exitChan; !ok {
-			break
-		}
-	}
-	fmt.Println("main end")
-}
-func putNum(originChan chan int) {  //存数
-	for i := 1; i <= 1000; i++ {
-		originChan <- i
-	}
-	close(originChan)
-}
-func calcPrime(originChan chan int, primeChan chan int, finishChan chan bool) {
-	//计算素数
-	for v := range originChan {
-		if isPrime(v) {
-			primeChan <- v
-		}
-	}
-	finishChan <- true
-	//也可以通过判断finishChan的长度等于4时关闭primeChan
-	//if len(finishChan) == 4 {
-		//close(primeChan)
-	//}
-}
-func printPrime(primeChan chan int, exitChan chan bool) {  //打印素数
-	for v := range primeChan {
-		fmt.Printf("%d is prime\n", v)
-	}
-	exitChan <- true
-	close(exitChan)
-}
 4, select多路复用
-同时从多个管道并发接收数据, 有两种方法:
-1)定义多个协程分别从每个管道接收数据;
-2)使用select多路复用, 打印fabonacci数列
-func main() {
-	ch := make(chan int)
-	quit := make(chan boo)
-	go func() {
-		for i := 0; i < 10; i++ {
-			fmt.Println(<- ch)
-		}
-		quit <- true
-	}()
-	x, y := 1, 1
-	for {
-		select {
-			case ch <- x:
-				x, y = y, x + y
-			case <- quit:
-				return
-		}
-	}
+select {
+	case <- ch1:
+		//...
+	case ch2 <- i:
+		//...
+	default: 
+		//...
 }
+如果没有default, 则阻塞等待ch1与ch2的读写, 否则立即执行default;
+如果有多个case可执行,则随机选择其中一个;
 5, 锁
 1)互斥锁: sync.Mutex
 互斥锁用于解决并发编程中对共享资源的访问;
@@ -1253,10 +1211,10 @@ func fn() { //协程的函数
 	mutex.Unlock()  //解锁
 }
 2)读写锁: sync.RWMutex
-读写锁仅对写操作互斥, 多个协程的读操作可以并发执行;
 var rwMutex sync.RWMutex
-rwMutex.Lock() / rwMutex.Unlock()  //读写都上锁
-rwMutex.RLock() / rwMutex.RUnlock()  //仅对写上锁, 可并发读
+rwMutex.Lock() / rwMutex.Unlock()  
+rwMutex.RLock() / rwMutex.RUnlock()  
+注: Lock与Lock互斥、RLock与Lock互斥、RLock与RLock不互斥;
 6, 原子操作
 因为count++并不是原子操作, 需要给count++加锁来实行并发, 
 可用sync/atomic包里的函数来执行原子操作:

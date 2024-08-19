@@ -777,6 +777,19 @@ alter view view_name as select   ……
 drop view view_name
 
 
+>>触发器
+1, 创建
+create trigger trigger_name
+before/after insert/update/delete
+on tb_name for each row  --行级触发器
+begin 
+	trigger_stmt;
+end;
+2, 查看
+show triggers;
+3, 删除
+drop trigger [db_name].trigger_name;  --如果没有指定db_name, 默认为当前数据库
+
 
 >>mysql的四层结构
 1, 连接层
