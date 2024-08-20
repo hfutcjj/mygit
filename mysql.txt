@@ -559,6 +559,18 @@ count(*)与count(score)的区别:
 如果表达式的值为true, 则使用值1, 否则使用值2;
 
 
+
+>>mysql的四层结构
+1, 连接层
+与高级语言的连接, 连接池等;
+2, 服务层
+sql接口、sql解析、优化以及缓冲等;
+3, 引擎层
+存储引擎 
+4, 存储层
+文件系统, 以及日志等;
+
+
 >>mysql中的变量
 1, 系统变量
 服务器提供的, 分为全局级别(GLOBAL)和会话级别(SESSION), 默认是会话级别;
@@ -800,17 +812,6 @@ show triggers;
 drop trigger [db_name].trigger_name;  --如果没有指定db_name, 默认为当前数据库
 
 
->>mysql的四层结构
-1, 连接层
-与高级语言的连接, 连接池等;
-2, 服务层
-sql接口、sql解析、优化以及缓冲等;
-3, 引擎层
-存储引擎 
-4, 存储层
-文件系统, 以及日志等;
-
-
 >>存储引擎
 1, 定义
 mysql用不同的技术将数据保存在内存中，就是存储引擎;
@@ -836,6 +837,58 @@ cnames ctypes
 )engine=InnoDB default charset=utf8;
 3)修改数据表的存储引擎
 alter table tname engine = InnoDB;
+
+
+>>索引高级
+primary key InverterModel_PK using btree(ManufacturerID, ID)
+key Product_Name_IX using btree(Name)
+key InverterDevice_IX using btree(InverterID, DeviceID)
+1, mysql的索引使用B+树, B+树的特点:
+1)一个结点存多条数据, 通常为一页, InnoDB中一页的大小为16KB, 3层的B+树就可以保存大约
+2000万条数据;
+2)非叶子结点只存索引字段, 并且非叶子节点的数据在叶子节点中冗余保存一份;
+3)叶子节点包含索引字段, 和主键(或指向数据的指针或数据记录本身);
+4)叶子节点通过双向指针进行连接;
+2, 聚集索引与非聚集索引
+1)非聚集索引: 索引文件与数据文件分离
+MyISAM采用非聚集索引, 叶子结点存索引字段与指向数据记录的指针, 一个MyISAM表由三个文件
+组成: test.frm(表结构)、test.myi(表索引文件)、test.myd(表数据文件);
+2)聚集索引: 索引与数据保存在一起
+InnoDB的主键索引与其他索引的存储方式不同;
+对于主键索引, 叶子结点包含主键字段与整条数据记录;
+对于其他索引, 叶子结点包含索引字段与对应的主键值, 通过主键值进行回表查找数据记录;
+一个InnoDB表只包含两个文件: test.frm(表结构)、test.ibd(索引与数据在一起);
+3, 为什么主键要用自增的整型, 而不建议用uuid
+1)整型占用空间小;
+2)整型比较大小时速度更快;
+3)索引文件在插入时就会进行排序, 使用自增的主键可以避免插入数据时频繁移动数据, 
+大大提高性能;
+4, 联合索引的最左前缀匹配
+是指使用联合索引的最左前缀来匹配查询条件, 如联合索引为(A, B, C), 则只是用A列、
+或(A, B)列、或(A, B, C)列来进行查询;
+5, 前缀索引
+对于长字符串或大文本字段建立索引, 可以使用前缀索引;
+create index idx_user_name_5 on user(name(5));
+前缀索引是非聚集索引(或二级索引、辅助索引), 叶子节点保存的是主键值, 需要通过回表
+进行二次查询;
+6, 索引失效的几种情况
+1)联合索引中不符合最左前缀原则;
+2)where中对索引列进行运算;
+3)where中字符串不加引号;
+4)模糊查询时在前面加%;
+5)or连接的条件中其中一侧没有索引;
+6)mysql评估走索引会比全表扫描更慢的情形;
+注: 在业务场景中, 推荐使用联合索引, 而非单列索引, 避免回表查询;
+7, 使用explain对查询进行查询计划分析;
+explain select id, name from user where name = 'zhao';
+8, 联合排序的索引优化
+联合索引默认都是升序排列的, 所以联合排序的字段同为升序或同为降序的效率最高, 否则会不走索引：
+create index idx_user_name_phone on user(name, phone);  //索引默认为升序
+select id, name, phone from user group by name desc, phone desc;  //走索引
+select id, name, phone from user group by name asc, phone desc;  //部分不走索引
+如果建立如下索引:
+create index idx_user_name_phone_ad on user(name asc, phone desc);  //指定索引的排序规则
+则第二个查询语句就会走索引;
 
 
 >>事务机制
@@ -874,6 +927,61 @@ set session transaction isolation level serializable;
 注: 隔离级别的不同也会导致所谓的脏读、幻读、不可重复读;
 
 
+>>事务高级
+1, 事务的四种隔离级别
+InnoDB定义了四种隔离级别, 级别越高隔离性越好, 但性能就越低;
+隔离性是由mysql的各种锁以及MVCC机制来实现的;
+client1:
+set transaction isolation level read uncommitted;
+begin
+	update account set balance = balance + 500 where id = 1;  //1
+commit 
+begin 
+	update account set balance = balance + 300 where id = 1;  //2
+commit
+client2:
+set transaction isolation level read uncommitted;
+begin 
+	select * from account where id = 1;  //1
+	select * from account where id = 1; //2
+commit
+1)read-uncommitted(读未提交): 有脏读问题
+执行完client1-1但未提交, client2-1就能读到修改后的500, 这是脏读;
+2)read-committed(读已提交): 有不可重复读问题
+执行完client1-1并提交, client2-1读到500, 然后执行client1-2并提交, client2-2读到800,
+这属于不可重复读;
+3)repeatable read(可重复读): 有幻读问题
+也叫快照读, 执行client1-1并提交, client2-1读到500, 然后执行client1-2并提交, 
+client2-2读到的仍然是500, 这叫可重复读; 但数据库实际存储的值是800, 读到的却是500, 
+这叫幻读;
+4)serializable(串行化): 不可并发
+串行化就是所有事务串行执行, 不存在以上并发执行的各种问题, 但效率极低, 不可用;
+2, 不同事务的应用场景
+1)mysql默认的隔离级别是: repeatable read; oracle默认的隔离级别是: read-committed;
+2)对于并发要求高的互联网公司, 一般用rc(读已提交), 而对于数据一致性要求高的如ERP(包含大量报表), 
+用rr(可重复读);
+3, 通过锁与MVCC机制来实现事务的隔离级别
+1)对读或写加锁, 串行化就是通过加锁来实现的, 但是加锁会影响并发性能;
+2)MVCC: 多版本并发控制
+连续执行的多个事务, 会形成一条记录的多个版本, 即undo日志链, MVCC机制通过旧的快照数据, 
+写的是最新数据(即读写分离), 做到读写并发执行, 并且避免了脏读的问题;
+旧数据与脏数据的区别: 旧数据虽然是历史数据, 但数据之间具有一致性; 而脏数据是不完整的数据;
+MVCC可能会读到旧数据, 解决这个问题的方法有两种: 乐观锁和悲观锁;
+4, 查询操作需要用事务吗
+可重复读的事务, 并且包含多条查询语句时, 就需要用事务;
+其他如读已提交的事务, 或者只有一条查询语句时, 都不需要用事务;
+
+
+>>锁 
+1)全局锁
+对整个数据库加锁, 用于全库的逻辑备份的场景;
+flush tables with read lock;  //加锁
+mysqldump -uroot -p123456 db_name>db_name.sql;  //备份 
+unlock tables;
+
+
+
+
 >>数据的导入、导出与备份
 1, 导出与备份的区别
 数据导出，导出的纯粹是业务数据;
@@ -897,6 +1005,18 @@ mysqldump -uroot -p 数据库名(imooc) > 路径(E:/demo.sql)
 4, 备份
 全量备份(第一次)->增量备份1->增量备份2->....
 数据的备份需要在linux环境，并且没有图形用户界面，具体操作另行百度;
+
+
+>>分库分表
+1, 垂直分片
+将数据库按照业务场景分为多个库, 将表的列进行拆分, 一张表拆为多个表;
+2, 水平分片
+单表的数据量太大, 对数据进行水平拆分, 方法: 
+1)取模拆分
+优点是数据均匀, 缺点是后续可能需要迁移大量数据;
+2)按范围分片
+缺点是数据可能不均匀;
+实践中常将这两种方式结合, 先按范围分片, 然后在范围内取模分片;
 
 
 >>配置文件my.ini
@@ -1129,119 +1249,6 @@ select
 	@cid:=cid
 from sc, (select @rank:=0, @sco:=null, @cid:=null) as t
 order by cid, score desc;
-
-
-
->>索引高级
-primary key InverterModel_PK using btree(ManufacturerID, ID)
-key Product_Name_IX using btree(Name)
-key InverterDevice_IX using btree(InverterID, DeviceID)
-1, mysql的索引使用B+树, B+树的特点:
-1)一个结点存多条数据, 通常为一页, InnoDB中一页的大小为16KB, 3层的B+树就可以保存大约
-2000万条数据;
-2)非叶子结点只存索引字段, 并且非叶子节点的数据在叶子节点中冗余保存一份;
-3)叶子节点包含索引字段, 和主键(或指向数据的指针或数据记录本身);
-4)叶子节点通过双向指针进行连接;
-2, 聚集索引与非聚集索引
-1)非聚集索引: 索引文件与数据文件分离
-MyISAM采用非聚集索引, 叶子结点存索引字段与指向数据记录的指针, 一个MyISAM表由三个文件
-组成: test.frm(表结构)、test.myi(表索引文件)、test.myd(表数据文件);
-2)聚集索引: 索引与数据保存在一起
-InnoDB的主键索引与其他索引的存储方式不同;
-对于主键索引, 叶子结点包含主键字段与整条数据记录;
-对于其他索引, 叶子结点包含索引字段与对应的主键值, 通过主键值进行回表查找数据记录;
-一个InnoDB表只包含两个文件: test.frm(表结构)、test.ibd(索引与数据在一起);
-3, 为什么主键要用自增的整型, 而不建议用uuid
-1)整型占用空间小;
-2)整型比较大小时速度更快;
-3)索引文件在插入时就会进行排序, 使用自增的主键可以避免插入数据时频繁移动数据, 
-大大提高性能;
-4, 联合索引的最左前缀匹配
-是指使用联合索引的最左前缀来匹配查询条件, 如联合索引为(A, B, C), 则只是用A列、
-或(A, B)列、或(A, B, C)列来进行查询;
-5, 前缀索引
-对于长字符串或大文本字段建立索引, 可以使用前缀索引;
-create index idx_user_name_5 on user(name(5));
-前缀索引是非聚集索引(或二级索引、辅助索引), 叶子节点保存的是主键值, 需要通过回表
-进行二次查询;
-6, 索引失效的几种情况
-1)联合索引中不符合最左前缀原则;
-2)where中对索引列进行运算;
-3)where中字符串不加引号;
-4)模糊查询时在前面加%;
-5)or连接的条件中其中一侧没有索引;
-6)mysql评估走索引会比全表扫描更慢的情形;
-注: 在业务场景中, 推荐使用联合索引, 而非单列索引, 避免回表查询;
-7, 使用explain对查询进行查询计划分析;
-explain select id, name from user where name = 'zhao';
-8, 联合排序的索引优化
-联合索引默认都是升序排列的, 所以联合排序的字段同为升序或同为降序的效率最高, 否则会不走索引：
-create index idx_user_name_phone on user(name, phone);  //索引默认为升序
-select id, name, phone from user group by name desc, phone desc;  //走索引
-select id, name, phone from user group by name asc, phone desc;  //部分不走索引
-如果建立如下索引:
-create index idx_user_name_phone_ad on user(name asc, phone desc);  //指定索引的排序规则
-则第二个查询语句就会走索引;
-
-
->>事务高级
-1, 事务的四种隔离级别
-InnoDB定义了四种隔离级别, 级别越高隔离性越好, 但性能就越低;
-隔离性是由mysql的各种锁以及MVCC机制来实现的;
-client1:
-set transaction isolation level read uncommitted;
-begin
-	update account set balance = balance + 500 where id = 1;  //1
-commit 
-begin 
-	update account set balance = balance + 300 where id = 1;  //2
-commit
-client2:
-set transaction isolation level read uncommitted;
-begin 
-	select * from account where id = 1;  //1
-	select * from account where id = 1; //2
-commit
-1)read-uncommitted(读未提交): 有脏读问题
-执行完client1-1但未提交, client2-1就能读到修改后的500, 这是脏读;
-2)read-committed(读已提交): 有不可重复读问题
-执行完client1-1并提交, client2-1读到500, 然后执行client1-2并提交, client2-2读到800,
-这属于不可重复读;
-3)repeatable read(可重复读): 有幻读问题
-也叫快照读, 执行client1-1并提交, client2-1读到500, 然后执行client1-2并提交, 
-client2-2读到的仍然是500, 这叫可重复读; 但数据库实际存储的值是800, 读到的却是500, 
-这叫幻读;
-4)serializable(串行化): 不可并发
-串行化就是所有事务串行执行, 不存在以上并发执行的各种问题, 但效率极低, 不可用;
-2, 不同事务的应用场景
-1)mysql默认的隔离级别是: repeatable read; oracle默认的隔离级别是: read-committed;
-2)对于并发要求高的互联网公司, 一般用rc(读已提交), 而对于数据一致性要求高的如ERP(包含大量报表), 
-用rr(可重复读);
-3, 通过锁与MVCC机制来实现事务的隔离级别
-1)对读或写加锁, 串行化就是通过加锁来实现的, 但是加锁会影响并发性能;
-2)MVCC: 多版本并发控制
-连续执行的多个事务, 会形成一条记录的多个版本, 即undo日志链, MVCC机制通过旧的快照数据, 
-写的是最新数据(即读写分离), 做到读写并发执行, 并且避免了脏读的问题;
-旧数据与脏数据的区别: 旧数据虽然是历史数据, 但数据之间具有一致性; 而脏数据是不完整的数据;
-MVCC可能会读到旧数据, 解决这个问题的方法有两种: 乐观锁和悲观锁;
-4, 查询操作需要用事务吗
-可重复读的事务, 并且包含多条查询语句时, 就需要用事务;
-其他如读已提交的事务, 或者只有一条查询语句时, 都不需要用事务;
-
-
->>分库分表
-1, 垂直分片
-将数据库按照业务场景分为多个库, 将表的列进行拆分, 一张表拆为多个表;
-2, 水平分片
-单表的数据量太大, 对数据进行水平拆分, 方法: 
-1)取模拆分
-优点是数据均匀, 缺点是后续可能需要迁移大量数据;
-2)按范围分片
-缺点是数据可能不均匀;
-实践中常将这两种方式结合, 先按范围分片, 然后在范围内取模分片;
-
-
-
 
 
 	
