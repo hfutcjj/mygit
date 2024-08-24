@@ -973,13 +973,43 @@ MVCC可能会读到旧数据, 解决这个问题的方法有两种: 乐观锁和
 
 
 >>锁 
-1)全局锁
+1, 全局锁
 对整个数据库加锁, 用于全库的逻辑备份的场景;
 flush tables with read lock;  //加锁
-mysqldump -uroot -p123456 db_name>db_name.sql;  //备份 
+mysqldump -uroot -p123456 db_name > db_name.sql;  //备份 
 unlock tables;
-
-
+注: 全局锁严重影响并发性能, 在InnoDB引擎中, 可以在备份时加上参数 --single-transaction 
+来完成不加锁的一致性数据备份:
+mysqldump --single-transaction -uroot -p123456 db_name > db_name.sql;
+2, 表级锁
+1)表锁
+表锁又分为读锁(read lock)和写锁(write lock); 
+//加锁
+lock tables t_name[, t2_name...] read/write;
+//解锁
+unlock tables;
+注: 读锁与写锁的区别:
+加读锁, 别人能读(但自己不能写);
+加写锁, 别人不能读写(自己能读写);
+2)元数据锁(MDL)
+MDL是系统自动控制的, 当对一张表进行增删改查操作时, 自动加MDL读锁(共享), 当对表结构进行变更操作时, 
+自动加MDL写锁(排他);
+3)意向锁
+A进程对表加行锁时, 会同时对表加意向锁, 这样当B进程对表加表锁时, 就不用再逐行检查了, 提高效率;
+3, 行锁
+锁粒度最小, 并发度最高, 应用在InnoDB引擎;
+InnoDB的数据是基于索引组织的, 行锁是通过对索引上的索引项加锁来实现的, 而不是对记录加锁;
+1)行锁
+锁定单行记录;
+分为共享锁(S)与排他锁(X);
+select ... //不加任何锁
+insert/update/delete ... //自动加排他锁
+select ... lock in share mode //手动加共享锁
+select ... for update //手动加排他锁
+2)间隙锁
+锁定索引记录的间隙, 防止在这个间隙内进行插入, 产生幻读;
+3)临键锁
+行锁+间隙锁, 既锁住数据, 也锁住数据前面的间隙;
 
 
 >>数据的导入、导出与备份
