@@ -1264,6 +1264,50 @@ fmt.Printf("user: %s, host: %s, port: %d\n", user, host, port)
 go run main.go -u cjj -h uhome
 
 
+>>socket编程
+1, 分为服务端和客户端, 使用net包;
+2, 常用函数
+Listen(): 服务端监听
+Accept(): 服务端接收客户端连接
+Dial(): 客户端创建与服务器的连接
+3, 服务端流程
+1)监听 Listen/ListenPacket
+ln, err := net.Listen("tcp", "127.0.0.1:8888")
+defer ln.Close()
+2)接收客户端连接 Accept
+conn, err := ln.Accept()
+defer conn.Close()
+3)处理客户端连接
+conn.RemoteAddr()  //客户端的地址
+conn.Read(b)  //读数据
+conn.Write(b)  //写数据
+4, 客户端流程
+1)连接服务端
+conn, err := net.Dial("tcp", "127.0.0.1:8888")
+defer conn.Close()
+2)进行读写操作
+同服务端conn
+5, 使用带缓冲的读写
+reader := bufio.NewReader(conn)  //conn实现了io.Reader接口
+reader.ReadLine()
+6, 处理多客户端的连接
+for {
+	conn, err := ln.Accept()
+	go handleConn(conn)
+}
+func handleConn(conn net.Conn) {
+	defer conn.Close()
+	fmt.Printf("Recieve a connection from %s....\n, conn.RemoteAddr().String())
+	reader := bufio.NewReader(conn)
+	for {
+		msg, _, err := reader.Readline()
+		if err == io.EOF {
+			return
+		}
+		fmt.Printf("Recieve message: %s\n", msg)
+	}
+}
+
 
 >>请求与响应
 1, http是无状态协议，也就是服务端不保留连接的相关信息;
@@ -1489,86 +1533,6 @@ session是在服务器端保存用户信息;
 2)将session的ID值作为cookie发送给浏览器
 3)以后再发送请求浏览器就会携带该cookie
 4)服务器获取cookie并根据它的值找到服务器中对应的session, 也就知道是哪个用户了
-
-
->>socket编程
-1, 步骤: 
-ln, err := net.Listen("tcp", ":8080")  //服务端监听指定端口
-conn, err := ln.Accept()  //服务端接收客户端的连接
-conn, err := net.Dial("tcp", ":8080")  //客户端请求连接
-conn.Read([]byte s)  //服务端和客户端都可以通过Read()读取数据
-conn.Write([]byte s) //服务器和客户端都可以通过Write()发送数据
-2, 示例
-1)server.go
-//监听端口
-func main() {
-	var (
-		ln net.Listener
-		conn net.Conn
-		err error
-	)
-	//监听端口
-	if ln, err = net.Listen("tcp", ":8080"); err != nil {
-		fmt.Println("Listen error:", err)
-		return
-	}
-	defer ln.Close()
-	//接收连接请求
-	for {
-		if conn, err = ln.Accept(); err != nil {
-			fmt.Println("Accept error:", err)
-			return
-		}
-		//并发处理每个请求
-		go handleConn(conn)
-	}
-}
-func handleConn(conn net.Conn) {
-	defer conn.Close()
-	//获取客户端地址
-	addr := conn.RemoteAddr().String()
-	fmt.Println("Accept new Connection from", addr)
-	//读取客户端的请求
-	for {
-		buf := make([]byte, 1024)
-		n, _ := conn.Read(buf)
-		data := string(buf[:n])
-		fmt.Println("Received data from client:", data)
-		if strings.ToLower(data) == "exit" {  //客户端发送exit代表终止连接
-			return 
-		}
-		//给客户端发送数据
-		newData := "Hello, " + strings.ToUpper(data)
-		conn.Write([]byte(newData))
-	}
-}
-2)client.go
-func main() {
-	var (
-		conn net.Conn
-		err error
-	)
-	//请求连接
-	if conn, err = net.Dial("tcp", ":8080"); err != nil {
-		fmt.Println("Connect error:", err)
-		return
-	}
-	defer conn.Close()
-	//发送数据
-	for {
-		fmt.Print("Enter your data: ")
-		var data string
-		fmt.Scanln(&data)
-		conn.Write([]byte(data))
-		if strings.ToLower(data) == "exit" { //输入exit代表退出
-			return 
-		}
-		//接收服务器的数据
-		buf := make([]byte, 1024)
-		n, _ := conn.Read(buf)
-		fmt.Println("Recieved data from server:", string(buf[:n]))
-	}
-}
 
 
 
