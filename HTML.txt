@@ -893,23 +893,6 @@ max-width, min-width, max-device-width, min-device-width等;
 @media only screen and (max-width: 600px) { //移动端设定 }
 
 
->>多列布局
-1, column-width
-每列的宽度, auto / 200px, 如为auto则由其他属性决定;
-2, column-count
-列数, auto / 3, 如为auto则表示1列;
-3, column-gap
-列间距，normal / 2em / 20px，默认为normal = 1em = font-size值;
-4, column-rule
-列间的边框，相当于border，区别是边框宽度改变不会影响列的位置;
-column-rule: 2px dotted gray;
-5, column-span
-跨列设置，应用于子列, none / all, 要么不跨，要么全跨;
-默认值为none, 表示不跨任何列，all表示跨所有列;
-总: columns综合设置, 如
-columns: 200px 3;
-
-
 >>使用css进行图像处理
 img{filter: ...}
 常见的属性如下:
