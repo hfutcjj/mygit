@@ -812,6 +812,18 @@ show triggers;
 drop trigger [db_name].trigger_name;  --如果没有指定db_name, 默认为当前数据库
 
 
+
+>>mysql自带的系统数据库
+1, mysql
+存储mysql服务器正常运行所需要的各种信息(时区、主从、用户、权限等);
+2, information_schema
+提供了访问数据库元数据的各种表和视图, 包括数据库、表、字段类型及访问权限等;
+3, performance_schema
+为mysql服务器运行时状态提供了一个底层监控功能, 主要用于手机数据库服务器行能参数;
+4, sys
+包含了一些列方便DBA和开发人员利用performance_schema性能数据库进行性能调优和诊断的视图;
+
+
 >>存储引擎
 1, 定义
 mysql用不同的技术将数据保存在内存中，就是存储引擎;
@@ -891,7 +903,7 @@ create index idx_user_name_phone_ad on user(name asc, phone desc);  //指定索�
 则第二个查询语句就会走索引;
 
 
->>事务机制
+>>事务初级
 1, RDBMS = SQL语句 + 事务(ACID)
 2, mysql有5种日志文件，其中undo日志和redo日志是与事务有关的,
 执行SQL之前，先将数据文件拷贝到undo日志, 然后执行update/delete操作，将结果保存到redo日志,
@@ -906,6 +918,10 @@ commit / rollback;
 一致性: 不管在任何给定的时间，并发事务有多少，事务必须保证运行结果的一致性;
 隔离性: 事务不受其他并发事务的影响，在给定的时间内，该事务是数据库唯一运行的事务;
 持久性；事务一旦提交，结果便是永久性的，即使发生宕机，依然可以依靠事务日志完成数据的持久化;
+注: 原子性由 undo log 实现;
+持久性由 redo log 实现;
+一致性由 undo log + redo log 实现;
+隔离性由 锁 + MVCC 实现;
 5, 事务的隔离级别
 默认情况下mysql不允许事务之间相互读取临时数据, 但可以修改这种隔离级别;
 1)四种隔离级别
