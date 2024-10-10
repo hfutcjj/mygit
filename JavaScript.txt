@@ -1316,19 +1316,53 @@ Object.defineProperty(o3, a, {value: 'zhao'});
 
 >>异步操作
 1, Promise
-new Promise((resolve, reject) => {
+1)Promise对象是为了解决异常的回调问题而引入的, Promise对象有两个属性: 
+状态属性: resolved(或fullfilled)、rejected;
+结果属性;
+2)创建Promise对象的几种方法: 
+i.通过构造函数创建
+let p = new Promise((resolve, reject) => {
 	let flag = Math.random()
 	if(flag >= 0.5) {
-		resolve('big enough')  //成功的时候调用resolve()
+		resolve('success')  //resolve()将Promise对象的状态由 pending 变为 resolved;
 	} else {
-		reject('too small')  //失败的时候调用rejecct()
-		//throw new Error('too small')  等价
+		reject('failed')  //reject()将Promise对象的状态由 pending 变为 rejected;
+		//throw new Error('too small')  //等价于reject(), 抛出异常也能将Promise对象的状态由 pending 变为 rejected;
 	}
-}).then(res => {  //处理成功的逻辑
+});
+p.then(value => {  //处理成功的回调
 	console.log(res)
-}).catch(err => {  //处理失败的逻辑
+}, reason => {  //处理失败的回调
+	console.log(reason)  
+})
+p.catch(err => {  //捕获失败的回调
 	console.log(err)
 })
+ii.通过Promise类的resolve或reject函数来创建
+let p = Promise.resolve('success')
+let p = Promise.reject('failed')
+注: Promise对象的状态只能修改一次;
+3)Promise类的常用函数
+i.Promise.all([p1, p2, ...])
+如果数组的每个元素都为resolved的Promise对象, 则结果为resolved的Promise对象;
+如果其中有一个为rejected的Promise对象, 则结果为rejected的Promise对象;
+ii.Promise.race([p1, p2, ...])
+返回数组中第一个状态改变的Promise对象;
+4)then函数的返回值也是一个Promise对象
+p.then(value => {
+	//有以下几种情况
+	return Promise.resolve(12);
+	return Promise.reject('error');
+	return 12; //成功的Promise对象, 值属性为12
+	throw 'error';  //失败的Promise对象, 值属性为error
+});
+注: 没有返回值即返回undefined, 也是值为undefined的Promise对象;
+5)异常的穿透
+在多个then的链式调用时, 异常可以放在最后进行处理, 中间不用指定失败的回调;
+p.then(value => {})
+ .then(value => {})
+ .then(value => {})
+ .catch(reason => {});
 2,async await
 async放在函数前表示该函数是一个异步操作, await后面的值自动转换为Promise对象;
 async函数里可以包含多个异步操作, 等所有await执行完, 再执行then操作;
@@ -1349,18 +1383,6 @@ f().then(res => {
 	console.log(err);  //'请求数据失败'
 });
 
-
->>记录视频播放的时间
-<video src="..." controls></video>
-const video = document.querySelector('video');
-//视频帧变化时触发, 在该事件中获取当前播放的时间, 保存到本地存储或者数据库
-video.ontimeupdate = function(){  
-	localStorage.setItem('currentTime', video.currentTime);
-}
-//页面加载时触发, 在该事件中取出视频播放记录
-video.onloadeddata = function(){  //
-	video.currentTime = localStorage.getItem('currentTime') || 0;
-}
 
 
 

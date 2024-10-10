@@ -124,7 +124,7 @@ x-可以进入目录
 注: 文件拥有w权限不可删除文件, 必须目录拥有w权限才可删除文件;
 注: x是文件的最高权限, w是目录的最高权限;
 2, chmod 修改文件权限
--r 递归修改目录下所有文件的权限
+-R 递归修改目录下所有文件的权限
 chmod u+w,g-w,o-x,a+r test
 chmod g=rwx test
 chmod 664 test
@@ -132,7 +132,7 @@ chmod 664 test
 常见的数字权限有644和755, 禁止随意给文件赋777的权限;
 注: 用户可以修改自己文件的权限;
 3, chown 修改文件的所有者和所属组
--r 递归修改目录下所有文件的所有者和所属组
+-R 递归修改目录下所有文件的所有者和所属组
 chown user1 test 
 chown uset1:group1 test
 注: 只有root用户才可以修改文件的所有者和所属组, 普通用户只可以修改自己文件的权限;
@@ -142,6 +142,7 @@ chown uset1:group1 test
 
 >>Linux命令之查找文件名
 1, locate 根据文件名查找文件
+快速定位文件所在目录, 该指令根据locate数据库进行搜索, 无需遍历整个文件系统, 所以速度很快;
 2, find 功能强大的搜索文件的命令
 格式: find 范围目录 [选项] 文件 
 1)按文件名查找
@@ -149,7 +150,7 @@ chown uset1:group1 test
 -iname 不区分大小写
 find . -name test
 2)按文件大小查找
-find . -size 12k
+find . -size +12k  //+大于 -小于
 3)按文件的时间查找
 find . -atime/mtime/ctime -5  //5天内创建或修改的文件
 4)按照权限查找
@@ -165,11 +166,6 @@ find . -type d/f/l  //目录/普通文件/软链接文件
 find . -size 2k -a -type f
 find . -name zhao -o -name qian
 find . -not -name zhao
-8)链接操作 
--exec 命令2 {} \; 将前面查找的结果作为{}由命令2接着处理
-find . -size +1000k -a -type f -exec ls -lh {} \;
-find /var/log -mtime +10 -exec rm -rf {} \;  //删除/var/log目录里10天前建立的所有文件
--ok 命令2 {} \; 同-exec, 但在操作命令2前会先询问
 
 
 >>Linux命令之查找文件内容
@@ -202,7 +198,7 @@ whoami  //查看当前用户
 
 
 >>Linux命令之压缩与解压缩命令
-1, Linux常见的压缩格式: .tar.gz、.tar.bz2、tar(仅打包)、.gz(仅压缩)、.bz2(仅压缩)、.zip(兼容windows)等;
+1, Linux常见的压缩格式: .tar.gz、.tar.bz2、.tar(仅打包)、.gz(仅压缩)、.bz2(仅压缩)、.zip(兼容windows)等;
 2, 不同格式文件的压缩命令
 1).zip
 zip [选项] 压缩包名 源文件或目录 //压缩
@@ -222,10 +218,6 @@ bzip2 [选项] 源文件
 注: 同gzip, bzip2也是不打包仅压缩;
 4).tar
 tar [选项] [-f 压缩包名] 源文件或目录 
--c 打包
--x 解包
--f 指定压缩包的文件名
--v 显示打包过程
 tar -cvf test.tar demo1 demo2 demo3 //打包
 tar -xvf test.tar //解包
 注: tar命令只打包不压缩;
@@ -240,7 +232,7 @@ tar [选项] 压缩包 源文件或目录
 -f 指定压缩包的文件名 
 -v 显示打包过程 
 -C 指定解压位置, 该选项必须放在压缩包后面, 否则会报错
-tar -zcvf tmp.tar.gz /tmp  //吧/tmp目录打包压缩为.tar.gz格式
+tar -zcvf tmp.tar.gz /tmp  //把/tmp目录打包压缩为.tar.gz格式
 tar -zxvd tmp.tar.gz  //解压并解包.tar.gz格式
 tar -ztvf tmp.tar.gz  //只查看, 不解压 
 tar -zxvf tmp.tar.gz -C /test  //解压到指定目录
@@ -290,6 +282,12 @@ w
 显示历史命令记录
 history 10 //显示最近的10条历史记录
 !10 //执行编号为10的历史指令
+8, 日期时间
+date //当前时间
+date +%Y //年份
+date "+%Y-%m-%d %H:%M:%S"
+date -s "2020-11-03 20:02:10"  //设置时间
+cal [选项] //日历
 
 
 >>vim
