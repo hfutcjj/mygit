@@ -561,7 +561,7 @@ function add(a, b) {
 }
 es6中的做法:
 const add = (a = 10, b = 20) => a + b;
-2, 不定参数
+2, 不定参数/剩余参数
 function fn(...args) { //... }  
 es6中...args代替了es5中的arguments;
 3, 高阶函数
@@ -1114,7 +1114,7 @@ window.innerHeight;
 4)var声明的全局变量都会绑定到window上, 而let不会;
 var a = 1; window.a  //1
 let b = 2; window.b  //undefined
-2, let有了块级作用域, 就不需要引入闭包了
+*2, let有了块级作用域, 就不需要引入闭包了
 1)举例
 const a = [], b = [];
 for(var i = 0; i < 10; i++){ a[i] = () => i; }  a[1]()  //10
@@ -1134,6 +1134,11 @@ for(let i = 0; i < btns.length; i++) {
 let s1 = `My name is ${name}, I am ${age+1} years old next year`;
 let s2 = `Game start, ${f()}`;
 注: 模板字符串中的空格和换行都会原样保留;
+
+
+>>...运算符
+1, 在表达式的左边, 用于解构赋值、和函数的不定参数;
+2, 在表达式的右边, 用于扩展运算符;
 
 
 >>解构赋值
@@ -1208,6 +1213,17 @@ f()
 btn.addEventListener('click', function(){
 	console.log(this) 
 })
+
+
+>>es6中对象的简写
+const name = 'zhao', age = 32;
+const obj = {
+	name,
+	age,
+	say() {
+		console.log(this.name);
+	}
+}
 
 
 >>类
@@ -1292,7 +1308,7 @@ s.add()  //增加元素
 s.delete ()  //删除元素
 s.has()  //是否包含指定元素
 s.forEach(v => {...})  //遍历集合, 同数组
-4, Set的常见应用
+3, Set的常见应用
 1)给数组去重
 var a = [1, 2, 1, 3, 1, 4]
 var b = [...new Set(a)]
@@ -1305,13 +1321,38 @@ var r3 = a.filter(v => !b.includes(v))  //a - b
 
 >>Symbol
 1, 新的原始数据类型Symbol, 表示独一无二的值, 一般用来定义对象的唯一属性名;
-let a = Symbol('kk')  //字符串作为Symbol的描述
+const a = Symbol('kk')  //字符串作为Symbol的描述
 typeof a == 'symbol'  //true
 Symbol('kk') == Symbol('kk');  //false
 2, Symbol作为对象的属性名
 var o1 = {}; o1[a] = 'zhao';  o1  //{Symbol(kk): 'zhao'}
 var o2 = {[a]: 'zhao'};
 Object.defineProperty(o3, a, {value: 'zhao'}); 
+3, Symbol作为对象的属性名, 无法通过Object.keys(obj)来获得, 也无法通过枚举获得, 
+只能通过Object.getOwnPropertySymbols(obj) 或 Reflect.ownKeys(obj) 来获得;
+
+
+>>Generator生成器
+1, 基础知识
+1)在function后面加*, 创建生成器;
+function* fn() {
+	yield 'hello'
+	yield 'world'
+}
+2)调用生成器函数不会立即执行函数, 而是返回一个迭代器对象;
+yield关键字用于暂停函数执行并返回一个值;
+3)执行 
+可以通过迭代器对象的next()方法逐次执行生成器函数;
+也可以通过 for...of 来遍历迭代器;
+const iterator = fn()
+//next()
+iterator.next()  //{value: 'hello', done: false}
+iterator.next()  //{value: 'world', done: false}
+iterator.next()  //{value: undefined, done: true}
+//for...of
+for(let item of iterator) {
+	//item为每次yield的返回值
+}
 
 
 >>异步操作
@@ -1363,9 +1404,16 @@ p.then(value => {})
  .then(value => {})
  .then(value => {})
  .catch(reason => {});
-2,async await
-async放在函数前表示该函数是一个异步操作, await后面的值自动转换为Promise对象;
-async函数里可以包含多个异步操作, 等所有await执行完, 再执行then操作;
+2,async函数 与 await表达式
+1)async函数返回一个Promise对象, 规则与Promise对象的then方法规则相同;
+async function fn() {
+	//
+}
+2)await右侧如果是成功的promise对象, 则await的返回值是promise成功的值;
+如果是失败的promise对象, 则await抛出异常;
+如果是其他值, 则await直接返回该值;
+注: await必须写在async函数中;
+3)举例 
 async function f() {
 	let s = await 'hello world';  //异步操作1(假设)
 	let data = await s.split(' ');  //异步操作2
