@@ -18,8 +18,9 @@
 SATA硬盘, a表示第一块硬盘, 1表示第一个分区;
 2)挂载点: 即文件名, 如/dev/sda1。把硬件设备绑定到指定挂载点上, 就称为挂载;
 3)挂载命令
+lsblk [-f]  //查看整体硬盘分区的挂载情况
 mount [-l]	//显示系统中所有已挂载的设备
-mount [-t 文件系统] 设备文件名 挂载点  //挂载 
+mount [-t 文件系统] 设备名 挂载点  //挂载 
 如: mount /dev/sr0 /mnt/cdrom
 unmount 设备文件名或挂载点  //卸载
 
@@ -255,6 +256,16 @@ tar -zxvf tmp.tar.gz -C /test  //解压到指定目录
 -p 显示pid和程序名
 -r 显示路由表
 注: 本地常用选项 -tuln;
+5, 修改ip地址(改为固定ip)
+vim /etc/sysconfig/network-scripts/ifcfg-ens33
+BOOTPROTO="static"  //默认dhcp是动态分配
+#IP地址
+IPADDR=192.168.200.130
+#网关
+GATEWAY=192.168.200.2
+#域名解析器
+DNS1=192.168.200.2
+然后重启网络服务;
 
 
 >>Linux命令之其他命令
@@ -361,28 +372,36 @@ ctrl+Y 粘贴ctrl+U剪切的内容
 注: netstat只列出有关网络通讯的进程, 而ps则是包含本地进程在内的所有进程;
 注: 可使用通道技术来组合使用这些命令, 如
 ps -ef | grep vim  //筛选包含字符串"vim"的进程
-5,shutdown -r now
-立即重启Linux;
-6, 在命令的后面添加一个 & 符号, 就成为后台进程
+5, 在命令的后面添加一个 & 符号, 就成为后台进程
 ping www.baidu.com >> cao.txt &
-7, 防止后台进程被挂起
+6, 防止后台进程被挂起
 nohup ./uhome-website-backend &
 
 
 >>Linux定时任务管理
-1, crontab -l
+1, crontab //周期性执行任务
+1)crontab -l
 查询当前有哪些任务调度;
-2, crontab -e 
+2)crontab -e 
 编辑crontab定时任务, 如 
 */1 * * * * echo 'hello' >> /home/cjj/text.txt
 其中, *依次代表分、时、日、月、周几, 如: 
 0 8,12,16 * * * 命令  //每天的8点0分, 12点0分, 16点0分
 0 5 * * 1-6  //周一到周六的5点0分
 */n  //每隔n分钟
-3, crontab -r 
+3)crontab -r 
 删除当前用户的所有任务调度;
-4, service crond restart 
+4)service crond restart 
 重启任务调度;
+2, at  //一次性执行任务
+1)atq  
+查看系统中还没执行的工作任务;
+2)atrm 编号
+删除已经设置的任务;
+3)示例
+at now +2 minutes 
+at> date >> cao.txt  
+//按ctrl+D结束命令
 
 
 

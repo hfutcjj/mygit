@@ -14,6 +14,13 @@
 3, 对null的变量使用typeof, 返回的是'object';
 
 
+>>通用的判断变量的方式
+Object.prototype.toString.call(o)
+o为1: [object Number]
+o为'hi': [object String]
+o为[]: [object Array]
+
+
 >>javascript没有块级作用域；
 for(var i = 0; i < 10; i++){
 	//...
@@ -394,7 +401,12 @@ arr; //[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 var a = [1, 2, 3, 4]
 a.fill(8);  //[8, 8, 8, 8]
 a.fill('a', 2);  //[8, 8, 'a', 'a']
-22, Array.from()
+22, arr.flat(depth)
+将嵌套的数组扁平化; 
+var a = [1, [2, [3, 4, 5]]];
+a.flat(2);  //[1, 2, 3, 4, 5]
+如果对嵌套的深度不确定, 就传入Infinity;
+23, Array.from()
 用于将伪数组、字符串、Set、Map等可迭代对象转化为数组;
 var a1 = Array.from([1, 2, 3], n => n*n);  //[1, 4, 9], 类似于arr.map()
 var a3 = Array.from(new Set([1, 2, 1, 3, 1, 4]));  //[1, 2, 3, 4], 可用于数组的去重
@@ -1355,9 +1367,9 @@ for(let item of iterator) {
 }
 
 
->>异步操作
+>>异步操作: Promise、async、await
 1, Promise
-1)Promise对象是为了解决异常的回调问题而引入的, Promise对象有两个属性: 
+1)Promise对象是为了解决异步的回调问题而引入的, Promise对象有两个属性: 
 状态属性: resolved(或fullfilled)、rejected;
 结果属性;
 2)创建Promise对象的几种方法: 
@@ -1385,7 +1397,7 @@ let p = Promise.reject('failed')
 注: Promise对象的状态只能修改一次;
 3)Promise类的常用函数
 i.Promise.all([p1, p2, ...])
-如果数组的每个元素都为resolved的Promise对象, 则结果为resolved的Promise对象;
+如果数组的每个元素都为resolved的Promise对象, 则结果为resolved的Promise对象, 且该Promise对象的值为[value1, value2, ...];
 如果其中有一个为rejected的Promise对象, 则结果为rejected的Promise对象;
 ii.Promise.race([p1, p2, ...])
 返回数组中第一个状态改变的Promise对象;
@@ -1398,38 +1410,47 @@ p.then(value => {
 	throw 'error';  //失败的Promise对象, 值属性为error
 });
 注: 没有返回值即返回undefined, 也是值为undefined的Promise对象;
-5)异常的穿透
+5)异常穿透
 在多个then的链式调用时, 异常可以放在最后进行处理, 中间不用指定失败的回调;
 p.then(value => {})
  .then(value => {})
  .then(value => {})
  .catch(reason => {});
+6)中断then的链式调用
+在then中返回一个pending状态的Promise对象, 后续的then就不会崽执行;
 2,async函数 与 await表达式
 1)async函数返回一个Promise对象, 规则与Promise对象的then方法规则相同;
 async function fn() {
-	//
+	return 12;
+	//throw 'wrong'
 }
-2)await右侧如果是成功的promise对象, 则await的返回值是promise成功的值;
-如果是失败的promise对象, 则await抛出异常;
+fn();  //Promise对象
+(async function() {
+	//...
+})().then(value => {
+	//...
+}).catch(reason => {
+	//...
+});
+2)await表达式返回一个值:
+如果是成功的promise对象, 则await的返回值是promise成功的值属性;
+如果是失败的promise对象, 则await抛出异常, 需要通过try...catch处理;
 如果是其他值, 则await直接返回该值;
 注: await必须写在async函数中;
-3)举例 
-async function f() {
-	let s = await 'hello world';  //异步操作1(假设)
-	let data = await s.split(' ');  //异步操作2
-	let flag = Math.random()
-	if(flag >= 0.5) {  //模拟成功
-		return data;
-	} else {  //模拟失败
-		throw new Error('请求数据失败');
-		return await Promise.reject('请求数据失败');  //或者
-	}
+3)async结合await
+//异步请求函数
+function fn() {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve('zhao');
+		}, 2000)
+	});
 }
-f().then(res => {
-	console.log(res);  //['hello', 'world']
-}).catch(err => {
-	console.log(err);  //'请求数据失败'
-});
+//使用
+(async function(){
+	const r = await fn();
+	console.log(r);
+})()
 
 
 
