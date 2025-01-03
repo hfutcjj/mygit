@@ -1,0 +1,202 @@
+>>nodejs的作用
+1, 开发服务端应用
+2, 开发工具类应用(Webpack、Vite、Babel等)
+3, 开发桌面端应用(nodejs -> electron -> 各种桌面端程序)
+
+
+>>前端js = ECMAScript + Web API, 其中Web API = DOM + BOM + ...;
+nodejs = ECMAScript + Node API, 其中Node API = fs + path + url + ...;
+nodejs不能使用DOM与BOM;
+
+
+>>缓存: Buffer
+缓存(字节序列)的操作;
+1, Buffer.alloc(100);
+内容全为00;
+2, Buffer.allocUnsafe(100);
+与前者的区别是, 该方法不对内存空间进行清空, 可能含有旧数据, 有点是快速;
+3, Buffer.from('hello');
+4, Buffer转为字符串
+const buf = Buffer.from([105, 108, 111, 112]);
+const s = buf.toString();
+注: Buffer每个英文字符占1个字节, 中文占3个字节;
+
+
+>>文件操作: fs
+1, 导入fs模块
+const fs = require('fs');
+2, 文件写入
+1)写入
+fs.writeFile('f1.txt', data, [option], err => {
+	if(err) {
+		console.warn('写入失败');
+		return;
+	}
+});
+注: 如果文件不存在, 则会创建文件;
+第三个参数可选, 是一个对象, 如{flag: 'a'}表示追加写入;
+fs.writeFileSync('f1.txt', data)为同步写入, 使用不多;
+2)追加写入
+fs.appendFile() / fs.appendFileSync()
+参数与writeFile() / writeFileSync() 完全相同;
+3)流式写入
+const ws = fs.createWriteStream('f1.txt');
+ws.write('11');
+ws.write('22');
+ws.close();
+流式写入可以减少打开与关闭文件的次数, 适用于大文件写入或频繁写入的场景;
+3, 文件读取
+1)异步读取
+fs.readFile('f1.txt', (err, data) => {
+	if(err) {
+		console.warn('读取失败');
+		return
+	}
+	console.log(data.toString());
+});
+注: 读取的内容是一个Buffer, 使用toString()将其转换为字符串;
+2)同步读取
+let data = fs.readFileSync('f1.txt');
+let s = data.toString();
+3)流式读取
+const rs = fs.createReadStream('f1.txt');
+fs.on('data', chunk => {
+	console.log(chunk)
+});
+//可选
+fs.on('end', () => {
+	console.log('读取结束')
+});
+4, 案例: 文件复制
+//采用流式读取与写入, 占用内存空间最小
+fs.on('data', chunk => {
+	fs.write('f2.txt');
+})
+5, 文件重命名或移动
+fs.rename('f1.txt', 'f2.txt', err => {});
+6, 文件删除
+fs.unlink('f1.txt', err => {});
+fs.rm('f1.txt', err => {});  //等价
+7, 文件夹操作
+1)创建文件夹
+//创建单个
+fs.mkdir('cao', err => {});
+//递归创建
+fs.mkdir('a/b/c', {recursive: true}, err => {}); 
+2)读取文件夹
+fs.readdir('cao', (err, files) => {
+	//files是数组
+})
+3)删除文件夹
+//删除单个
+fs.rmdir('cao', err => {})
+//递归删除
+fs.rm('a/b/c', {recursive: true}, err => {})
+8, 查看资源的状态
+rs.stat('f1.txt', (err, data) => {
+	//data为包含各种状态属性的对象
+})
+9, __dirname
+表示源程序所在目录的绝对路径, 不会随着在哪执行程序而改变;
+10, __filename
+当前文件的绝对路径;
+
+
+>>路径: path
+const path = require('path');
+1, 获取操作系统的路径分隔符
+path.sep
+2, 拼接规范的绝对路径
+path.resolve(__dirname, './test.html')
+3, 解析路径
+path.parse(__filename)
+4, 路径的目录名
+path.dirname
+5, 路径的文件名
+path.basename
+6, 路径的扩展名
+path.extname
+
+
+>>网络: http
+1, 创建服务
+//导入http模块
+const http = require('http')
+//创建服务对象
+const server = http.createServer((request, response) => {
+	response.end('hello nodejs server')  //设置响应体
+})
+//监听端口, 启动服务
+server.listen(9000, () => {
+	console.log('服务已经启动....')
+})
+注: 解决中文乱码的方法是设置响应头:
+response.setHeader('content-type', 'text/html;charset=utf-8');
+2, 获取请求信息
+1)请求头信息
+request.headers  //包含所有请求头的对象
+request.method   //请求方法
+request.url		 //url路径, 只包含路径与查询字符串, 如 /search?name=zhao&age=30
+2)解析url
+require('url').parse(request.url)  或者
+new URL(request.url, 'http://localhost:9000')
+返回的结果都是包含url各字段的对象;
+3, 设置响应信息
+1)设置响应状态码
+response.statusCode = 200 
+2)设置响应头
+response.setHeader('key', 'value') 
+3)设置响应体
+response.write('hello')
+response.write('world')
+response.end()
+注: 可以有多个write()方法, 有且只能有一个end()方法并放在最后;
+
+
+>>模块化
+nodejs使用的 module.exports/require 是commonJS的模块系统, 与ES6的 import/export 模块系统不同;
+1, 导出
+//a.js
+function f1() {}
+function f2() {}
+module.exports = {
+	f1,
+	f2
+}
+或者
+exports.f1 = f1
+exports.f2 = f2
+注: exports = module.exports = {}, 但是因为require()使用的是module.exports的值, 
+所以exports不能用来导出基本类型的数据;
+2, 导入 
+1)导入js
+const a = require('./a.js')
+a.f1()
+a.f2()
+2)导入json
+//b.json
+{
+	"name": "zhao",
+	"age": 32
+}
+//test.js
+const b = require('./b.json')
+b.name
+3)导入文件夹
+首先检测文件夹下package.json文件中main属性对应的文件, 如果文件存在则导入, 不存在则报错;
+如果不存在package.json文件或者不存在main属性, 则会导入文件夹下的index.js或index.json文件;
+如果以上两者都不存在, 则报错;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
