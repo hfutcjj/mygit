@@ -360,22 +360,27 @@ ctrl+U 剪切光标当前位置一直到命令开头的内容
 ctrl+Y 粘贴ctrl+U剪切的内容
 
 
->>Linux系统管理命令
-1, ifconfig
-查看网卡的IP地址;
-2, netstat -tulpn 或者 netstat -ano
-查看网络端口号;
-3, ps -ef
-查看所有正在运行的进程;
-4, kill -9 PID (强制关闭) / kill -s quit PID (正常退出)
-杀死PID进程;
-注: netstat只列出有关网络通讯的进程, 而ps则是包含本地进程在内的所有进程;
-注: 可使用通道技术来组合使用这些命令, 如
-ps -ef | grep vim  //筛选包含字符串"vim"的进程
-5, 在命令的后面添加一个 & 符号, 就成为后台进程
-ping www.baidu.com >> cao.txt &
-6, 防止后台进程被挂起
-nohup ./uhome-website-backend &
+>>Linux进程管理
+1, ps -aux
+查看所有进程的信息, 如果要查看某个进程, 可以使用
+ps -aux | grep xxx
+2, ps -ef 
+以全格式查看当前所有进程, 可以查看进程的父进程;
+3, 终止进程
+kill [选项] 进程号
+killall 进程名称  //进程名称支持通配符
+注: 选项为 -9 表示强迫进程立即终止
+4, pstree
+pstree [选项]   //以树状形式查看进程
+-p: 显示进程PID
+-u:显示进程的所属用户
+
+
+>>Linux服务管理
+
+
+
+
 
 
 >>Linux定时任务管理
@@ -402,6 +407,8 @@ nohup ./uhome-website-backend &
 at now +2 minutes 
 at> date >> cao.txt  
 //按ctrl+D结束命令
+
+
 
 
 

@@ -136,6 +136,7 @@ response.setHeader('content-type', 'text/html;charset=utf-8');
 1)请求头信息
 request.headers  //包含所有请求头的对象
 request.method   //请求方法
+request.ip       //请求端ip
 request.url		 //url路径, 只包含路径与查询字符串, 如 /search?name=zhao&age=30
 2)解析url
 require('url').parse(request.url)  或者
@@ -188,10 +189,159 @@ b.name
 如果以上两者都不存在, 则报错;
 
 
+>>包管理工具: npm
+1, 初始化
+npm init [-y]
+注: 包名默认是文件夹名称, 不能使用大写和中文;
+2, 下载安装包
+npm i/install jquery 
+npm i [-S | -D] jquery  //-S(默认)是保存为生产依赖, -D为开发依赖
+npm i [-g] jquery  //-g为全局安装, 默认是安装到运行命令所在的目录
+注: windows默认不允许npm全局命令执行脚本文件, 所以需要修改windows的执行策略:
+以管理员身份打开powershell命令行 -> 键入命令set-ExecutionPolicy remoteSigned;
+3, 安装包里的所有依赖
+npm i/install 
+会依据package.json和package-lock.json的依赖声明安装项目依赖;
+4, 安装指定版本的包
+npm i jquery@1.11.2
+5, 删除依赖包
+npm remove jquery  //局部删除
+npm remove -g jquery  //全局删除
+6, 命令的别名
+可以在package.json的"scripts"属性中配置命令的别名, 如 
+"scripts": {
+	"start": "node test.js",
+	"build": "react-script build"
+}
+然后通过 npm run 来运行每个命令;
+注: start这个命令比较特别, 使用时可以省略run, 如 npm start;
+npm run 与require()函数一样, 有自动向上查找的特性;
+7, 比npm速度更快的包管理工具: yarn 
+1)安装yarn
+npm i -g yarn
+2)初始化
+yarn init / yarn init -y 
+3)安装包 
+yarn add jquery  //生产依赖
+yarn add jquery --dev  //开发依赖
+yarn global add jquery  //全局安装
+4)删除包
+yarn remove jquery  //局部删除 
+yarn global remove jquery  //全局删除 
+5)安装项目依赖
+yarn 
+6)运行命令别名
+yarn 别名  //不需要添加run
+8, npm和yarn的区分
+npm管理的项目的锁文件是package-lock-json, 而yarn的锁文件是yarn.json;
+npm和yarn最好不要混用;
 
 
-
-
+>>express框架
+1, 搭建步骤
+1)创建文件夹、初始化为npm包、下载express
+npm init 
+npm i express
+2)使用express
+//导入express
+const express = require('express')
+//创建应用对象
+const app = express();
+//创建路由
+app.get('/home', (req, res) => {
+	res.end('home by get method')
+})
+app.post('/login', (req, res) => {
+	res.end('login by post method')
+})
+//监听端口并启动服务
+app.listen(9000, () => {
+	console.log('start server....')
+})
+2, 路由
+1)路由 = 请求方法 + 路径 + 回调函数
+2)express使用路由
+app.<method>(path, callback)
+3)获取路由参数
+路由参数是指路径中的参数, 如http://locahost:9000/123.html中的123, 可以使用占位符 :id 来获取,
+app.get('/:id.html', (req, res) => {
+	//req.params.id
+})
+3, 获取请求头
+1)使用与原生http相同的方式
+req.method
+req.url
+req.ip
+req.headers
+2)express独有的方式
+req.path   //获取路径
+req.query  //获取查询字符串
+req.get('host')  //获取指定的请求头
+4, 设置响应 
+1)使用与原生http相同的方式
+res.statusCode = 404
+res.setHeader('key', 'value')
+res.write('响应体')
+res.end('xxx')
+2)express独有的方式
+res.status(500)  //设置响应状态码 
+res.set('key', 'value')   //设置响应头 
+res.send('响应体')  //设置响应体
+注: send()方法会自动设置响应头的content-type为utf-8编码;
+//连贯操作
+res.status(404).set('key', 'value').send('响应体')
+3)其他响应
+res.redirect('http://abc.com')  //重定向
+res.download('./package.json')   //下载响应
+res.json(jsonObj)  //发送json
+res.sendFile(__dirname + '/home.html')  //响应文件内容
+5, 中间件
+1)中间件本质是一个回调函数, 用来对请求进行先行处理, 并将请求继续往后传;
+按类型分为全局中间件和路由中间件;
+2)全局中间件
+针对所有请求的回调函数;
+//定义中间件函数
+function fn(req, res,next) {
+	const {url, ip} = req
+	require('fs').appendFileSync('./log.txt', `${url} ${ip}`)
+	next()  //*调用next()将请求继续往后传
+}
+//使用中间件函数
+app.use(fn)
+3)路由中间件
+针对特定路由的回调函数;
+//定义中间件函数 
+function fn(req, res, next) {
+	if(req.query.code === '520') {
+		next()
+	} else {
+		res.send('参数错误')
+	}
+}
+//使用中间件函数 
+app.get('/admin', fn, (req, res) => {
+	....
+})
+注: 与全局中间件不同, 路由中间件是把中间件函数放到对应的路由处理函数中;
+4)静态资源中间件
+app.use(express.static('./public'))  //静态资源放在/public目录
+注: 如果请求的url不带任何路径, 则默认打开/public/index.html;
+路由响应动态资源, 静态资源中间件响应静态资源;
+6, 获取请求体
+express可以使用body-parser包来处理请求体;
+1)安装并导入
+npm i body-parser 
+const bodyParser = require('body-parser')
+2)获取中间件函数
+//处理querystring格式的请求体
+const urlParser = bodyParser.urlencoded({extended: false})
+//处理json格式的请求体
+const jsonParser = bodyParser.json()
+3)设置路由中间件, 然后使用req.body来获取请求体数据
+app.post('/login', urlParser, (req, res) => {
+	//req.body
+	res.send('获取请求体数据')
+})
 
 
 
