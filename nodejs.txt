@@ -258,6 +258,11 @@ app.post('/login', (req, res) => {
 app.listen(9000, () => {
 	console.log('start server....')
 })
+注: 也可以通过Router对象来创建路由规则:
+const router = express.Router()
+router.get('/home', (req, res) => {})
+router.post('/login', (req, res) => {})
+app.use(router)
 2, 路由
 1)路由 = 请求方法 + 路径 + 回调函数
 2)express使用路由
@@ -342,6 +347,81 @@ app.post('/login', urlParser, (req, res) => {
 	//req.body
 	res.send('获取请求体数据')
 })
+7, 防盗链
+通过在中间件函数中, 对请求头中的referer信息进行判断;
+app.use((req, res, next) => {
+	const referer = req.get('referer')
+	//todo 
+	next()
+)
+8, 文件上传
+1)前端
+<form method="post" action="./handle.js" enctype="multipart/form-data">
+	Username: <input type="text" name="username">
+	Photo: <input type="file" name="photo">
+	<button>Submit</button>
+</form>
+注: 上传文件必须设置表单属性: enctype="multipart/form-data";
+2)后端: 使用formidable包
+npm i formidable
+//具体使用AI
+9, 自动搭建express框架工具: express-generator
+1)自动创建项目并导入依赖包
+npx express-generator
+express -e express-generator  //使用ejs模板引擎
+npm i
+2)启动 
+npm start
+3)在routes文件夹里添加路由, 在views文件夹里添加视图文件;
+
+
+>>模板引擎: ejs
+1, 安装与引用
+npm i ejs --save
+const ejs = require('ejs')
+2, 使用 
+//test.html
+<div>姓名: <%= name %></div>
+<div>年龄: <%= age %></div>
+//nodejs 
+const name = 'zhao'
+const age = 32
+const tpl = fs.readFileSync('./test.html').toString()
+const rs = ejs.render(tpl, {name, age})
+3, for循环(列表渲染)
+<ul>
+	<% datas.forEach(v => { %>
+	<li><%= v %></li>
+	<% }) %>
+</ul>
+注: {% %}是ejs的标记, 里面可以写js;
+4, if条件(条件渲染)
+<% if(isLogin){ %>
+	<h2>Welcome Back</h2>
+<% }else{ %>
+	<h2>Login</h2>
+<% } %>
+5, 在express中使用ejs
+1)设置视图引擎
+app.set('view engine', 'ejs') 
+2)指定视图文件夹
+app.set('views', './myViews')
+3)创建视图文件 ./myViews/home.ejs   //摸板文件的后缀是 ejs
+<h2>Welcome <%= name %></h2>
+4)渲染视图并传递数据 nodejs 
+app.get('/', (req,res) => {
+	res.render('home', {name: '糖饼'})
+})
+
+
+
+
+
+
+
+
+
+
 
 
 

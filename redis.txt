@@ -122,35 +122,6 @@ protected-mode yes  //保护模式, 默认为yes, 如果其他主机需要连接
 bind 127.0.0.1  //可以访问redis的主机ip, 默认为仅本机可访问, 修改为 0.0.0.0 表示所有主机都可访问;
 
 
->>Java中使用Redis(Jedis)
-1, 需要在maven工程中添加jedis依赖;
-<dependency>
-	<groupId>redis.clients</groupId>
-	<artifactId>jedis</artifactId>
-	<version>2.9.0</version>
-</dependency>
-2, 通过jedis来操作redis
-jedis中操作redis的函数与redis本身的命令基本一致;
-//连接redis
-Jedis jedis = new Jedis("localhost", 6379);
-jedis.select(1);
-//操作String
-jedis.set("name", "zhao");
-String name = jedis.get("name");
-jedis.mset(new String[]{"name", "zhao", "age", "30});
-List<String> list = jedis.mget(new String[]{"name", "age"});
-//操作Hash
-jedis.hset("emp:101", "name", "zhao");
-String name = jedis.hget("emp:101", "name");
-Map<String, String> emp = new HashMap<>();
-emp.put("name", "zhao");
-emp.put("age", 30);
-jedis.hset("emp:101", emp);
-Map<String, String> emp = jedis.hgetall("emp:101");
-//操作List
-jedis.rpush("emps", new String[]{"zhao", "qian", "sun"});
-List<String> list = jedis.lrange("emps", 0, -1);
-
 
 
 

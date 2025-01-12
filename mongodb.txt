@@ -1,0 +1,103 @@
+>>基本概念
+1)mongodb是基于分布式文件存储的数据库;
+2)mongodb中的概念: 
+数据库(database)、集合(collection)、文档(document);
+3)安装与启动服务
+下载zip包解压到C:\Program Files文件夹下;
+创建C:\data\db目录, mongodb会将数据默认保存在该文件夹下;
+在mongodb的bin目录打开命令行, 运行mongod, 就启动了mongodb服务;
+运行mongo或者点击mongo.exe, 就打开了一个mongodb客户端;
+monbodb服务默认在27017端口;
+
+
+>>数据库、集合、文档的常见命令
+1, 数据库命令
+1)显示所有数据库
+show dbs
+2)切换到指定数据库, 如不存在则创建
+use test
+3)显示当前数据库
+db 
+4)删除当前数据库
+use test
+db.dropDatabase()
+2, 集合命令
+1)创建集合
+db.createCollection('集合名')
+2)显示当前数据库中的所有集合
+show collections
+3)删除某个集合
+db.集合名.drop()
+4)重命名集合
+db.集合名.renameCollection('新集合名')
+3, 文档命令
+1)插入文档
+db.集合名.insert({name: 'zhao', age: 32})
+2)查询文档
+db.集合名.find() //查询所有文档
+db.集合名.find({age: 32})
+3)更新文档
+db.集合名.update({name: 'zhao', {$set: {age: 40}})
+4)删除文档
+db.集合名.remove({name: 'zhao'})
+
+
+>>nodejs操作mongodb: mongoose
+1, 下载并安装
+npm i mongoose
+const mongoose = require('mongoose')
+2, 连接数据库
+mongoose.connect('mongodb://127.0.0.1:27017/cao')
+mongoose.connection.on('open', () => {
+	//连接成功
+})
+mongoose.connection.on('error', () => {
+	//连接失败
+})
+mongoose.connection.on('close', () => {
+	//连接关闭
+})
+mongoose.disconnect() 
+3, 文档的增删改查
+//创建文档的结构对象, 用来约束文档的属性以及属性值的类型
+const UserSchema = new mongoose.Schema({
+	name: String,
+	age: Number
+})	
+//创建模型对象, 用来对文档进行增删改查操作
+const UserModel = mongoose.model('users', UserSchema)
+//增
+UserModel.create({
+	name: 'zhao',
+	age: 32
+}).then(value => {
+	....
+}).catch(reason => {
+	....
+})
+//删 
+UserModel.deleteOne({name: 'zhao'}).then(...)  //删除一条
+UserModel.deleteMany({name: 'zhao'}).then(...)  //批量删除
+//改 
+UserModel.updateOne({name: 'zhao'}, {age: 66}).then(...)  //修改一条
+UserModel.updateMany({name: 'zhao'}, {age: 66}).then(...)  //修改多条
+//查
+UserModel.findOne({name: 'zhao'}).then(data => {  //查找一条
+	//data为一个对象
+})
+UserModel.findById(1001).then(...)  //通过ID查找
+UserModel.find({name: 'zhao'}).then(data => {  //查找任意条, find()不加条件为查找所有项
+	//data为对象数组
+})
+注: 以上代码写在数据库连接成功的回调中;
+注: 文档的结构对象里的属性可以为对象, 这样就可以对插入的数据进行验证, 如 
+name: {type: String, required: true, unique: true};
+
+
+
+
+
+
+
+
+
