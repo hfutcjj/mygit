@@ -92,10 +92,21 @@ UserModel.find({name: 'zhao'}).then(data => {  //查找任意条, find()不加�
 注: 以上代码写在数据库连接成功的回调中;
 注: 文档的结构对象里的属性可以为对象, 这样就可以对插入的数据进行验证, 如 
 name: {type: String, required: true, unique: true};
-
-
-
-
+4, 条件查询
+1)关系运算符
+$gt、$lt、$gte、$lte、$ne;
+db.students.find({id: {$gt: 3}})
+2)逻辑运算符
+$or、$and;
+db.students.find({$or: [{age: 18}, {age: 24}]})
+3)正则匹配
+db.students.find({name: /abc/})  //或 new RegExp('abc')
+5, 字段筛选
+db.students.find().select({name: 1, age: 0})  //要的字段为1, 不要为0
+6, 数据排序
+db.students.find().sort({name: 1})  //1为升序, -1为降序
+7, 数据截取
+db.students.find().skip(2).limit(2)  //skip为跳过, limit为截取的个数
 
 
 
