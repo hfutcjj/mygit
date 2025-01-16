@@ -14,7 +14,7 @@ nodejs不能使用DOM与BOM;
 1, Buffer.alloc(100);
 内容全为00;
 2, Buffer.allocUnsafe(100);
-与前者的区别是, 该方法不对内存空间进行清空, 可能含有旧数据, 有点是快速;
+与前者的区别是, 该方法不对内存空间进行清空, 可能含有旧数据, 优点是快速;
 3, Buffer.from('hello');
 4, Buffer转为字符串
 const buf = Buffer.from([105, 108, 111, 112]);
@@ -233,7 +233,7 @@ yarn
 6)运行命令别名
 yarn 别名  //不需要添加run
 8, npm和yarn的区分
-npm管理的项目的锁文件是package-lock-json, 而yarn的锁文件是yarn.json;
+npm管理的项目的锁文件是package-lock.json, 而yarn的锁文件是yarn.json;
 npm和yarn最好不要混用;
 
 
@@ -268,7 +268,7 @@ app.use(router)
 2)express使用路由
 app.<method>(path, callback)
 3)获取路由参数
-路由参数是指路径中的参数, 如http://locahost:9000/123.html中的123, 可以使用占位符 :id 来获取,
+路由参数是指路径中的参数, 如http://localhost:9000/123.html中的123, 可以使用占位符 :id 来获取,
 app.get('/:id.html', (req, res) => {
 	//req.params.id
 })
@@ -280,7 +280,7 @@ req.ip
 req.headers
 2)express独有的方式
 req.path   //获取路径
-req.query  //获取查询字符串
+req.query  //获取查询字符串, 由各查询字段组成的对象
 req.get('host')  //获取指定的请求头
 4, 设置响应 
 1)使用与原生http相同的方式
@@ -365,10 +365,12 @@ app.use((req, res, next) => {
 2)后端: 使用formidable包
 npm i formidable
 //具体使用AI
-9, 自动搭建express框架工具: express-generator
+
+
+>>express-generator: 自动搭建express框架的工具
 1)自动创建项目并导入依赖包
-npx express-generator
 express -e express-generator  //使用ejs模板引擎
+或者 npx express-generator
 npm i
 2)启动 
 npm start
@@ -377,7 +379,7 @@ npm start
 
 >>模板引擎: ejs
 1, 安装与引用
-npm i ejs --save
+npm i ejs [--save]
 const ejs = require('ejs')
 2, 使用 
 //test.html
