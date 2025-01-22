@@ -396,7 +396,7 @@ const rs = ejs.render(tpl, {name, age})
 	<li><%= v %></li>
 	<% }) %>
 </ul>
-注: {% %}是ejs的标记, 里面可以写js;
+注: <% %>是ejs的标记, 里面可以写js;
 4, if条件(条件渲染)
 <% if(isLogin){ %>
 	<h2>Welcome Back</h2>
@@ -416,10 +416,61 @@ app.get('/', (req,res) => {
 })
 
 
-
-
-
-
+>>会话控制
+1, cookie
+1)cookie是保存在浏览器的数据, cookie是按照域名划分的;
+2)cookie的流程
+服务端校验账户和密码通过后, 在响应头中以 "set-cookie:name=zhao" 发送给浏览器;
+浏览器后续发送请求时, 在请求头中以 "cookie:name=zhao" 发送给服务器进行校验;
+3)express中使用cookie
+//创建cookie 
+res.cookie('name', 'zhao', {maxAge: 60*1000})
+注: cookie默认在浏览器关闭时销毁
+//删除cookie
+res.clearCookie('name')
+注: 一般在退出登录时销毁session
+//获取cookie: 使用cookie-parse包
+app.use(cookieParse())
+req.cookies.name
+2, session
+1)session是保存在服务器的数据;
+2)session的流程
+服务端检验账户和密码后, 创建session信息, 然后将session_id的值通过cookie发送给浏览器;
+浏览器后续发送请求时, 就会携带该session_id到服务端进行校验;
+3)express中使用session
+//创建session: 使用express-session包
+app.use(session({
+	name: 'sid',   //使用sid作为cookie字段
+	resave: true,  //每次请求时重新保存session
+	cookie: {
+		httpOnly: true,  //前端js无法操作cookie, 只能通过http传输使用
+		maxAge: 60*1000
+	}
+}))
+req.session.username = 'zhao'
+req.session.password = '123'
+注: sid会自动生成并发送给浏览器;
+//删除session
+req.session.destroy()
+//读取session
+req.session.username
+3, token
+1)token是服务端生成并返回给客户端的加密字符串, token的流程同cookie, 区别是: 
+服务端将token放在响应体中发给客户端, 后续客户端必须手动将token添加到请求头中发给服务端;
+token是加密的, 比cookie更安全;
+2)jwt: (json web token)基于token的身份认证
+npm i jsonwebtoken
+const jwt = require('jsonwebtoken')  
+//创建token
+const token = jwt.sign({  //三个参数: 用户数据、加密字符串、配置对象
+	username: 'zhao'
+}, 'aabbccdd', {
+	expiresIn: 60
+})
+//校验token
+jwt.verify(token, 'aabbccdd', (err, data) => {
+	//....
+})
 
 
 
