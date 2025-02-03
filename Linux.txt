@@ -392,6 +392,32 @@ DNS1=192.168.200.2
 然后重启网络服务;
 
 
+>>安装包管理
+1, rpm
+1)rpm -qa 
+查询所安装的所有rpm软件包
+rpm -qa | more 
+rpm -qa | grep xxx
+2)rpm -q 软件包名
+查询指定软件包是否安装
+rpm -q firefox
+3)rpm -ivh rpm包全路径名称
+-i 安装 
+-v 提示
+-h 进度条
+4)rpm -e rpm包的名称
+卸载rmp包
+rpm -e firefox 
+2, yum
+linux的在线软件包管理器, 基于rpm包管理, 可以自动下载并安装软件包;
+1)yum list | grep xxx 
+查询yum服务器是否有指定的软件
+2)yum install xxx
+下载安装软件包
+注: rpm包需要先下载, 而yum是自动在线下载并安装;
+
+
+
 >>Linux定时任务管理
 1, crontab //周期性执行任务
 1)crontab -l
