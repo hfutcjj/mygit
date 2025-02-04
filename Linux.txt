@@ -417,7 +417,6 @@ linux的在线软件包管理器, 基于rpm包管理, 可以自动下载并安�
 注: rpm包需要先下载, 而yum是自动在线下载并安装;
 
 
-
 >>Linux定时任务管理
 1, crontab //周期性执行任务
 1)crontab -l
@@ -444,8 +443,34 @@ at> date >> cao.txt
 //按ctrl+D结束命令
 
 
-
-
+>>shell编程
+1, .sh脚本的基本执行
+脚本以#!/bin/bash开头;
+如果以绝对路径或相对路径执行, 如 ./hello.sh, 需要给脚本文件赋可执行权限;
+如果以sh的命令执行, 如 sh ./hello.sh, 则不需要;
+2, shell的变量
+1)系统变量
+$HOME, $PATH, $USER等;
+2)用户自定义变量
+NAME=zhao  //定义变量
+echo $NAME  //输出变量
+unset NAME  //撤销变量
+A=`date`  //反引号, 将命令的运行结果赋给变量
+A=$(date)  //同上, 等价于反引号
+3, 环境变量(全局变量)
+export TOMCAT_HOME=/opt/tomcat/bin  //导出为全局变量, 使其在其他文件也可用
+source /etc/profile  //让配置文件生效
+echo $TOMCAT_HOME  //输出 
+4, 命令行参数
+./hello.sh zhao 32
+$0 //命令本身
+$1 //第1个参数
+$# //所有参数的个数
+5, 运算符
+有以下几种方式:
+$[运算式]: 如$[(2+3)*4]  //这种最常用
+$((运算式)): 如$(((2+3)*4))
+expr m - n
 
 
 
