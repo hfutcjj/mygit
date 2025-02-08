@@ -471,6 +471,59 @@ $# //所有参数的个数
 $[运算式]: 如$[(2+3)*4]  //这种最常用
 $((运算式)): 如$(((2+3)*4))
 expr m - n
+6, 条件语句
+1)if条件
+格式: if [ exp ] then ... elif [ exp ] then ... fi  //注意[]里面一定要有空格
+'ok' = 'ok'  //字符串比较
+12 -ge 10  //数字比较
+-e/-f/-d  /home/cjj/bms  //文件是否存在/是否为文件/是否为目录
+2)case条件
+case $1 in 
+'1')
+echo 'Monday'
+;;
+'2')
+echo 'Tuesday'
+;;
+*)
+echo 'Other'
+;;
+esac
+7, 循环语句
+1)for循环语法1
+for i in 1 2 3 4 5
+do 
+	echo "i-$i"
+done
+2)for循环语法2
+SUM=0
+for(( i=1; i<=100; i++ ))
+do 
+	SUM=$[$SUM+$i]
+done 
+3)while循环
+SUM=0
+i=0
+while [ $i -le $1 ]
+do ...
+done
+8, 读取控制台输入
+read [-t 等待时间] [-p 提示语] 变量
+9, 系统函数
+basename /home/aaa/test.txt   //test.txt
+basename /home/aaa/test.txt .txt  //test
+dirname /home/aaa/test.txt  // /home/aaa 
+10, 自定义函数
+function getSum() {
+	SUM=$[$n1+$n2]
+	echo "SUM=$SUM"
+}
+read -p 'Enter n1:' n1
+read -p 'Enter n2:' n2
+getSum $n1 $n2
+
+
+
 
 
 

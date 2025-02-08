@@ -499,123 +499,42 @@ import 'antd/dist/antd.css';
 action: 动作对象, 如{type: 'ADD', data: {name: 'zhao', age: 30}};
 reducer: 用于初始化状态、加工状态;
 store: 将state、action、reducer联系在一起的对象;
-3, 使用redux的步骤
-1)下载redux
-npm install redux / yarn add redux;
-2)新建redux文件
-src
-	redux 
-		store.js
-		count_action.js
-		count_reducer.js
-//store.js
-import {createStore} from 'redux';
-import countReducer from './count_reducer';
-export default const store = createStore(countReducer);
-//count_action.js
-export const Increment = data => ({type: 'increment', data});
-export const Decrement = data => ({type: 'decrement', data});
-//count_reducer.js
-export default countReducer(preState, action) {
-	const {type, data} = action
-	switch(type) {
-		case 'increment': 
-			return preState + data;
-		case 'decrement':
-			return preState - data;
-		default: 
-			return 0;
+3, 使用redux的基本步骤(无React的情形)
+1)定义reducer函数: 根据不同的action对象返回不同的新的state
+function reducer(state = {count: 0}, action) {
+	if(action.type == 'incre') {
+		return {count: state.count + 1}
 	}
+	if(action.type == 'decre') {
+		return {count: state.count - 1}
+	}
+	return state;
 }
-3)在组件中使用
-//取得store中存储的状态值
-store.getState()  //api-1
-//通知store更新状态
-store.dispatch(Increment(5))  //api-2
-4)在合适的位置(如index.js)通知组件重绘(当store中状态改变时)
-store.subscribe(() => {  //api-3
+2)使用reducer函数生成store实例
+const store = Redux.createStore(reducer)
+3)通过store实例的subscribe订阅数据变化: 回调函数在每次state发生变化时自动执行
+store.subscribe(() => {
+	console.log('state变化了')
+	document.getElementById('count').innerText = store.getState().count  //5)
+})
+4)通过store实例的dispatch函数提交action更改状态
+const increBtn = document.getElementById('incre')
+const decreBtn = document.getElementById('decre')
+increBtn.addEventListener('click', () => {
+	store.dispatch({type: 'incre'})
+})
+decreBtn.addEventListener('click', () => {
+	store.dispatch({type: 'decre'})
+})
+5)通过store实例的getState()方法获取最新状态更新到视图中, 见3);
+注: store对象的三个常用api如下
+store.getState()  //api-1, 取得store中存储的状态值
+store.dispatch(Increment(5))  //api-2, 通知store更新状态
+store.subscribe(() => {  //api-3, 当store中状态改变时通知组件重绘
 	root.render(<App />);
 });
-4, react中集成了redux: react-redux插件
-1)下载react-redux
-2)所有UI组件都包裹一个容器组件, 容器组件连接UI组件与redux, 所有与redux的交互都在容器组件里完成, 
-容器组件再将 redux中保存的状态 与 用于操作状态的方法 传递给UI组件;
-文件结构:
-src 
-	index.js
-	APP.js
-	components    //UI组件
-		Count.js
-	containers    //容器组件
-		Count.js
-	redux
-		store.js
-		actions
-			count_action.js
-		reducers
-			count_reducer.js
-//App.js
-<Count store={store} />  //APP中调用容器组件, 并在此处绑定redux
-//containers/Count.js
-import {connect} from 'react-redux';
-const mapStateToProps = state => {  //传递状态
-	return {count: state};  
-}
-const mapDispatchToProps = dispatch => {  //传递操作状态的方法
-	return {
-		incre: data => dispatch(Increment(data)),
-		decre: data => dispatch(Decrement(data)),
-	}
-}
-export default connect(mapStateToProps, mapDispatchToProps)(Count)  //容器组件连接UI组件与redux
-//components/Count.js
-UI组件通过props.count得到状态值, 通过props.incre(value)来间接改变状态;
-3)优化一: 简写
-//containers/Count
-import {connect} from 'react-redux';
-export default connect(
-	state => ({count: state}),
-	dispatch => ({  //mapDispatchToProps的一般写法
-		incre: data => dispatch(Increment(data)),
-		decre: data => dispatch(Decrement(data)),
-	}), 
-	{  //或, mapDispatchToProps的最简写法
-		incre: Increment,
-		decre: Decrement,
-	}
-)(Count)
-4)优化二: 引入<Provider>组件
-不用在App组件里为每个容器组件绑定store, 直接在index.js里给<Provider>组件绑定store;
-Provider会自动检测容器组件, 给每个容器组件传递store;
-//index.js
-import {Provider} from 'react-redux;
-ReactDOM.createRoot(document.getElementById('root').render(
-	<Provider store={store}>
-		<App />
-	</Provider>
-);
-5)优化三: 整合UI组件与容器组件
-将UI组件和容器组件写在同一个文件里, 默认暴露容器组件;
-//containers/Count.js
-export default connect(...)(Count);
-function Count(props){
-	//...
-}
-5, redux管理多个组件的状态
-此时就有1个store, n个action, n个reducer, store中需要用combineReducers合并连接多个reducer, 
-此时redux中的最终state是一个对象;
-//store.js
-import {createStore, combineReducers} from 'redux';
-import countReducer from './reducers/count';
-import personReducer from './reducers/person';
-const allReducers = combineReducers({
-	sum: countReducer,
-	persons: personReducer,
-});
-const store = createStore(allReducers);
-export default store;
-//组件
-此时给组件传递状态以及组件取状态得用 state.sum 的形式;
+4, redux与react结合的情形(AI)
+
 
 
 >>项目打包运行
