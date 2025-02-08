@@ -527,14 +527,16 @@ decreBtn.addEventListener('click', () => {
 	store.dispatch({type: 'decre'})
 })
 5)通过store实例的getState()方法获取最新状态更新到视图中, 见3);
-注: store对象的三个常用api如下
-store.getState()  //api-1, 取得store中存储的状态值
-store.dispatch(Increment(5))  //api-2, 通知store更新状态
-store.subscribe(() => {  //api-3, 当store中状态改变时通知组件重绘
+4, store对象的三个常用api如下
+1)store.getState()  
+取得store中存储的状态值
+2)store.dispatch(action)  
+通知store更新状态
+3)store.subscribe(() => {  
 	root.render(<App />);
 });
-4, redux与react结合的情形(AI)
-
+当store中状态改变时通知组件重绘
+5, redux结合react的使用, 见AI;
 
 
 >>项目打包运行
