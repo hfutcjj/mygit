@@ -1,0 +1,106 @@
+>>创建Vue工程
+1, 基于vue-cli
+npm install -g @vue/cli
+vue create vue_test
+2, 基于vite
+npm create vue@latest
+
+
+>>Vue项目结构
+1, 目录结构
+vue_test
+	public
+	src	
+		main.ts	       
+		App.vue		  	//根组件
+		components      //其他组件
+			A.vue
+			B.vue
+	index.html			//入口文件
+	node_modules
+	package.json
+2, 常用文件
+1)index.html
+<div id="app"></div>
+<script type="module" src="/src/main.ts"></script>
+2)main.ts
+import { createApp } from 'vue';
+import App from './App.vue';
+createApp(App).mount('#app')
+3)App.vue
+<template>
+	...
+</template>
+<script lang="ts" setup>
+	import {ref} from 'vue'
+	//数据
+	let name = ref('张三')
+	let age = 32
+	//方法
+	function changeName() {
+		name.value = 'zhang-san'
+	}
+	function showAge() {
+		alert(age.value)
+	}
+</script>
+<style>
+	....
+</style>
+3, setup
+1)setup是vue3中的配置项, 值是一个函数, 用于组合式API(CompositionAPI), 而Vue2是选项式API(OptionsAPI);
+export default {
+	name: 'APP',
+	setup() {
+		//数据
+		let name = 'zhao'
+		let age = 32
+		//方法
+		function changeName() {...}
+		function changeAge() {...}
+		//
+		return {name, age, changeName, changeAge}
+	}
+}
+注: vue2中的data()、methods可以和vue3中的setup()同时存在, 但不建议;
+setup()里没有this;
+2)setup语法糖
+setup()函数可以用<script setup>标签代替, 不用显式return;
+<script setup>
+	let name = 'zhao'
+	let age = 32
+	function changeName() {...}
+	function changeAge() {...}
+</script>
+4, ref
+定义基本类型和对象类型的响应式数据: let xxx = ref(初始值);
+js中操作数据需要 xxx.value, 但模板中不需要 .value, 直接使用即可;
+5, reactive
+定义对象类型的响应式数据, 使用时直接用 obj.key, 不需要用value;
+注: ref定义对象类型的响应式数据, 底层用的就是reactive;
+
+
+>>列表渲染
+const datas = [
+	{id: '001', name: 'zhao'}, 
+	{id: '002', name: 'qian'},
+]
+<ul>
+	<li v-for="g in datas" :key="g.id">{{g.name}}</li>
+</ul>
+
+
+>>toRefs, toRef
+toRefs将对象的每个属性都变成响应式数据, toRef将对象的某个属性变成响应式数据;
+let {name, age} = toRefs(person);
+let age = toRef(person, 'age');
+
+
+
+
+
+
+
+
+
+
