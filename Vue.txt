@@ -44,7 +44,7 @@ createApp(App).mount('#app')
 		alert(age.value)
 	}
 </script>
-<style>
+<style scoped>
 	....
 </style>
 3, setup
@@ -78,6 +78,8 @@ js中操作数据需要 xxx.value, 但模板中不需要 .value, 直接使用即
 5, reactive
 定义对象类型的响应式数据, 使用时直接用 obj.key, 不需要用value;
 注: ref定义对象类型的响应式数据, 底层用的就是reactive;
+6, scoped
+style标签加上scoped表示局部样式, 防止其他组件的样式冲突;
 
 
 >>列表渲染
@@ -118,6 +120,51 @@ let fullname = computed({
 	}
 })
 注: 这样定义的计算属性, 既可读, 也可修改;
+
+
+>>watch
+1, watch用于监视以下数据源:
+ref或reactive响应式数据、getter函数、或多个数据源组成的数组;
+2, 常用举例
+1)基本类型响应式数据
+let count = ref(0)
+const stopWatch = watch(count, (newValue, oldValue) => {
+	if(newValue >= 10) {
+		stopWatch()  //解除监视
+	}
+})
+2)对象类型数据之整个对象
+watch(person, (newValue, oldValue) => {
+	//...
+}, {deep: true})  
+加上第三个参数{deep: true}表示深度监视, 对象的属性变化时也会触发watch回调函数;
+3)对象类型数据之对象的属性
+数据源需要定义为一个getter函数;
+watch(() => person.name, (newValue, oldValue) => {
+	//...
+})
+4)监视多个值
+监视对象为多个数据源的数组;
+watch([() => person.name, () => person.car.c1], (newValue, oldValue) => {
+	//newValue和oldValue也为对应的数组
+})
+
+
+>>watchEffect
+watchEffect(() => {
+	//...
+})
+watch监视指定的数据, 只在监视的数据变化时执行回调函数;
+watchEffect不用指定具体的监视数据, 它在开始时、以及回调函数里用到的数据发生变化时执行;
+
+
+>>标签的ref属性
+用在普通dom标签上, 获取的是dom节点;
+用在组件标签上, 获取的是组件实例对象;
+<div ref="box">合肥</div>
+let box = ref()
+console.log(box.value)
+
 
 
 
