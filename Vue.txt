@@ -96,7 +96,28 @@ let {name, age} = toRefs(person);
 let age = toRef(person, 'age');
 
 
+>>页面与数据的双向绑定
+FirstName: <input type="text" v-model="firstname">
+LatName: <input type="text" v-model="lastname">
+FullName: {{firstname}}-{{lastname}}
+//js
+let firstname = ref('张')
+let lastname = ref('三')
 
+
+>>computed 计算属性
+FullName: {{fullname}}
+//js
+import {computed} from 'vue'
+let fullname = computed({
+	get(){
+		return firstname.value + '-' + lastname.value
+	},
+	set(val){
+		//...
+	}
+})
+注: 这样定义的计算属性, 既可读, 也可修改;
 
 
 
