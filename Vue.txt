@@ -166,8 +166,15 @@ let box = ref()
 console.log(box.value)
 
 
-
-
+>>props
+父组件给子组件传递数据;
+//Parent
+<Son :a="personList" b="zhao" />
+//Son
+<ul>
+	<li v-for="g in a" :key="g.id">{{g.name}}</li>
+</ul>
+defineProps(['a', 'b'])
 
 
 
