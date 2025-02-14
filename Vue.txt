@@ -82,6 +82,11 @@ js中操作数据需要 xxx.value, 但模板中不需要 .value, 直接使用即
 style标签加上scoped表示局部样式, 防止其他组件的样式冲突;
 
 
+>>条件渲染
+<div v-if="isShow">Hello</div>
+注: v-if与v-show的区别是, 前者销毁了组件, 而后者组件还在只是让其不可见;
+
+
 >>列表渲染
 const datas = [
 	{id: '001', name: 'zhao'}, 
@@ -175,6 +180,60 @@ console.log(box.value)
 	<li v-for="g in a" :key="g.id">{{g.name}}</li>
 </ul>
 defineProps(['a', 'b'])
+
+
+>>生命周期
+1, vue2的生命周期
+创建 -> 挂载 -> 更新 -> 销毁
+<script>
+	export default {
+		name: 'Person',
+		data() { //数据 },
+		methods: { //方法 },
+		beforeCreate() { //创建前 },
+		created() { //创建完毕 },
+		beforeMount() { //挂载前 },
+		mounted() { //挂载完毕 },
+		beforeUpdate() { //更新前 },
+		updated() { //更新完毕 },
+		beforeDestroy() { //销毁前 },
+		destroyed() { //销毁完毕 }
+	}
+</script>
+2, vue3的生命周期
+本质上同vue2, 只是部分钩子函数有所不同;
+<script setup>
+	import {...} from 'vue'  //导入钩子函数
+	let count = ref(0)  //数据
+	function add() { count.value += 1 }  //方法
+	console.log('create')  //创建 
+	onBeforeMount(() => {})  //挂载前
+	onMounted(() => {})  //挂载完毕
+	onBeforeUpdate(() => {})  //更新前
+	onUpdated(() => {})  //更新完毕
+	onBeforeUnmount(() => {})  //卸载前
+	onUnmounted(() => {})  //卸载后
+</script>
+
+
+>>自定义hooks
+//useCount.js
+import {ref} from 'vue'
+export default function() {
+	//数据 
+	let count = ref(0)
+	//方法
+	function add() {
+		count.value += 1
+	}
+	return {count, add}
+}
+//Person.js  组件中使用
+import useCount from './hooks/useCount'
+const {count, add} = useCount()
+
+
+
 
 
 

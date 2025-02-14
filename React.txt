@@ -536,7 +536,67 @@ decreBtn.addEventListener('click', () => {
 	root.render(<App />);
 });
 当store中状态改变时通知组件重绘
-5, redux结合react的使用, 见AI;
+5, redux结合react
+1)安装两个插件: redux toolkit 与 react-redux;
+npm i @reduxjs/toolkit react-redux 
+2)在src下新建store目录结构
+store 
+	modules
+		channelStore.js
+		counterStore.js    //子模块
+	index.js   //组合modules中所有的子模块, 并导出store
+3)代码
+//counterStore.js
+import {createSlice} from '@reduxjs/toolkit'
+const counterStore = createSlice({
+	name: 'counter',
+	initialState: {
+		count: 0
+	},
+	reducer: {
+		increment(state, action) {
+			state.count += action.payload
+		},
+		decrement(state) {
+			state.count--
+		}
+	}
+})
+const {increment, decrement} = counterStore.actions
+const counterReducer = counterStore.reducer
+export {increment, decrement}
+export default counterReducer
+//store/index.js
+import {configureStore} from '@reduxjs/toolkit'
+import counterReducer from './modules/counterStore'
+const store = configureStore({
+	reducer: {
+		counter: counterReducer
+	}
+})
+export default store
+//react-redux负责把redux和react链接起来, 内置Provider组件通过store参数把创建好的store实例注入到应用中;
+import store from './store'
+import {Provider} from 'react-redux'
+const root = ReactDOM.createRoot(document.getElementById('root'))
+root.render(
+	<Provider store={store}>
+		<App />
+	</Provider>
+)
+//组件中使用store的数据: 使用钩子函数useSelector
+//修改store中的数据: 使用钩子函数useDispatch
+import {useSelector, useDispatch} from 'react-redux'
+import {increment, decrement} from './store/modules/counterStore'
+const {count} = useSelector(state => state.counter) 
+const dispatch = useDispatch()
+return (
+	<div>
+		<button onClick={() => dispatch(decrement())}>-</button>
+		<span>{count}</span>
+		<button onClick={() => dispatch(increment(5))}>+</button>
+	</div>
+)
 
 
 >>项目打包运行
