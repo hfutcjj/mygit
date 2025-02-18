@@ -1224,7 +1224,7 @@ atomic.AddInt32(&count, 1);
 //DOS基本操作
 1, 目录操作
 dir 			 //查看当前目录下的直接子目录和直接子文件
-cd 				//查看当前目录
+pwd 				//查看当前目录
 cd test或..或/   //切换到test目录或上级目录或根目录
 mkdir(或md) d1 d2 d3  //创建目录, 多个目录用空格隔开
 rmdir(或rd) d1		  //删除空目录
@@ -1418,7 +1418,9 @@ http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("v
 
 >>使用http获取其他url的信息
 resp, _ := http.Get("http://www.baidu.com")
-resp.Body.Read(buf)
+var b []byte
+b, err := ioutil.ReadAll(resp.Body)
+fmt.Println(string(b))
 注: 可用于爬取其他网站的信息;
 
 
