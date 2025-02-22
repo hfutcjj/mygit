@@ -1271,7 +1271,7 @@ Listen(): 服务端监听
 Accept(): 服务端接收客户端连接
 Dial(): 客户端创建与服务器的连接
 3, 服务端流程
-1)监听 Listen/ListenPacket
+1)监听 Listen(TCP)/ListenPacket(UDP)
 ln, err := net.Listen("tcp", "127.0.0.1:8888")
 defer ln.Close()
 2)接收客户端连接 Accept
