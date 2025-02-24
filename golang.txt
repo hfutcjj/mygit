@@ -1391,7 +1391,17 @@ sq := "insert into employee(name, dno) values(?, ?)"
 r, _ := Db.Exec(sq, "zhao", 1)  //r: sql.Result
 r.LastInsertId() //最后插入的ID
 r.RowsAffected() //影响的行数
-
+5, 事务
+tx, err := Db.Begin()
+s1 := "update t1 set balance = balance + ? where id = 1"
+s2 := "update t2 set balance = balance - ? where id = 1"
+_, err1 := tx.Exec(s1, 1000)
+_, err2 := tx.Exec(s2, 1000)
+if err1 != nil || err2 != nil {
+	tx.Rollback()  //回滚
+	return
+}
+tx.Commit()  //提交
 
 
 >>go搭建服务器(net/http包)
@@ -1468,11 +1478,12 @@ w.Header().Set("Content-Type", "application/json")
 User := User{//...}
 json, _ := json.Marshal(user)
 w.Write(json)
-2)使用模板引擎
+2)重定向
+http.Redirect(w, r, "/login", 301)
+3)使用模板引擎
 t, _ := template.ParseFiles("hello.html")
 t.Execute(w, "zhao")
-3)重定向
-http.Redirect(w, r, "/login", 301)
+
 
 
 >>模板引擎
@@ -1555,6 +1566,46 @@ session是在服务器端保存用户信息;
 2)将session的ID值作为cookie发送给浏览器
 3)以后再发送请求浏览器就会携带该cookie
 4)服务器获取cookie并根据它的值找到服务器中对应的session, 也就知道是哪个用户了
+
+
+>>RPC(远程过程调用)
+1, rpc是一种允许客户端调用服务器端函数的技术, jsonrpc是rpc的一种实现,
+它使用json作为数据交换格式, 支持通过http或websocket等协议进行通信;
+2, 实现步骤
+1)定义一个服务, 包含可以被远程调用的方法
+type Request struct {
+	A, B int
+}
+type UserService struct {}
+func (u *UserService) Add(request *Request, response *int) error {
+	*response = request.A + request.B
+	return nil
+}
+注: 一般写在服务端代码里;
+注: 服务的方法接收两个参数: 第一个参数为请求结构体变量指针, 用于获取客户端提交的参数; 
+第二个参数为响应结构体变量指针, 用于计算结果的返回;
+返回值error用于告知客户端错误信息;
+2)服务端: 启动一个rpc服务端, 注册服务并监听客户端的请求
+func main() {
+	userService := new(UserService)
+	rpc.Register(userService)  //注册服务
+	ln, err := net.Listen("tcp", "127.0.0.1:9000")
+	for {
+		conn, err := ln.Accept()
+		go jsonrpc.ServeConn(conn)  //处理客户端连接
+	}
+}
+3)客户端: 实现一个rpc客户端, 连接到服务器并调用远程方法
+type Request struct {
+	A, B int
+}
+func main() 
+	client, err := jsonrpc.Dial("tcp", "127.0.0.1:9000")  //连接到服务端
+	request := &Request{12, 3}
+	var response int
+	err := client.Call("UserService.Add", request, &response)  //调用远程方法
+	fmt.Printf("Request: %d+%d=%d\n", request.A, request.B, response)
+}
 
 
 
