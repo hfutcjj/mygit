@@ -497,27 +497,96 @@ import 'antd/dist/antd.css';
 前端路由, 是在单页面应用(SPA)中根据不同的URL渲染不同的组件, 而不需要重新加载页面;
 使用路由前, 先明确页面中的导航区和展示区;
 路由的底层是由浏览器的history实现的;
-2, 路由的使用: react-router-dom包
-1)npm i react-router-dom
-2)简单路由
+2, 路由的基本使用: react-router-dom包
+1)安装
+npm i react-router-dom
+2)基本结构
 <BrowserRouter>
 	//编写路由链接(导航区)
 	<Link to="/about">About</Link>
 	<Link to="/home">Home</Link>
 	//注册路由(展示区)
-	<Route path="/about" component={About} />
-	<Route path="/home" component={Home} />
+	<Switch>
+		<Route path="/about" component={About} />
+		<Route path="/home" component={Home} />
+		<Redirect to="/home" />
+	</Switch>
 </BrowserRouter>
 注: BrowserRouter包裹所有路由代码, 一般直接包裹住<App>;
-3)路由组件与一般组件
+3)<NavLink>
+NavLink是Link的升级版, 默认会在点击时自动添加'active'的类名, 从而使用.active的样式实现点击时高亮效果;
+也可手动在NavLink组件上使用activeClassName设置点击时添加自定义的类名;
+4)<Switch>
+注册路由时, 将所有的<Route>都包裹在<Switch>里, 就能让path与component进行单一匹配, 提高效率;
+5)<Redirect>
+<Redirect>放在注册路由的所有<Route>的最后面, 用于当所有路由都不匹配时的默认导航:
+<Redirect to="/home" />
+6)路由组件与一般组件
 上面的Home、About属于路由组件, 路由组件一般放在src/pages文件夹, 而一般组件放在
 src/components文件夹;
 两者的最大区别就是接收到的props不同, 一般组件如果不传则为{}, 而路由组件的props为
 {history: .., location: .., match: ..};
-
-
-
-
+7)路由的模糊匹配
+路由链接: <Link to="/home/a/b">Home</Link>
+注册路由: <Route path="/home" component={Home} />
+如果在<Route>里增加exact的属性, 则开启精准匹配, 注意不要随便开启, 会导致二级路由失效;
+8)push与replace
+react的路由默认是通过history的push()方法不断往上堆叠的, 从而可以回退;
+在<Link>中添加replace属性, 就成为了替换;
+3, 嵌套路由
+//路由链接(导航区)
+<NavLink to="/home/news">News</NavLink>
+<NavLink to="/home/messages">Messages</NavLink>
+//注册路由(展示区)
+<Switch>
+	<Route path="/home/news" component={News} />
+	<Route path="/home/messages" component={Messages} />
+	<Redirect to="/home/news" />
+</Switch>
+4, 给路由组件传递参数
+1)传递params参数
+//路由链接传递params参数
+<Link to="/home/messages/detail/zhao/32">Message-1</Link>
+//注册路由声明接收params参数
+<Route path="/home/messages/detail/:name/:age" component={Detail} />
+//<Detail>组件中, props.match.params: {name: 'zhao', age: 32};
+const {name, age} = props.match.params
+2)传递search参数
+//路由链接传递search参数
+<Link to="/home/messages/detail?name=zhao&age=32">Message-1</Link>
+//注册路由不需要声明接收
+<Route path="/home/messages/detail" component={Detail} />
+//<Detail>组件, props.location.search: ?name=zhao&age=32;
+?name=zhao&age=32属于urlencoded编码字符串, 可以借助querystring解析;
+3)传递state参数
+//路由链接传递state参数, to是对象
+<Link to={{pathname: "home/messages/detail", state: {name: 'zhao', age: 32}}}>Message-1</Link>
+//注册路由不需要声明接收 
+<Route path="/home/messages/detail" component={Detail} />
+//<Detail>组件, props.location.state: {name: 'zhao', age: 32};
+const {name, age} = props.location.state
+注: 与前两种不同, state参数并不出现url中;
+5, 编程式路由导航
+不使用<Link>或<NavLink>, 而是使用history的push或replace方法来实现路由导航;
+props.history.push('/home/messages/detail/zhao/32');  //params传参
+props.history.push('/home/messages/detail', {id, name});  //state传参
+props.history.goBack();
+props.history.goForward();
+props.history.go(n);
+6, withRouter
+withRouter用于加工一般组件, 让一般组件具备路由组件所特有的API, withRouter的返回值是一个新组件;
+import {withRouter} from 'react-router-dom'
+//<Detail>组件定义....
+export default withRouter(Detail)
+7, BrowserRouter与HashRouter的区别
+1)url表示形式不同
+前者的路径中没有#, 如:localhost:3000/demo/test;
+后者的路径中包含#, 如: localhost:3000/#demo/test;
+2)底层原理不一样
+前者使用的是h5的history API, 后者使用的是url的哈希值;
+3)刷新后对路由state参数的影响
+前者没有影响, 因为state保存在history对象中;
+后者刷新后会导致路由state参数的丢失;
 
 
 
