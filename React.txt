@@ -492,6 +492,12 @@ import 'antd/dist/antd.css';
 2, 样式的按需引入以及自定义主题, 属于高级配置, 在antd的3.x版本中有详细说明;
 
 
+>>项目打包运行
+终端输入: npm run build, 会在项目下生成build文件夹, 将build文件夹部署到服务器即可;
+
+
+
+
 >>路由
 1, 单页面应用(SPA)
 前端路由, 是在单页面应用(SPA)中根据不同的URL渲染不同的组件, 而不需要重新加载页面;
@@ -594,35 +600,40 @@ export default withRouter(Detail)
 >>redux
 1, redux是做集中式状态管理的js库, 主要与react一起使用;
 2, redux中的三个核心概念
-action: 动作对象, 如{type: 'ADD', data: {name: 'zhao', age: 30}};
-reducer: 用于初始化状态、加工状态;
-store: 将state、action、reducer联系在一起的对象;
+1)action: 动作对象, 如{type: 'ADD', data: {name: 'zhao', age: 30}};
+2)reducer: 用于初始化状态、加工状态;
+3)store: 将state、action、reducer联系在一起的对象;
 3, 使用redux的基本步骤(无React的情形)
 1)定义reducer函数: 根据不同的action对象返回不同的新的state
-function reducer(state = {count: 0}, action) {
-	if(action.type == 'incre') {
-		return {count: state.count + 1}
+//count_reducer.js
+function count_reducer(preState = 0, action) {
+	const {type, data} = action
+	if(action.type == 'add') {
+		return preState + data
+	} else if(action.type == 'sub') {
+		return preState - data
+	} else {
+		return preState
 	}
-	if(action.type == 'decre') {
-		return {count: state.count - 1}
-	}
-	return state;
 }
-2)使用reducer函数生成store实例
-const store = Redux.createStore(reducer)
+export default count_reducer
+注: 给preState一个默认值, 表示初始化状态;
+2)根据reducer函数生成store实例
+//store.js
+import {createStore} from 'redux'
+const store = createStore(count_reducer)
+export default store
 3)通过store实例的subscribe订阅数据变化: 回调函数在每次state发生变化时自动执行
 store.subscribe(() => {
 	console.log('state变化了')
-	document.getElementById('count').innerText = store.getState().count  //5)
+	document.getElementById('count').innerText = store.getState()
 })
 4)通过store实例的dispatch函数提交action更改状态
-const increBtn = document.getElementById('incre')
-const decreBtn = document.getElementById('decre')
-increBtn.addEventListener('click', () => {
-	store.dispatch({type: 'incre'})
+addBtn.addEventListener('click', () => {
+	store.dispatch({type: 'add', data: 2})
 })
-decreBtn.addEventListener('click', () => {
-	store.dispatch({type: 'decre'})
+subBtn.addEventListener('click', () => {
+	store.dispatch({type: 'sub', data: 2})
 })
 5)通过store实例的getState()方法获取最新状态更新到视图中, 见3);
 4, store对象的三个常用api如下
@@ -697,8 +708,7 @@ return (
 )
 
 
->>项目打包运行
-终端输入: npm run build, 会在项目下生成build文件夹, 将build文件夹部署到服务器即可;
+
 
 
 
