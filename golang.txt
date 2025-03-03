@@ -1641,9 +1641,25 @@ c.HTML(200, "index.html", map[string]interface{}{
 })
 注: 第二个参数是前端模板文件, 第三个参数是传递给前端模板文件的参数;
 一般前端模板放在模板文件夹里, 需要配置模板文件夹:
-route.loadHTMLGlob("template/*")
+r.loadHTMLGlob("tpl/*")
 4, 静态文件配置
 r.Static("/static", "./static")  //前者表示路由, 后者表示路径
+5, 模板
+tpl
+	news.html
+	goods.html
+//main.go
+r.loadHTMLGlob("tpl/*")  //配置模板目录
+c.html(200, "goods", map[string]any{
+	"title": "books",
+	"price": 200,
+})
+//goods.html
+<div>title: {{.title}}</div>
+<div>price: {{.price}}</div>
+
+
+
 
 
 

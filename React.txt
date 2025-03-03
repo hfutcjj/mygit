@@ -650,64 +650,99 @@ subBtn.addEventListener('click', () => {
 npm i @reduxjs/toolkit react-redux 
 2)在src下新建store目录结构
 store 
-	modules
-		channelStore.js
-		counterStore.js    //子模块
-	index.js   //组合modules中所有的子模块, 并导出store
-3)代码
-//counterStore.js
+	slices
+		counterSlice.js
+		listSlice.js
+	store.js   //组合所有的slice, 并导出store
+3)slices代码: 每一个状态对应一个slice文件
+//counterSlice.js
 import {createSlice} from '@reduxjs/toolkit'
-const counterStore = createSlice({
+const counterSlice = createSlice({
 	name: 'counter',
 	initialState: {
-		count: 0
+		value: 0
 	},
-	reducer: {
-		increment(state, action) {
-			state.count += action.payload
+	reducers: {
+		add(state, action) {
+			state.value += action.payload
 		},
-		decrement(state) {
-			state.count--
+		sub(state, action) {
+			state.value -= action.payload
 		}
 	}
 })
-const {increment, decrement} = counterStore.actions
-const counterReducer = counterStore.reducer
-export {increment, decrement}
+const {add, sub} = counterSlice.actions
+const counterReducer = counterSlice.reducer
+export {add, sub}
 export default counterReducer
-//store/index.js
+//listStore.js
+import {createSlice} from '@reduxjs/toolkit'
+const listSlice = createSlice({
+	name: 'list',
+	initialState: {
+		value: [
+			{name: 'zhao', age: 23},
+			{name: 'qian', age: 26},
+			{name: 'sun', age: 32},
+		]
+	},
+	reducers: {
+		push(state, action) {
+			state.value.push(action.payload)
+		},
+		pop(state) {
+			state.value.pop()
+		}
+	}
+})
+const {push, pop} = listSlice.actions
+const listReducer = listSlice.reducer
+export {push, pop}
+export default listReducer
+4)store/store.js代码: 创建store, 将所有slice整合到store中
 import {configureStore} from '@reduxjs/toolkit'
-import counterReducer from './modules/counterStore'
+import counterReducer from './slices/counterSlice'
+import listReducer from './slices/listSlice'
 const store = configureStore({
 	reducer: {
-		counter: counterReducer
+		counter: counterReducer,
+		list: listReducer
 	}
 })
 export default store
-//react-redux负责把redux和react链接起来, 内置Provider组件通过store参数把创建好的store实例注入到应用中;
-import store from './store'
+5)在组件中使用
+//src/index.js: 使用Provider包裹App
 import {Provider} from 'react-redux'
-const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
 	<Provider store={store}>
 		<App />
 	</Provider>
 )
-//组件中使用store的数据: 使用钩子函数useSelector
-//修改store中的数据: 使用钩子函数useDispatch
+//src/App.js: 使用useSelector和useDispatch操作Redux状态
 import {useSelector, useDispatch} from 'react-redux'
-import {increment, decrement} from './store/modules/counterStore'
-const {count} = useSelector(state => state.counter) 
-const dispatch = useDispatch()
-return (
-	<div>
-		<button onClick={() => dispatch(decrement())}>-</button>
-		<span>{count}</span>
-		<button onClick={() => dispatch(increment(5))}>+</button>
-	</div>
-)
-
-
+import {add, sub} from './store/slices/counterSlice'
+import {push, pop} from './store/slices/listSlice'
+function App() {
+	const count = useSelector(state => state.counter.value)
+	const list = useSelector(state => state.list.value)
+	const dispatch = useDispatch()
+	return (
+		<>
+			<button onClick={() => dispatch(add(5))}>Add</button>
+			<span>{count}</span>
+			<button onClick={() => dispatch(sub(5))}>Sub</button>
+			<hr />
+			<button onClick={() => dispatch(push({name: 'cao', age: 30}))}>Push</button>
+			<button onClick={()=>dispatch(pop())}>Pop</button>
+			<ul>
+				{
+					list.map(v => <li>Name:{v.name}--Age:{v.age})
+				}
+			</ul>
+		</>
+	)
+}
+export default App
 
 
 
