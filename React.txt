@@ -494,6 +494,11 @@ import 'antd/dist/antd.css';
 
 >>项目打包运行
 终端输入: npm run build, 会在项目下生成build文件夹, 将build文件夹部署到服务器即可;
+可以全局安装serve包, 在本地开启一个服务器进行测试;
+npm i serve -g;
+cd test/build;  //作为服务器的根目录
+serve
+//等价于 serve test/build
 
 
 
@@ -593,6 +598,21 @@ export default withRouter(Detail)
 3)刷新后对路由state参数的影响
 前者没有影响, 因为state保存在history对象中;
 后者刷新后会导致路由state参数的丢失;
+8, 路由组件的懒加载
+1)旧的导入组件的方式会将组件全部加载进来
+import Home from './Home'
+import About from './About'
+2)使用懒加载
+import {lazy, Suspense} from 'react'
+const Home = lazy(() => import('./Home))
+const About = lazy(() => import ('./About'))
+//注册路由
+<Suspense fallback={<h1>Loading....</h1>}>
+	<Route path="/home" component={Home} />
+	<Route path="/about" component={About} />
+</Suspense>
+注: lazy是懒加载的回调函数, Suspense是当网速很慢时显示的加载画面;
+懒加载可以用于任何组件, 但一般是在路由组件中使用;
 
 
 
