@@ -205,14 +205,21 @@ watchEffect不用指定具体的监视数据, 它在开始时、以及回调函�
 
 >>props
 父组件给子组件传递数据;
-//Parent
+1, 父组件中通过属性给子组件传递数据
 <Son :a="personList" b="zhao" />
-//Son
+2, 子组件通过defineProps()接收数据
 <ul>
 	<li v-for="g in a" :key="g.id">{{g.name}}</li>
 </ul>
-import {defineProps} from 'vue'
-defineProps(['a', 'b'])  //需要先声明接收到的props
+//props只在视图中使用
+defineProps(['a', 'b'])  
+//props需要进一步处理, 用变量接收: {a: 'zhao', b: ...}
+let obj = defineProps(['a', 'b'])
+//接收props + 限制类型 + 限制必要性 + 指定默认值
+withDefaults(defineProps<b?:Persons>(), {
+	b: () => [{name: 'zhao', age: 32}]
+})  
+注: 以define开头的一般为宏函数, 不需要从vue中导入;
 
 
 >>生命周期
@@ -247,6 +254,7 @@ defineProps(['a', 'b'])  //需要先声明接收到的props
 	onBeforeUnmount(() => {})  //卸载前
 	onUnmounted(() => {})  //卸载后
 </script>
+注: 最常用的三个钩子函数: onMounted、onUpdated、onBeforeUnmount;
 
 
 >>自定义hooks
