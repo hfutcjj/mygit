@@ -809,7 +809,7 @@ transform-style: preserve-3d;
 1)flex-grow: 0(default) | 数值;
 是否允许拉升, 默认不拉升;
 2)flex-shrink: 1(default) | 数值;
-是否匀速收缩, 默认自动收缩;
+是否允许收缩, 默认自动收缩;
 3)flex-basis: auto(default) | 数值;
 元素的宽度, 替代width;
 *4)flex: flex-grow flex-shrink flex-basis;

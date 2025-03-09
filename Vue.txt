@@ -269,9 +269,74 @@ export default function() {
 	}
 	return {count, add}
 }
-//Person.js  组件中使用
+//Person.js 组件中使用
 import useCount from './hooks/useCount'
 const {count, add} = useCount()
+
+
+
+>>路由
+1, 下载路由包 vue-router
+npm i vue-router
+2, 定义路由器
+router
+	index.ts
+//index.ts
+import {createRouter, createWebHistory} from 'vue-router'
+const router = createRouter({
+	history: createWebHistory(),
+	routes: [
+		{path: '/home', component: Home},
+		{path: 'about', component: About}
+	]
+})
+export default router
+3, 修改main.ts, 在main.ts中引用路由器
+import router from './router'
+createApp(App).use(router).mount('#app')
+4, 在组件中使用路由
+<template>
+	//导航区
+		<div class="nav">
+			<RouterLink to="/home" active-class="active">Home</RouterLink>
+			<RouterLink to="/about" active-class=active">About</RouterLink>
+		</div>
+	//展示区
+		<div class="main-content">
+			<RouterView></RouterView>
+		</div>
+</template>
+<script lang="ts" setup>
+	import {RouterView, RouterLink} from 'vue-router'
+</script>
+<style>
+	.active{
+		....
+	}
+</style>
+注: active-class表示导航按钮被点击时的样式, 可以在style中自定义该样式;
+5, 一般组件与路由组件
+上面的Home、About属于路由组件, 路由组件一般放在src/pages或src/views文件夹, 而一般组件放在
+src/components文件夹;
+6, 路由器工作模式
+1)history模式
+url不带#, 更美观, 但需要服务端配合处理路径问题(后端增加一个配置项);
+2)hash模式
+将createWebHistory改成createWebHashHistory, 就成为hash模式, url带有#, 优点是不需要服务端配合处理路径问题;
+注: 前台项目一般用history模式, 中后台管理项目有时用hash模式;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
