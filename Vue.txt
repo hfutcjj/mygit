@@ -278,7 +278,8 @@ const {count, add} = useCount()
 >>路由
 1, 下载路由包 vue-router
 npm i vue-router
-2, 定义路由器
+2, 基本使用
+1)定义路由器: 在路由器中指定路由规则;
 router
 	index.ts
 //index.ts
@@ -287,14 +288,15 @@ const router = createRouter({
 	history: createWebHistory(),
 	routes: [
 		{path: '/home', component: Home},
-		{path: 'about', component: About}
+		{path: 'about', component: About},
+		{path: '/', redirect: '/about'}  //重定向
 	]
 })
 export default router
-3, 修改main.ts, 在main.ts中引用路由器
+2)修改main.ts, 在main.ts中引用路由器
 import router from './router'
 createApp(App).use(router).mount('#app')
-4, 在组件中使用路由
+3)在组件中使用路由
 <template>
 	//导航区
 		<div class="nav">
@@ -315,21 +317,106 @@ createApp(App).use(router).mount('#app')
 	}
 </style>
 注: active-class表示导航按钮被点击时的样式, 可以在style中自定义该样式;
-5, 一般组件与路由组件
+导航区路由链接中的to有三种写法:
+a)字符串形式, to="/home';
+b)对象形式, :to="{path: '/home'}"
+c)对象形式, :to="{name: 'zhuye'}"  //需要给每个路由规则一个name属性, 如name: 'zhuye';
+3, 一般组件与路由组件
 上面的Home、About属于路由组件, 路由组件一般放在src/pages或src/views文件夹, 而一般组件放在
 src/components文件夹;
-6, 路由器工作模式
+4, 路由器工作模式
 1)history模式
 url不带#, 更美观, 但需要服务端配合处理路径问题(后端增加一个配置项);
 2)hash模式
 将createWebHistory改成createWebHashHistory, 就成为hash模式, url带有#, 优点是不需要服务端配合处理路径问题;
 注: 前台项目一般用history模式, 中后台管理项目有时用hash模式;
-
-
-
-
-
-
+5, push与replace
+路由默认是通过history的push()方法不断往上堆叠的, 从而可以回退;
+在<RouterLink>中添加replace属性, 就成为了替换;
+6, 嵌套路由
+1)在路由器的路由规则中, 通过children属性定义二级路由规则:
+{
+	path: '/news',
+	component: News,
+	children: [
+		{
+			path: 'detail',
+			component: Detail
+		}
+	]
+}
+2)导航区, 定义路由链接
+<RouterLink to="/news/detail">Detail</RouterLink>
+3)展示区
+<RouterView></RouterView>
+7, 给路由组件传参
+1)query参数
+//在路由链接中传参
+<RouterLink to="/news/detail?name=zhao&age=32">Detail</RouterLink> 
+或者
+<RouterLink :to="{path: '/news/detail', query: {name: 'zhao', age: 32}}">Detail</RouterLink>
+//路由组件中接收参数: route.query
+<template>
+	Name: {{route.query.name}}
+	Age: {{route.query.age}}
+</template>
+<script setup>
+	import {useRoute} from 'vue-router'
+	const route = useRoute()
+</script>
+2)params参数
+//修改路由规则, 加上占位符
+{
+	path: 'detail/:name/:age?',
+	component: Detail
+}
+注: 在某个占位符后面加个?, 则表示该参数可选;
+//在路由链接中传参
+<RouterLink to="/news/detail/zhao/32">Detail</RouterLink>
+//在路由组件中接收参数: route.params 
+<template>
+	Name: {{route.params.name}}
+	Age: {{route.params.age}}
+</template>
+<script setup>
+	import {useRoute} from 'vue-router'
+	const route = useRoute()
+</script>
+3)路由规则的props配置, 让路由组件更方便的接收参数
+//修改路由规则, 加上props属性
+{
+	path: 'detail/:name/:age',
+	component: Detail,
+	props: true
+}
+//在路由组件中通过defineProps()来接收props
+<template>
+	Name: {{name}}
+	Age: {{age}}
+</template>
+<script setup>
+	defineProps(['name', 'age'])
+</script>
+注: props有三种写法:
+第一种写法, props: true, 将路由收到的所有params参数作为props传给路由组件;
+第二种写法, props(route) {
+	return {
+		name: route.query.name, 
+		age: route.query.age
+	}
+}, 可以自己决定将什么作为props传给路由组件;
+第三种写法, props: {
+	name: 'zhao',
+	age: 32
+}, 作用同第二种;
+8, 编程式路由导航
+不使用路由组件<RouterLink>, 而是使用router的push或replace方法来实现路由导航;
+import {useRouter} from 'vue-router'
+const router = useRouter()
+router.push('/about')
+router.replace('/about')  
+push()和replace()的参数与路由组件的to属性完全相同
+注: 实际项目中编程式路由比路由组件更常用;
 
 
 
