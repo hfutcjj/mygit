@@ -557,6 +557,12 @@ count(*)与count(score)的区别:
 如果表达式的为null, 则用第二个参数的值来替代;
 2)if(表达式, 值1, 值2)
 如果表达式的值为true, 则使用值1, 否则使用值2;
+8, 开窗函数
+//将各科成绩分别从高到低进行排序
+select 
+	*,
+	rank() over(partition by cid order by score desc)
+from SC;
 
 
 
@@ -1267,34 +1273,36 @@ select
 from SC
 group by cid;
 20, 按各科成绩排序, 并显示排名, 分数相同时名次也相同:
-select 
-	sid, 
-	cid, 
-	score,
-	case when @sco=score then @rank
-		else @rank:=@rank+1 
-		end as rank,
-	@sco:=score
-	from sc, (select @rank:=0, @sco:=null) as t 
-	order by score;
-或者, 为了在查询的结果中不显示新引入的 @sco:=score 列, 可以写成:
-select 
-	sid,
-	cid,
-	score,
-	case when @sco=score then @rank
-		when @sco:=score then @rank:=@rank+1
-		end as rank
-	from sc, (select @rank:=0, @sco:=null) as t 
-	order by score;
-21, 按各科成绩排序并显示排名, 不同科目都从1开始排:
+//方法一: 使用mysql8.0引入的开窗函数
 select 
 	sc.*,
-	@rank:=if(@cid=cid, if(@sco=score, @rank, @rank+1), 1) as rank,
-	@sco:=score,
-	@cid:=cid
-from sc, (select @rank:=0, @sco:=null, @cid:=null) as t
+	rank() over(partition by cid order by score desc) as `rank`
+from score;
+//方法二: 使用子查询
+select 
+	a.*,
+	(select count(score) from SC b where a.cid = b.cid and a.score < b.score) + 1 as `rank`
+from SC a
 order by cid, score desc;
-
+21, 查询各科成绩的前两名:
+select 
+	*
+from (
+	select 
+		*,
+		rank() over(partition by cid order by score desc) rk
+	from SC
+) t where t.rk in (1, 2);
+22, 列转行
+s_id  c_id  s_score          s_id  score01  score02  score03
+01    01     80               01     80       90       70
+01    02     90        =>   
+01    03     70
+select 
+	s_id,
+	max(case when c_id='01' then s_score end) score01,
+	max(case when c_id='02' then s_score end) score02,
+	max(case when c_id='03' then s_score end) score03
+from score group by s_id;
 
 	

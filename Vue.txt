@@ -222,6 +222,13 @@ withDefaults(defineProps<b?:Persons>(), {
 注: 以define开头的一般为宏函数, 不需要从vue中导入;
 
 
+>>$event事件对象
+$event放在函数调用时的占位符, 表示事件对象;
+<template>
+	<button @click="test(1, $event, 2)">点我</button>
+</template>
+
+
 >>生命周期
 1, vue2的生命周期
 创建 -> 挂载 -> 更新 -> 销毁
@@ -272,6 +279,32 @@ export default function() {
 //Person.js 组件中使用
 import useCount from './hooks/useCount'
 const {count, add} = useCount()
+
+
+>>组件之间的通信
+1, 父子通信
+若父传子, 属性值为数据; 若子传父, 属性值为函数;
+2, 自定义事件, 实现子传父
+//Parent.vue
+<template>
+	<Son @handle-fn="fn"/>  给子组件传递自定义事件
+</template>
+<script setup>
+	function fn(value) {
+		....
+	}
+</script>
+//Son.vue
+<template>
+	<button @click="emit('handle-fn', 666)>点我</button>  //调用并传参
+</template>
+<script setup>
+	const emit = defineEmits(['handle-fn'])  //接收自定义事件
+</script>
+3, mitt
+接收数据的组件: 提前绑定事件; 
+提供数据的组件: 在合适的时候触发事件;
+
 
 
 
