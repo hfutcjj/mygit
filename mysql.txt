@@ -1281,10 +1281,11 @@ from score;
 //方法二: 使用子查询
 select 
 	a.*,
-	(select count(score) from SC b where a.cid = b.cid and a.score < b.score) + 1 as `rank`
+	(select count(score) from SC b where b.cid = a.cid and b.score > a.score) + 1 as `rank`
 from SC a
 order by cid, score desc;
 21, 查询各科成绩的前两名:
+//方法一:  使用开窗函数
 select 
 	*
 from (
@@ -1293,6 +1294,11 @@ from (
 		rank() over(partition by cid order by score desc) rk
 	from SC
 ) t where t.rk in (1, 2);
+//方法二: 使用子查询
+select 
+	a.*
+from SC a 
+where (select count(score) from SC b where b.cid = a.cid and b.score > a.score) + 1 <= 2;
 22, 列转行
 s_id  c_id  s_score          s_id  score01  score02  score03
 01    01     80               01     80       90       70

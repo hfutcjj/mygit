@@ -1,0 +1,136 @@
+>>数据类型
+1, 整型 int
+2, 浮点型 float / double
+3, 布尔型 bool
+4, 字符串 string
+5, null
+6, 数组 
+索引数组、关联数组
+7, 对象
+8, 资源类型
+
+
+>>超级全局变量
+1, $GLOBALS
+存储所有全局变量的数组
+2, $_SERVER
+包含服务器环境信息和请求信息
+3, $_GET
+存储通过GET请求传递到当前脚本的变量
+4, $_POST
+存储通过POST请求传递到当前脚本的变量
+5, $_REQUEST
+包含$_GET, $_POST, $_COOKIE的组合数据
+6, $_COOKIE 
+存储通过Cookies传递到当前脚本的变量
+7, $_SESSION
+存储会话期间的用户数据
+8, $_FILES
+存储通过HTML表单上传的文件信息
+
+
+>>常见内置函数与运算符
+1, isset()
+变量是否已声明且不为null;
+echo isset($name) : $name ? 'zhao';
+echo $name ?? 'zhao';  //等价
+2, empty()
+变量是否为空, 以下变量被认定为空: null、''、0、false、[];
+3, is_null()
+判断变量是否为null;
+4, unset()
+销毁变量；
+5, <=>
+组合比较符, 按<、=、>分别返回-1, 0, 1;
+
+
+>>字符串相关函数
+1, 字符串长度
+strlen($s);  //按字节数计算, 一个中文算3个字符
+mb_strlen($s, 'utf-8');  //按字符数
+2, 字符串拼接
+$s1.$s2;
+implode('*', $arr);  //将数组拼接成字符串
+3, 字符串查找
+查找子串第一次出现的位置, 可选的第三个参数表示起始查找的位置
+strpos('hello world', 'o', [n]);
+stripos(); //不区分大小写
+strstr($s1, $s2);  //返回$s2出现的位置到字符串末尾的部分
+4, 字符串替换
+str_replace('o', '*', 'hello world');
+str_ireplace();  //不区分大小写
+5, 字符串截取
+substr($s, $start, $len);
+mb_substr($s, $start, $len);  //支持中文的按字符截取
+6, 大小写转换
+strtolower($s);
+strtoupper($s);
+ucwords($s);  //将字符串中每个单词的首字母大写
+7, 字符串分割
+explode(',', $s);  //将字符串分割成数组
+8, 去除字符串首尾的空白字符
+trim($s);
+9, 填充字符串
+str_pad($s, 10, '*');
+10, 重复字符串
+str_repeat($s, n);
+11, 打乱字符串
+str_shuffle($s);
+
+
+>>数组相关函数
+1, 数组的创建与初始化
+$a = array();
+$a = ['zhao', 'qian', 'sun'];  //索引数组
+$a = ['name'=>'zhao', 'age'=>32];  //关联数组
+$a = range(1, 10);
+$a = range(1, 100, 2);  //创建一个包含指定范围的数组 
+2, 数组的长度
+count($a);
+3, 数组的遍历
+foreach($arr as $k => $v) {
+	//....
+}	
+array_walk($arr, function($k, $v) {
+	//....
+});
+4, 数组的查找
+in_array($a, $v);  //数组中是否存在某个值
+array_search($a, $v);  //查找该值的键名
+5, 数组的截取
+array_slice($a, $start, $len);
+array_splice($a, $start, $len, $b);  //截取并替换
+6, 数组的过滤
+array_filter($a, function($v) {  //按值过滤数组
+	//....
+})
+7, 数组的合并
+array_merge($a, $b);  //键相同的会覆盖
+array_merge_recursive($a, $b);  //相同键的值合并为数组
+数组的拼接
+implode('*', $a);
+8, 数组的排序
+sort($a);  //升序(键会丢失)
+rsort($a);  //降序
+asort($a);  //按值升序(保留键值关系)
+ksort($a);  //按键升序
+usort($a, function($x, $y) {  //自定义排序
+	return $a <=> $b;  
+});
+9, 操作数组的键和值
+array_keys($a);  //获取所有键
+array_values($a);  //获取所有值
+array_flip(#a);  //交换键和值
+10, 数组求和
+array_sum($a);
+11, 数组去重
+array_unique($a);
+12, 提取多维数组的一列
+$a = [['id'=>1, 'name'=>'zhao'], ['id'=>2, 'name'=>'qian']];
+array_column($a, 'name'); //['zhao', 'qian']
+
+
+
+
+
+
