@@ -10,6 +10,32 @@
 8, 资源类型
 
 
+>>基础知识点
+1, 常用内置函数
+1)isset()
+变量是否已声明且不为null;
+echo isset($name) : $name ? 'zhao';
+echo $name ?? 'zhao';  //等价
+2)empty()
+变量是否为空, 以下变量被认定为空: null、''、0、false、[];
+3)is_null()
+判断变量是否为null;
+4)unset()
+销毁变量；
+2, <=>
+组合比较符, 按<、=、>分别返回-1, 0, 1;
+3, 特殊的变量写法
+$a = 'age';
+$age = 32;
+echo $$a;  //32
+4, 常量
+define('NATION', 'China');
+const NATION = 'China';  //等价
+echo NATION;
+注: 常量默认是全局的;
+const可以在类中使用, 而define()不可以;
+
+
 >>超级全局变量
 1, $GLOBALS
 存储所有全局变量的数组
@@ -29,22 +55,18 @@
 存储通过HTML表单上传的文件信息
 
 
->>常见内置函数与运算符
-1, isset()
-变量是否已声明且不为null;
-echo isset($name) : $name ? 'zhao';
-echo $name ?? 'zhao';  //等价
-2, empty()
-变量是否为空, 以下变量被认定为空: null、''、0、false、[];
-3, is_null()
-判断变量是否为null;
-4, unset()
-销毁变量；
-5, <=>
-组合比较符, 按<、=、>分别返回-1, 0, 1;
+>>魔术常量
+__NAMESPACE__: 当前命名空间
+__FILE__: 当前文件名, 包含完整路径
+__LINE__: 当前行号
+__DIR__: 当前目录
+__FUNCTION__: 当前函数名, 用在函数中
+__CLASS__: 当前类名
+__METHOD__: 当前方法名
+__TRAIT__: 当前trait名
 
 
->>字符串相关函数
+>>字符串相关的函数
 1, 字符串长度
 strlen($s);  //按字节数计算, 一个中文算3个字符
 mb_strlen($s, 'utf-8');  //按字符数
@@ -53,8 +75,10 @@ $s1.$s2;
 implode('*', $arr);  //将数组拼接成字符串
 3, 字符串查找
 查找子串第一次出现的位置, 可选的第三个参数表示起始查找的位置
-strpos('hello world', 'o', [n]);
+strpos($s, 'o', [n]);
 stripos(); //不区分大小写
+strrpos($s, 'o', [n]);  //从后往前查找
+strripos($ss, 'o', [n]);  //不区分大小写的从后往前查找
 strstr($s1, $s2);  //返回$s2出现的位置到字符串末尾的部分
 4, 字符串替换
 str_replace('o', '*', 'hello world');
@@ -65,20 +89,27 @@ mb_substr($s, $start, $len);  //支持中文的按字符截取
 6, 大小写转换
 strtolower($s);
 strtoupper($s);
+ucfirst($s);  //将字符串的第一个字符转换为大写
 ucwords($s);  //将字符串中每个单词的首字母大写
 7, 字符串分割
 explode(',', $s);  //将字符串分割成数组
 8, 去除字符串首尾的空白字符
 trim($s);
-9, 填充字符串
+ltrim($s);  
+rtrim($s);
+9, 字符串比较
+strcmp($s1, $s2);
+10, 填充字符串
 str_pad($s, 10, '*');
-10, 重复字符串
+11, 重复字符串
 str_repeat($s, n);
-11, 打乱字符串
+12, 字符串逆转
+strrev($s);
+13, 打乱字符串
 str_shuffle($s);
 
 
->>数组相关函数
+>>数组相关的函数
 1, 数组的创建与初始化
 $a = array();
 $a = ['zhao', 'qian', 'sun'];  //索引数组
@@ -95,21 +126,26 @@ array_walk($arr, function($k, $v) {
 	//....
 });
 4, 数组的查找
+array_key_exists($key, $a);  //检查数组中是否存在指定的键
 in_array($a, $v);  //数组中是否存在某个值
 array_search($a, $v);  //查找该值的键名
-5, 数组的截取
+5, 数组的首尾添加与删除
+array_push();
+array_pop();
+array_unshift();
+array_shift();
+6, 数组的截取
 array_slice($a, $start, $len);
 array_splice($a, $start, $len, $b);  //截取并替换
-6, 数组的过滤
-array_filter($a, function($v) {  //按值过滤数组
-	//....
-})
-7, 数组的合并
+7, 数组的过滤与映射
+array_filter($a, callback);
+array_map(callback, $a);
+8, 数组的合并
 array_merge($a, $b);  //键相同的会覆盖
 array_merge_recursive($a, $b);  //相同键的值合并为数组
-数组的拼接
+9, 数组的拼接
 implode('*', $a);
-8, 数组的排序
+10, 数组的排序
 sort($a);  //升序(键会丢失)
 rsort($a);  //降序
 asort($a);  //按值升序(保留键值关系)
@@ -117,17 +153,64 @@ ksort($a);  //按键升序
 usort($a, function($x, $y) {  //自定义排序
 	return $a <=> $b;  
 });
-9, 操作数组的键和值
+11, 数组的反转
+array_reverse($a);
+12, 操作数组的键和值
 array_keys($a);  //获取所有键
 array_values($a);  //获取所有值
 array_flip(#a);  //交换键和值
-10, 数组求和
+13, 数组的统计函数
 array_sum($a);
-11, 数组去重
+max($a);
+min($a);
+array_count_values($a);  //统计数组中每个值的出现次数
+14, 数组去重
 array_unique($a);
-12, 提取多维数组的一列
+15, 提取多维数组的一列
 $a = [['id'=>1, 'name'=>'zhao'], ['id'=>2, 'name'=>'qian']];
 array_column($a, 'name'); //['zhao', 'qian']
+
+
+>>日期事件相关的函数
+1, 获取当前日期和时间
+date('Y-m-d H:i:s');  //格式化当前时间
+time();  //当前时间戳
+getdate();  //包含当前日期时间信息的关联数组
+2, 日期时间与时间戳的转换
+strtotime('2025-03-16');  //将字符串转换为时间戳
+strtotime('+1 day');  //明天的时间戳
+mktime($h, $i, $s, $m, $d, $y);  //转换为时间戳
+echo date('Y-m-d', strtotime('+1 week'))  //一周后的日期
+3, 检查日期事件格式是否有效
+checkdate(3, 16, 2025);
+4, 时区
+date_default_timezone_set('Asia/Shanghai');  //设置时区
+5, 使用DateTime对象
+$date = new DateTime();  //当前时间
+$date = new DateTime('2025-03-16 08:30:00');  //指定时间
+$date = new DateTime('2025-03-16 08:30:00', new DateTimeZone('Asia/Shanghai'));  //指定时区
+$date->format('Y-m-d H:i:s');
+$date->setDate(2025, 3, 18);  //修改日期
+$date->setTime(12, 34, 56);  //修改时间
+$date->setTimestamp(time() + 86400);  //设置时间戳
+$date->setTimezone(new DateTimeZone('UTC'));  //修改时区
+$date->modify('+1 day'); //加一天
+$d1->diff($d2);  //返回两个日期时间差的关联数组
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
