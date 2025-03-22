@@ -11,7 +11,7 @@
 
 
 >>基础知识点
-1, 常用内置函数
+1, 变量判断相关函数
 1)isset()
 变量是否已声明且不为null;
 echo isset($name) : $name ? 'zhao';
@@ -22,6 +22,14 @@ echo $name ?? 'zhao';  //等价
 判断变量是否为null;
 4)unset()
 销毁变量；
+5)gettype()
+获取变量的类型;
+6)is_string(), is_int()/is_integer(), is_float(), is_bool(), 
+is_numeric(), is_array(), is_object(), is_null(), is_resource(),
+is_scalar(), is_callable(), is_iterable()
+判断变量是否为相应的类型;
+7)print_r()
+打印数组或对象变量;
 2, <=>
 组合比较符, 按<、=、>分别返回-1, 0, 1;
 3, 特殊的变量写法
@@ -196,6 +204,346 @@ $date->setTimestamp(time() + 86400);  //设置时间戳
 $date->setTimezone(new DateTimeZone('UTC'));  //修改时区
 $date->modify('+1 day'); //加一天
 $d1->diff($d2);  //返回两个日期时间差的关联数组
+
+
+>>文件包含
+1, require
+引入指定的文件, 如果文件不存在, 则产生一个致命错误;
+2, include
+如果文件不存在, 只会报警告, 程序会继续运行;
+3, require_once, include_once
+只会引入一次;
+
+
+>>函数的相关知识
+1, 在函数内部访问全局变量
+使用关键字global或者超级全局变量$GLOBALS;
+$name = 'zhao';
+function test() {
+	global $name;
+	$GLOBALS['name'] = 'qian'; //等价
+}
+2, 静态变量
+静态变量只初始化一次, 在函数执行结束后也不会销毁;
+function test() {
+	static $count = 0;
+	$count++;
+	return $count;
+}
+3, 匿名函数
+$test = function() {
+	//...
+}
+4, 默认参数值
+function test($name, $age = 20) {
+	//...
+}
+5, 可变参数
+function test(...$args) {
+	//将多个参数收集到$args数组中
+}
+6, 引用传参与返回引用
+function test(&$value) {  //传递引用
+	//...
+}
+function &test() {  //返回变量的引用
+	//...
+}
+7, 类型声明
+PHP7+开始支持类型声明;
+function test(int $a, int $b): int {
+	//...
+}
+
+
+>>面向对象
+1, 类
+class Person {
+	public $name;
+	public $age;
+	public function __construct($name='zhao', $age=18) {  //构造函数
+		$this->name = $name;
+		$this->age = $age;
+	}
+	public function __destruct() {  //析构函数
+		//....
+	}
+	public function say() {
+		echo "My name is {$this->name}. I am {$this->age} years old.";
+	}
+}
+1)类的实例化
+$p = new Person('zhao', 32);
+$p = new Person();
+$p->name = 'zhao';
+$p->age = 32;
+2)访问修饰符
+public: 外部可访问
+protected: 类的内部及其子类中可访问
+private: 仅在类的内部访问
+3)静态属性与方法
+//类中定义
+class Counter {
+	public static $count = 0;
+	public static function increment() {
+		self::$count++;
+	}
+}
+//类外使用
+Counter:increment();
+echo Counter::$count;
+注: 静态属性和方法属于类本身, 而不是类的实例, 通过类名直接访问;
+4)类常量
+const NATION = '中国';
+self::NATION
+注: 类常量与类的静态属性相似, 唯一区别是静态属性可以更改;
+2, 继承
+class Student extends Person {
+	public $major;
+	public function __construct($name, $age, $major) {
+		parent::__construct($name, $age);
+		$this->major = $major;
+	}
+	public function say() {
+		echo "My name is {$this->name}, I am {$this->age} years old. I am majoring in {$this->major}."
+	}
+}
+1)子类构造函数中调用父类构造函数:
+parent::__construct($name, $age);
+2)final关键词
+final写在类前, 禁止该类被继承;
+final写在方法前, 禁止该方法被重写;
+3)静态方法与静态属性也可以被继承, 可以通过父类或子类进行调用;
+4)PHP不支持多重继承, 但可通过interface或trait类实现多重继承的功能;
+5)多态
+多态是指允许不同类的对象对相同的消息做出不同的响应, 是在类的继承中, 通过方法重载和方法重写来实现;
+3, 接口与抽象类
+1)接口定义了一组行为规范;
+//定义接口
+interface PersonInter {
+	public function say();
+}
+//类实现接口
+class Person implements PersonInter {
+	public function say() {
+		echo 'Person say....';
+	}
+}
+2)类可以实现多个接口
+class Person implements IEat, IWork {
+	//....
+}
+3)抽象类
+abstract class Person {
+	abstract public function f1();
+}
+注: 抽象类可以包含抽象方法与具体方法, 只能被继承, 不能被实例化;
+4, trait
+解决类的单一继承问题, 把通用的代码抽离出来, 写成trait;
+可同时使用多个trait;
+类似类的继承, 但trait不能被实例化;
+trait A {
+	//....
+}
+trait B {
+	//....
+}
+class C {
+	use A, B;
+	//....
+}
+
+
+>>php文件和目录的操作
+1, 文件操作
+1)打开文件
+r: 只读, w: 写入, a: 追加, r+/w+/a+: 读写(开头/清空/结尾);
+$file = fopen('test.txt', 'r');
+2)读取文件
+//按指定字节数读取
+fread($file, n);
+//逐行读取
+while(!feof($file)) {
+	$line = fgets($file);
+}
+//读取整个文件内容
+$content = file_get_contents('test.txt');
+3)写入文件
+//使用fwrite()或fputs()写入
+fwrite($file, 'hello world');
+//使用file_put_contents()
+file_put_contents('test.txt', 'hello world');
+4)关闭文件
+fclose($file);
+5)文件其他操作
+//检查文件或目录是否存在
+file_exists('test.txt');
+//删除文件
+unlink('test.txt');
+//获取文件大小, 以字节为单位
+filesize('test.txt');
+//获取文件最后修改时间
+filemtime('test.txt');
+2, 目录操作
+1)打开目录
+$dir = opendir('./cao');
+2)创建目录
+mkdir('cao');
+3)删除目录
+rmdir('cao');
+4)遍历目录
+$files = scandir('./cao');
+foreach($files as $file) {
+	//....
+}
+5)检查是否为目录
+is_dir('./cao');
+3, 文件和目录的其他操作
+1)复制文件
+copy('s1.txt', 's2.txt');
+2)移动或重命名文件
+rename('t1.txt', 't2.txt');
+
+
+
+>>php操作mysql
+1, 面向过程的方式
+//连接数据库
+$conn = mysqli_connect('localhost', 'root', '123456', 'test');
+if(!$conn) {
+	die('连接失败:'.mysqli_connect_error());
+}
+//查询数据
+$s = "select * from teacher";
+$result = mysqli_query($conn, $s);
+if(mysqli_num_rows($result) > 0) {
+	while($row = mysqli_fetch_assoc($result)) {
+		echo "ID: {$row['id']}, Name: {$row['name']}\n";
+	}
+} else {
+	echo 'No Data';
+}
+//插入、更新、删除: 都是使用mysqli_query($conn, $s)函数;
+//关闭连接
+mysqli_close($conn);
+2, 面向对象的方式
+//连接数据库
+$conn = new mysqli('localhost', 'root', '123456', 'test');
+if($conn->connect_error) {
+	die('连接失败:'.$conn->connect_error);
+}
+//查询数据
+$s = "select * from teacher";
+$result = $conn->query($s);
+if($result->num_rows > 0) [
+	while($row = $result->fetch_assoc()) {
+		echo "ID: {$row['id']}, Name: {$row['name']}\n";
+	}
+} else {
+	echo 'No Data';
+}
+//插入、更新、删除: 都是使用$conn->query($s)方法;
+//关闭连接
+$conn->close();
+3, 使用PDO(PHP Data Objects)
+//连接数据库
+try {
+    $pdo = new PDO("mysql:host=localhost;dbname=test", "root", "123456");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    echo "连接失败:" . $e->getMessage();
+}
+//查询数据
+$s = "select * from teacher";
+$stmt = $pdo->query($s);
+while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+	echo "ID: {$row['t_id']}, Name: {$row['t_name']}\n";
+}
+//插入数据
+$s = "insert into teacher values (:id, :name)";
+$stmt = $pdo -> prepare($s);
+$stmt->bindParam(":id", $id);
+$stmt->bindParam(":name", $name);
+$id = '05';
+$name = '何申杰';
+$stmt->execute();
+echo '最后插入的ID: '.$pdo->lastInsertId()."\n";
+//更新数据
+$s = "update teacher set name = :name where id = :id";
+$stmt = $pdo->prepare($s);
+$stmt->bindParam(":name", $name);
+$stmt->bindParam(":id", $id);
+$name = "zhao";
+$id = '05';
+$stmt->execute();
+//关闭连接
+$pdo = null;	
+4, 防止sql注入
+使用预处理语句防止sql注入, 上面pdo的方式就是;
+$stmt = $conn->query("select * from teacher where id = ?");
+$stmt->bind_param("id", $id);
+$id = '05';
+$stmt->execute();
+$result = $stmt->get_result();	
+5, 设置字符集
+$conn->set_charset('utf8');
+6, 开启错误报告
+$conn->report_mode = MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT;
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+7, mysqli与pdo的区别
+mysqli: 语法简单、性能稍高, 仅用于mysql数据库;
+pdo: 支持多种数据库, 适合大型项目;
+
+
+
+>>Cookie、Session、Token的操作
+1, Cookie
+1)设置cookie
+setcookie(name, value, expire, path, domain, secure, httponly);
+setcookie($username, 'zhao', time()+3600*24, '/');  //一天后过期
+2)获取cookie
+$_COOKIE[$username]
+3)修改cookie
+setcookie($username, 'qian', time()+3600*24, '/');
+4)删除cookie
+setcookie($username, '', time()-3600, '/');
+2, Session 
+1)启动session
+session_start();  //必须在输出任何内容之前调用该函数
+2)设置session
+$_SESSION['username'] = 'zhao';
+3)获取session
+$_SESSION['username'];
+4)删除session
+session_destroy();  //销毁会话
+3, Token 
+1)用户提交用户名和密码, 服务器验证成功后生成token并返回给客户端
+session_start();
+if($_POST['username'] == 'admin' && $_POST['password'] = '123456') {
+	$_SESSION['token'] = bin2hex(random_bytes(32));
+	setcookie('token', $_SESSION['token'], time()+3600, ’/');
+	echo '登录成功';
+} else {
+	echo '登录失败';
+}
+2)客户端在请求受限资源时携带token
+session_start();
+if(!isset($_SESSION['token']) || $_SESSION['token'] != $_COOKIE['token']) {
+	echo '访问失败！';
+	exit;
+} else {
+	echo '欢迎访问';
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
