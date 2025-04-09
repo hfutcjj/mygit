@@ -160,47 +160,68 @@ let box = ref()
 console.log(box.value)
 
 
->>watch 监视
-1, 监视ref定义的基本类型数据
-import {ref, watch} from 'vue'
+>>watch 监听
+1, watch用于监听基本类型的响应式数据、对象类型的响应式数据、一个getter函数、
+或多个数据源组成的数据;
+1)ref定义的基本类型数据
 let count = ref(0)
-const stopWatch = watch(count, (newValue, oldValue) => {
-	if(newValue >= 10) {
-		stopWatch()  //解除监视
-	}
+watch(count, (newValue, oldValue) => {
+	//....
 })
-注: watch()可以接收一个对象作为第三个参数, 包含很多配置项, 其中 immediate:true 表示组件加载时立即执行一次回调函数, 
-类似于React中的useEffect():
-watch(count, () => {}, {immediate: true});
-2, 监视ref定义的对象类型数据
+2)响应式对象
 let person = ref({name: 'zhao', age: 30})
 watch(person, (newValue, oldValue) => {
-	//...
-}) 
-注: 直接写ref变量名, 监视的是变量的地址值, 若要监视对象属性的变化, 需要手动开启深度监视:
-给watch传入第三个选项参数 {deep: true};
-监视对象类型一般用reactive;
-3, 监视reactive定义的对象类型数据
-let person = reactive({name: 'zhao', age: 30})
-watch(person, (newValue, oldValue) => {
-	//...
-}) 
-注: reactive变量默认就是开启深度监视;
-如果修改的是对象的属性, 则newValue与oldValue的值相同;
-4, 监视getter函数, 用于只监视对象的某个属性
+	//....
+}, {deep: true})
+注: ref定义的响应对象需要第三个参数{deep: true}表示监听对象的属性, 而reactive则默认是深度监听;
+3)getter函数
 watch(() => person.name, (newValue, oldValue) => {
-	//...
+	//....
 })
-5, 监视以上数据组成的数组
-watch([() => person.name, () => person.car.c1], (newValue, oldValue) => {
-	//newValue和oldValue也为对应的数组: ['张三', '宝马']
-})
-6, watchEffect
+4)以上数据源组成的数组
+watch([() => person.name, () => person.age], (newValue, oldValue) => {
+	//newValue和oldValue也为对应的数组['zhao', 30]
+}) 
+注: watch()函数可传入第三个参数作为配置项, 如deep: true表示深度监听, 
+immediate: true表示组件加载时立即执行一次;
+watch()函数的返回值可以用来停止监听;
+2, watchEffect
 watchEffect(() => {
-	//...
+	//....
 })
 watch监视指定的数据, 只在监视的数据变化时执行回调函数;
 watchEffect不用指定具体的监视数据, 它在开始时、以及回调函数里用到的数据发生变化时执行;
+
+
+>>slot 插槽
+子组件用插槽占位, 父组件调用子组件传递具体内容;
+如果子组件有多个插槽, 则要为每个插槽命名, 成为具名插槽;
+当父组件没有传递任何内容时, 子组件slot里的内容为默认显示值;
+//Son.vue 
+<template>
+	<view>
+		<slot name="header">
+			这是header区域
+		</slot>
+	</view>
+	<view>
+		<slot name="main">
+			这是main区域
+		</slot>
+	</view>
+</template>
+//Parent.vue
+<template>
+	<Son>
+		<template #header>
+			This is header area.
+		</template>
+		<template #main>
+			This is main area.
+		</template>
+	</Son>
+</template>
+注: #header是v-slot:header的简写;
 
 
 >>props
@@ -213,20 +234,35 @@ watchEffect不用指定具体的监视数据, 它在开始时、以及回调函�
 </ul>
 //props只在视图中使用
 defineProps(['a', 'b'])  
-//props需要进一步处理, 用变量接收: {a: 'zhao', b: ...}
-let obj = defineProps(['a', 'b'])
-//接收props + 限制类型 + 限制必要性 + 指定默认值
-withDefaults(defineProps<b?:Persons>(), {
-	b: () => [{name: 'zhao', age: 32}]
-})  
+//props需要进一步处理, 用变量接收
+const props = defineProps(['a', 'b'])
+//对接收的props进行约束
+defineProps({
+	username: {
+		type: String,
+		default: 'zhao'
+	},
+	age: Number
+}) 
 注: 以define开头的一般为宏函数, 不需要从vue中导入;
 
 
->>$event事件对象
-$event放在函数调用时的占位符, 表示事件对象;
-<template>
-	<button @click="test(1, $event, 2)">点我</button>
-</template>
+>>父组件给子组件传递函数
+子组件通过$emit()调用父组件的传递的函数, $emit的第二个参数开始表示子组件传给父组件的数据;
+//Parent.vue
+<Son @myCall="handleMyCall"></Son>
+function handleMyCall(v) {
+	//....
+}
+//Son.vue: 在<template>中通过$emit()调用
+<button @click="$emit('myCall', 12)">Click me</button>
+//Son.vue: 在<script>中通过defineEmits先声明后调用
+<button @click="hancleClick">Click me</button>
+function handleClick() {
+	const emit = defineEmits(['myCall'])
+	emit('myCall', 12)
+}
+
 
 
 >>生命周期
@@ -279,33 +315,6 @@ export default function() {
 //Person.js 组件中使用
 import useCount from './hooks/useCount'
 const {count, add} = useCount()
-
-
->>组件之间的通信
-1, 父子通信
-若父传子, 属性值为数据; 若子传父, 属性值为函数;
-2, 自定义事件, 实现子传父
-//Parent.vue
-<template>
-	<Son @handle-fn="fn"/>  给子组件传递自定义事件
-</template>
-<script setup>
-	function fn(value) {
-		....
-	}
-</script>
-//Son.vue
-<template>
-	<button @click="emit('handle-fn', 666)>点我</button>  //调用并传参
-</template>
-<script setup>
-	const emit = defineEmits(['handle-fn'])  //接收自定义事件
-</script>
-3, mitt
-接收数据的组件: 提前绑定事件; 
-提供数据的组件: 在合适的时候触发事件;
-
-
 
 
 >>路由
