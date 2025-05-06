@@ -154,10 +154,9 @@ array_merge_recursive($a, $b);  //相同键的值合并为数组
 9, 数组的拼接
 implode('*', $a);
 10, 数组的排序
-sort($a);  //升序(键会丢失)
-rsort($a);  //降序
-asort($a);  //按值升序(保留键值关系)
-ksort($a);  //按键升序
+sort($a) / rsort($a);  //用于索引数组
+ksort($a);  //关联数组: 按键排序
+asort($a);  //关联数组: 按值升序
 usort($a, function($x, $y) {  //自定义排序
 	return $a <=> $b;  
 });

@@ -264,6 +264,26 @@ function handleClick() {
 }
 
 
+>>组件暴露属性和方法
+子组件通过defineExpose()暴露属性和方法, 父组件通过ref得到子组件实例对象, 然后调用子组件的属性和方法;
+//Son.vue
+let count = ref(12)
+function f1() {
+	count.value++
+}
+defineExpose({
+	count,
+	f1
+})
+//Parent.vue
+<Son ref="son"></Son>
+const son = ref(null)
+function handleClick() {
+	son.value.f1()
+	console.log(son.value.count)
+}
+
+
 
 >>生命周期
 1, vue2的生命周期
