@@ -165,7 +165,7 @@ array_reverse($a);
 12, 操作数组的键和值
 array_keys($a);  //获取所有键
 array_values($a);  //获取所有值
-array_flip(#a);  //交换键和值
+array_flip($a);  //交换键和值
 13, 数组的统计函数
 array_sum($a);
 max($a);

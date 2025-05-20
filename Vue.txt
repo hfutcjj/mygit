@@ -94,7 +94,7 @@ let person = reactive({name: 'zhao', age: 32})  //将变量变为Proxy对象
 person.name = 'qian'
 3, ref和reactive的区别
 1)ref可以定义基本类型和对象类型的响应式数据, 而reactive只能定义对象类型;
-2)修改数据时, ref定义的变量要加.value, 而reactive不行tive直接修改;
+2)修改数据时, ref定义的变量要加.value, 而reactive数据可以直接修改;
 3)修改对象类型时, ref定义的对象可以通过整体赋值修改, 而reactive不行;
 [ref] person.value = {name: 'qian', age: 40}  //√
 [reactive] person = {name: 'qian', age: 40}  //×
@@ -126,6 +126,9 @@ const discountPrice = computed({
 	}
 })
 注: 计算属性也是ref响应式数据;
+计算属性本质上也是一个函数, 计算属性与一般函数的区别是:
+计算属性可以缓存, 当在模板中多次调用计算属性时, 计算属性只计算一次;
+而当在模板中多次调用一般函数时, 函数会执行多次;
 
 
 >>条件渲染和列表渲染
