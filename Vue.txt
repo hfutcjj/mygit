@@ -153,6 +153,8 @@ FullName: {{firstName}}-{{lastName}}
 //js
 let firstName = ref('张')
 let lastName = ref('三')
+注: v-model的底层实现如下
+<input type="text" :value="firstName" @input="firstname=$event.target.value">
 
 
 >>标签的ref属性
@@ -196,6 +198,54 @@ watch监视指定的数据, 只在监视的数据变化时执行回调函数;
 watchEffect不用指定具体的监视数据, 它在开始时、以及回调函数里用到的数据发生变化时执行;
 
 
+>>组件暴露属性和方法
+子组件通过defineExpose()暴露属性和方法, 父组件通过ref得到子组件实例对象, 然后调用子组件的属性和方法;
+//Son.vue
+let count = ref(12)
+function f1() {
+	count.value++
+}
+defineExpose({
+	count,
+	f1
+})
+//Parent.vue
+<Son ref="son"></Son>
+const son = ref(null)
+function handleClick() {
+	son.value.f1()
+	console.log(son.value.count)
+}
+
+
+>>$event表示事件对象
+1, <button @click="fn">点我</button>
+function fn(e) {
+	//不传任何参数时, e就是事件对象
+}
+2, <button @click="fn(1, $event)">点我</button>
+function fn(a, e) {
+	//传递多个参数时, 占位符$event表示事件对象
+}
+
+
+>>自定义hooks
+//useCount.js
+import {ref} from 'vue'
+export default function() {
+	//数据 
+	let count = ref(0)
+	//方法
+	function add() {
+		count.value += 1
+	}
+	return {count, add}
+}
+//Person.js 组件中使用
+import useCount from './hooks/useCount'
+const {count, add} = useCount()
+
+
 >>slot 插槽
 子组件用插槽占位, 父组件调用子组件传递具体内容;
 如果子组件有多个插槽, 则要为每个插槽命名, 成为具名插槽;
@@ -225,67 +275,6 @@ watchEffect不用指定具体的监视数据, 它在开始时、以及回调函�
 	</Son>
 </template>
 注: #header是v-slot:header的简写;
-
-
->>props
-父组件给子组件传递数据;
-1, 父组件中通过属性给子组件传递数据
-<Son :a="personList" b="zhao" />
-2, 子组件通过defineProps()接收数据
-<ul>
-	<li v-for="g in a" :key="g.id">{{g.name}}</li>
-</ul>
-//props只在视图中使用
-defineProps(['a', 'b'])  
-//props需要进一步处理, 用变量接收
-const props = defineProps(['a', 'b'])
-//对接收的props进行约束
-defineProps({
-	username: {
-		type: String,
-		default: 'zhao'
-	},
-	age: Number
-}) 
-注: 以define开头的一般为宏函数, 不需要从vue中导入;
-
-
->>父组件给子组件传递函数
-子组件通过$emit()调用父组件的传递的函数, $emit的第二个参数开始表示子组件传给父组件的数据;
-//Parent.vue
-<Son @myCall="handleMyCall"></Son>
-function handleMyCall(v) {
-	//....
-}
-//Son.vue: 在<template>中通过$emit()调用
-<button @click="$emit('myCall', 12)">Click me</button>
-//Son.vue: 在<script>中通过defineEmits先声明后调用
-<button @click="hancleClick">Click me</button>
-function handleClick() {
-	const emit = defineEmits(['myCall'])
-	emit('myCall', 12)
-}
-
-
->>组件暴露属性和方法
-子组件通过defineExpose()暴露属性和方法, 父组件通过ref得到子组件实例对象, 然后调用子组件的属性和方法;
-//Son.vue
-let count = ref(12)
-function f1() {
-	count.value++
-}
-defineExpose({
-	count,
-	f1
-})
-//Parent.vue
-<Son ref="son"></Son>
-const son = ref(null)
-function handleClick() {
-	son.value.f1()
-	console.log(son.value.count)
-}
-
 
 
 >>生命周期
@@ -323,21 +312,70 @@ function handleClick() {
 注: 最常用的三个钩子函数: onMounted、onUpdated、onBeforeUnmount;
 
 
->>自定义hooks
-//useCount.js
-import {ref} from 'vue'
-export default function() {
-	//数据 
-	let count = ref(0)
-	//方法
-	function add() {
-		count.value += 1
-	}
-	return {count, add}
+>>组件间的通信
+1, 父传子props
+1)父给子传递数据
+//Parent.vue
+<Son :c1="car" />
+let car = ref('宝马')
+//Son.vue
+Car from Parent: {{c1}}
+defineProps(['c1'])
+2)父给子传递函数
+//Parent.vue
+toyFromSon: {{toyFrom}}
+<Son :f1="getToy" />
+let toyFrom = ref('')
+function getToy(value) {
+	toyFrom.value = value
 }
-//Person.js 组件中使用
-import useCount from './hooks/useCount'
-const {count, add} = useCount()
+//Son.vue
+<button @click=f1(toy)">Send Toy</button>
+let toy = ref('奥特曼')
+defineProps(['f1])
+2, 父传子使用自定义事件
+//Parent.vue
+toyFromSon: {{toyFrom}}
+<Son @send-toy="getToy" />
+let toyFrom = ref('')
+function getToy(value) {
+	toyFrom.value = value
+}
+//Son.vue
+方法一: 在模板中直接使用$emit触发
+<button @click="$emit('send-toy', toy)">Send Toy</button>
+let toy = ref('奥特曼')
+方法二: 通过defineEmits()显式声明
+const emit = defineEmits(['send-toy'])
+emit('send-toy', toy.value)
+3, 任意组件的通信: mitt(消息订阅与发布)
+接收数据的组件, 提前绑定好事件(订阅消息),
+提供数据的组件, 在合适的时候触发事件(发布消息);
+1)安装mitt
+npm i mitt
+2)准备mitt公共文件
+src 
+	utils
+		emitter.js
+//emitter.js
+import mitt from 'mitt'
+export default mitt()
+3)使用mitt绑定事件和触发事件
+//A.vue 
+import emitter from '@/utils/emitter.js'
+emitter.on('send-toy', (value) => {  //绑定事件
+	console.log('send-toy被调用')
+})
+onUnmounted(() => {
+	emitter.off('send-toy')  //组件卸载时解绑事件
+})
+//B.vue
+import emitter from '@/utils/emitter.js'
+emitter.emit('send-toy', toy)  //触发事件
+
+
+
+
 
 
 >>路由
