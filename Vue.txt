@@ -157,6 +157,13 @@ let lastName = ref('三')
 <input type="text" :value="firstName" @input="firstname=$event.target.value">
 
 
+>>v-bind
+//Parent.vue
+<Son v-bind="{x: 10, y: 20}" />
+等价于
+<Son :x="10" :y="20" />
+
+
 >>标签的ref属性
 用在普通dom标签上, 获取的是dom节点;
 用在组件标签上, 获取的是组件实例对象;
@@ -372,7 +379,23 @@ onUnmounted(() => {
 //B.vue
 import emitter from '@/utils/emitter.js'
 emitter.emit('send-toy', toy)  //触发事件
-
+4, 祖传孙 $attrs
+1)$attrs是什么
+$attrs表示父给子传递的数据中, 不包含在子组件defineProps()里的其他数据;
+//Parent.vue
+<Son :a="a" :b="b" :c="c" :d="d" />
+//Son.vue
+<div>a: {{a}}</div>
+<div>其他: {{$attrs}}</div>
+defineProps(['a'])
+注: 此处$attrs就等于 {b: 2, c: 3, d: 4};
+2)祖传孙
+//Parent.vue
+<Son :a="a" :b="b" :c="c" :d="d" />
+//Son.vue
+<Sun v-bind="$attrs" />
+//Sun.vue
+defineProps(['a', 'b', 'c', 'd'])
 
 
 
