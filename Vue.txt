@@ -135,6 +135,7 @@ const discountPrice = computed({
 1)条件渲染
 <div v-if="isShow">Hello</div>
 注: v-if与v-show的区别是, 前者销毁了组件, 而后者只是隐藏组件;
+注: 与v-if搭配的有v-else-if, v-else;
 2)列表渲染
 const datas = [
 	{id: '001', name: 'zhao'}, 
@@ -205,7 +206,7 @@ watch监视指定的数据, 只在监视的数据变化时执行回调函数;
 watchEffect不用指定具体的监视数据, 它在开始时、以及回调函数里用到的数据发生变化时执行;
 
 
->>组件暴露属性和方法
+>>组件暴露属性和方法 defineExpose
 子组件通过defineExpose()暴露属性和方法, 父组件通过ref得到子组件实例对象, 然后调用子组件的属性和方法;
 //Son.vue
 let count = ref(12)
@@ -282,6 +283,7 @@ const {count, add} = useCount()
 	</Son>
 </template>
 注: #header是v-slot:header的简写;
+注: template标签用于占位, 不会增加额外的结构;
 
 
 >>生命周期
@@ -627,6 +629,8 @@ countStore.$subscribe((mutate, state) => {
 	//mutate: 本次的修改动作对象
 	//state: 修改后的数据
 })
+
+
 
 
 

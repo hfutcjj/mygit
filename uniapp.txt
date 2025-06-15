@@ -1,0 +1,19 @@
+>>新建components文件夹, 把组件放到里面(创建同名目录), 以后在pages页面里可以直接使用, 不需要import导入;
+
+>>页面的生命周期
+import {...} from '@dcloudio/uni-app'
+1, onLoad(页面加载)
+可以在这里接收其他页面传递过来的参数;
+onLoad((params) => {
+	//...
+})
+2, onReady(页面初次渲染完毕)
+相当于onMounted();
+3, onShow(页面显示)
+4, onHide(页面隐藏)
+5, onUnload(页面卸载)
+6, onPageScroll(页面滚动)
+7, onResize(页面尺寸变化)
+8, onReachBottom(页面触底)
+9, onPullDownRefresh(下拉刷新)
+10, onTabItemTap(Tab页面点击)
