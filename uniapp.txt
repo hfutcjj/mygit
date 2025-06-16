@@ -17,3 +17,8 @@ onLoad((params) => {
 8, onReachBottom(页面触底)
 9, onPullDownRefresh(下拉刷新)
 10, onTabItemTap(Tab页面点击)
+
+
+>>响应式像素单位 rpx
+以750px的手机宽度为基准;
+
