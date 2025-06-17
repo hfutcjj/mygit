@@ -4,7 +4,7 @@
 2, 超链接
 <a href="" title="" target=""> 
 注：target取值有_self, _blank, _parent, _top，默认是_self;
-3，表格
+3, 表格
 1)html
 <table border="1">
 	<thead>
@@ -42,7 +42,7 @@ table tr{
 table tr td:nth-child(1){
 	width: 100px;  //第一列的宽度
 }
-4，表单
+4, 表单
 <form method="post" action="test.php">
 	//文本框, label标签的for必须与input的id值一致
 	<label for="username">用户名: </label>
@@ -72,6 +72,8 @@ table tr td:nth-child(1){
 	//重置按钮
 	<input type="reset" value="重置">
 </form>
+5, 网站偏爱图标
+<link rel="icon" href="/favicon.ico" />
 
 
 >>文件表单

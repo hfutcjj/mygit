@@ -13,6 +13,7 @@ npm create vue@latest
 
 
 >>Vue项目结构
+1, 常用目录文件
 public 
 	favicon.ico   //替换为我们网站的快捷图标
 src
@@ -29,6 +30,23 @@ src
 index.html			//应用的入口文件
 package.json		//项目的依赖
 vite.config.js		//配置vite的选项, 如开发服务器、构建设置、插件等
+2, 入口文件
+1)index.html
+<body>
+	<div id="app"></div>
+	<script type="module" src="/src/main.js"></script>
+</body>
+2)main.js
+import {createApp} from 'vue';
+import App from './App.vue';
+import router from './router';
+const app = createApp(App);
+app.use(router);
+app.mount('#app);
+3)App.vue 
+<template></template>
+<script setup></script>
+<style scoped></style>
 
 
 >>选项式API(OptionsAPI)与组合式API(CompositionAPI)
@@ -143,6 +161,7 @@ const datas = [
 
 
 >>输入框与数据的双向绑定
+1, 基本原理
 使用ref: 数据 => 输入框, 使用v-model: 输入框 => 数据;
 FirstName: <input type="text" v-model="firstName">
 LastName: <input type="text" v-model="lastName">
@@ -152,6 +171,31 @@ let firstName = ref('张')
 let lastName = ref('三')
 注: v-model的底层实现如下
 <input type="text" :value="firstName" @input="firstname=$event.target.value">
+2, 分类使用
+1)单行文本框
+username: <input type="text" v-model="v1">  //字符串 
+2)多行文本框
+<textarea v-model="v2"></textarea>  //字符串 
+3)单选框
+<label><input type="radio" value="male" v-model="v3">男</label>
+<label><input type="radio" value="female" v-model="v3">女</label>  //字符串 
+*4)单个复选框
+<label><input type="checkbox" v-model="v4">同意</label>  //布尔值
+*5)多个复选框
+<label><input type="checkbox" value="足球" v-model="v5">足球</label>
+<label><input type="checkbox" value="篮球" v-model="v5">篮球</label>  //数组
+6)单个选择框
+<select v-model="v6">  //字符串
+  <option value="南京">南京</option>
+  <option value="苏州">苏州</option>
+  <option value="无锡">无锡</option>
+</select>
+7)多个复选框 
+<select v-model="v6" multiple>  //数组
+  <option value="南京">南京</option>
+  <option value="苏州">苏州</option>
+  <option value="无锡">无锡</option>
+</select>
 
 
 >>v-bind
@@ -231,6 +275,17 @@ function fn(e) {
 function fn(a, e) {
 	//传递多个参数时, 占位符$event表示事件对象
 }
+
+
+>>事件修饰符
+1)阻止事件冒泡
+<a @click.stop="f1">..</a>
+等价于在f1函数中调用event.stopProgation();
+2)阻止浏览器的默认行为
+<a @click.prevent="f2">..</a>
+等价于在f2函数中调用event.preventDefault();
+3)多个修饰符可以串联
+<a @click.stop.prevent="f3">..</a>
 
 
 >>自定义hooks
