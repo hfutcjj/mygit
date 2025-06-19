@@ -609,78 +609,25 @@ import {createPinia} from 'pinia'
 createApp(APP).use(createPinia()).mount('#app')
 3)存储数据到store
 src
-	store
-		count.ts   //保存组件Count.vue里的状态
+	stores
+		counter.ts   //保存组件Count.vue里的状态
 		person.ts  //保存组件Person.vue里的状态
 //count.ts
 import {defineStore} from 'pinia'
-const useCountStore = defineStore('count', {
-	state() {
-		return {
-			sum: 0
-		}
+export const useCountStore = defineStore('counter', {
+	const count = ref(0)
+	function increment() {
+		count.value++
 	}
+	return {count, increment}
 })
-exoprt useCountStore
-4)在组件里获取状态数据
-//Count.vue
-<template>
-	当前求和为: {{countStore.sum}}
-</template>
-<script setup>
-	import {useCountStore} from '@/store/count'
-	const countStore = useCountStore()
-</script>
-5)在组件里修改数据
-方式一, 直接修改
-function add(n) {
-	countStore.sum += n
-}
-方式二
-countStore.$patch({
-	sum: 1
-})
-方式三, 通过actions
-//在count.ts里追加actions
-const useCountStore = defineStore('count', {
-	actions: {
-		increment(value) {
-			this.sum += value
-		}
-	}
-})
-//在Count.vue里修改
-countStore.increment(5)
-3, storeToRefs
-将countStore对象里的数据变成响应式, toRefs是将一个对象里的所有数据与方法都变成响应式, 
-而countStore只针对数据;
-import {storeToRefs} from 'pinia'
-const {sum} = storeToRefs(countStore)
-function add(n) {
-	sum.value += n
-}
-4, getters
-当state中的数据, 需要经过处理后再使用时, 可以使用getters配置;
-//在count.ts里追加getters配置
-const useCountState = defineStore('count', {
-	getters: {
-		bigSum(state) {
-			return state.sum*10  //也可以用this.sum
-		},
-		upperName() {
-			return this.name.toUpperCase()
-		}
-	}
-})
-//在Count.vue组件里使用
-const {bigSum, upperName} = storeToRefs(countStore)
-5, $subscribe
-通过store的$subscribe()方法监听state的变化;
-countStore.$subscribe((mutate, state) => {
-	//mutate: 本次的修改动作对象
-	//state: 修改后的数据
-})
-
+4)其他组件使用store中的状态数据
+import {useCountStore} from '@/stores/counter'
+const counter = useCountStore()
+count.count++
+counter.increment()
+3, pinia的持久化存储
+将pinia的状态数据进行持久化存储, 可以防止刷新丢失, 具体使用请AI, 很简单;
 
 
 
