@@ -1188,14 +1188,41 @@ ch := make(<-chan int, 3)
 注: 双向管道可以赋值给单向管道, 反之则不可以;
 var ch chan<- int = make(chan int, 3)
 4, select多路复用
-select {
-	case <- ch1:
-		//...
-	case ch2 <- i:
-		//...
-	default: 
-		//...
+ch1 := make(chan string, 10)
+ch2 := make(chan string, 5)
+go func() {
+	defer close(ch1)
+	for i := 0; i < 10; i++ {
+		time.Sleep(1 * time.Second)
+		ch1 <- fmt.Sprintf("from ch1 %d", i)
+	}
+}()
+go func() {
+	defer close(ch2)
+	for i := 0; i < 5; i++ {
+		time.Sleep(2 * time.Second)
+		ch2 <- fmt.Sprintf("from ch2 %d", i)
+	}
+}()
+for ch1 != nil || ch2 != nil {
+	select {
+	case msg1, ok := <-ch1:
+		if !ok { // ch1已关闭
+			ch1 = nil
+			fmt.Println("ch1 closed")
+			continue
+		}
+		fmt.Println(msg1)
+	case msg2, ok := <-ch2:
+		if !ok { // ch2已关闭
+			ch2 = nil
+			fmt.Println("ch2 closed")
+			continue
+		}
+		fmt.Println(msg2)
+	}
 }
+fmt.Println("Done")
 如果没有default, 则阻塞等待ch1与ch2的读写, 否则立即执行default;
 如果有多个case可执行,则随机选择其中一个;
 5, 锁
@@ -1269,8 +1296,8 @@ var (
 	host string
 	port int
 )
-flag.StringVar($user, "u", "", "")  //第三个参数为默认值, 第四个参数为说明
-flag.StringVar($host, "h", "", "")
+flag.StringVar(&user, "u", "", "")  //第三个参数为默认值, 第四个参数为说明
+flag.StringVar(&host, "h", "", "")
 flag.IntVar(&port, "port", 3306, "")
 flag.Parse()  //*必须调用该方法才能解析生效
 fmt.Printf("user: %s, host: %s, port: %d\n", user, host, port)
@@ -1280,6 +1307,20 @@ go run main.go -u cjj -h uhome
 
 >>socket编程
 1, 分为服务端和客户端, 使用net包;
+文件组织结构:
+socket_demo 
+	server 
+		server.go 
+	client 
+		client.go
+	go.mod
+运行:
+首先启动客户端
+cd server
+go run server.go
+然后在一个或多个终端中启动客户端
+cd client
+go run client.go
 2, 常用函数
 Listen(): 服务端监听
 Accept(): 服务端接收客户端连接
