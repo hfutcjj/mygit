@@ -1653,11 +1653,15 @@ func main()
 
 
 -------------------------Gin-----------------------------
->>Gin
-1, 引入
-go get github.com/gin-gonic/gin 
+>>gin项目搭建
+1, 引入gin包
+go get -u github.com/gin-gonic/gin 
 import "github.com/gin-gonic/gin"
-2, 搭建服务
+注: -u表示如果包已存在, 则强行更新代码包及依赖;
+2, 热更新 refresh
+go install github.com/pilu/fresh@latest
+运行 refresh
+3, 搭建服务
 func main() {
 	r := gin.Default()  //创建一个默认的路由引擎
 	r.GET("/", func(c *gin.Context) {  //接收请求并响应
@@ -1668,7 +1672,21 @@ func main() {
 	})
 	r.Run()  //监听并执行, 默认8080端口, 也可指定
 }
-3, 响应的不同类型
+4, 请求参数的获取
+1)查询参数
+http://example.com/user?name=zhao&age=32
+name := c.Query("name")
+name := c.DefaultQuery("name", "zhao")
+2)路径参数
+http://example.com/user/zhao/123
+//先在路由中定义占位符
+r.GET("/user/:name/:age, func(c *gin.Context) {  
+	name := c.Param("name")
+})
+3)表单参数
+c.PostForm("name")
+c.DefaultPostForm("name", "zhao")
+5, 响应的不同类型
 可给前端响应不同的数据格式, 如字符串、json、jsonp、xml、html等；
 c.String(200, "hello")
 c.JSON(200, map[string]interface{}{
@@ -1683,9 +1701,9 @@ c.HTML(200, "index.html", map[string]interface{}{
 注: 第二个参数是前端模板文件, 第三个参数是传递给前端模板文件的参数;
 一般前端模板放在模板文件夹里, 需要配置模板文件夹:
 r.loadHTMLGlob("tpl/*")
-4, 静态文件配置
+6, 静态文件配置
 r.Static("/static", "./static")  //前者表示路由, 后者表示路径
-5, 模板
+7, 模板
 tpl
 	news.html
 	goods.html
@@ -1698,6 +1716,159 @@ c.html(200, "goods", map[string]any{
 //goods.html
 <div>title: {{.title}}</div>
 <div>price: {{.price}}</div>
+8, 路由分组
+frontRouter := r.Group("/")
+{
+	frontRouter.GET("/login", ...)
+	frontRouter.GET("/home", ...)
+}
+adminRouter := r.Group("/admin")
+{
+	adminRouter.GET("/user", ...)
+	adminRouter.GET("/user/add", ...)
+}
+apiRouter := r.Group("/api")
+{
+	apiRouter.GET("/user", ...)
+	apiRouter.GET("/user/add", ...)
+}
+9, 中间件
+1)中间件的定义
+//middleware/middleware.go
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := c.GetHeader("Authorization")
+		if token != "secret-token" {
+			c.JSON(401, gin.H{"error": "unauthorization})
+			c.Abort()
+			return
+		}
+	}
+	c.Next()
+	//请求完成后执行的其他操作
+}
+2)全局中间件
+r := gin.Default()
+r.Use(middleware/AuthMiddleware)
+3)分组中间件
+adminRouter := r.Group("/admin")
+adminRouter.Use(middleware/AuthMiddleware)
+//或者 
+adminRouter := r.Group("/admin", middleware/AuthMiddleware)
+4)路由中间件
+r.GET("/login", middleware/AuthMiddleware, func(c *gin.Context) {
+	//...
+})
+10, cookie和session
+1)cookie
+//设置cookie
+c.SetCookie("username", "张三", expireTime, path, domain, bSecure, bHttpOnly)
+注: 将过期时间设为一个小于0的数, 就表示删除cookie;
+//获取cookie
+c.Cookie("username")
+//多个二级域名中共享cookie
+比如将domain设置为".itying.com", 这样就可以在"a.itying.com"和"b.itying.com"中共享cookie;
+c.SetCookie("username", "张三", 3600, "/", ".itying.com", false, true)
+2)session
+使用第三方包, 查AI;
+注: session可以存在服务器本地, 如果是分布式系统, 则可以存在redis数据库中;
+
+
+>>GROM
+1, 下载gorm和mysql包
+gorm.io/driver/mysql 
+gorm.io/gorm
+2, 连接数据库 
+//model/db.go
+var (
+	Db *gorm.DB 
+	err error
+)
+func init() {
+	dsn := "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local"
+	Db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+}
+3, 建立模型与数据库表对应
+//model/Student.go 
+type Student struct {
+	//当主键不是id时, 需要指定对应的主键
+	SId uint `gorm:"primaryKey;column:s_id"`
+	SName string 
+	SBirth time.Time
+}
+//Student结构体默认对应数据库中students表, 如果不是则需要自定义表名
+func (Stduent) TableName() string {
+	return "student"
+}
+4, 查询
+sList := []model.Student{}
+model.Db.Find(&sList)
+c.JSON(200, gin.H{
+	"data": sList,
+})
+5, 原生查询
+复杂查询可以使用原生查询, 例如多表关联的查询, 步骤如下:
+type StudentCourseScore struct {
+	SName string 
+	CName string 
+	SScore int 
+}	
+var rs []StudentCourseScore
+sql := `
+	select s.s_name, c.c_name, score.s_score 
+		from student s 
+		left join score on s.s_id = score.s_id 
+		left join course c on c.c_id = score.c_id 
+`
+model.Db.Raw(sql).Scan(&rs)
+c.JSON(200, rs)
+注: 自定义的结构体需要与sql返回的查询字段--对应, 与SScore对应s_score;
+6, 多表关联: 
+1)has one
+//在结构体中定义关联关系: Student表与Dept表的关联
+type Student struct {
+	SId uint `gorm:"primaryKey;column:s_id"`
+	SName string 
+	DId uint 
+	Dept Dept `gorm:"foreignKey:DId;references:DId"`
+}
+//在查询Student表的数据时要通过Preload(Dept)加载Dept表
+model.Db.Preload("Dept").Find(&sList)
+2)has many
+//在结构体中定义关联关系: Dept表与Student表的关联
+type Dept struct {
+	DId uint `gorm:"primaryKey;column:d_id"`
+	DName string 
+	Student []Student `gorm:"foreignKey:DId;references:DId"`
+}
+注: 因为是一对多的关系, 所以Student要定义成[]Student切片类型;
+//查询 
+model.Db.Preload("Student").Find(&dList)
+3)many2many
+例如, 将student表与course表通过score这个关联表进行关联;
+可以查询每个学生选修的所有课程:
+type Student struct {
+	SID uint `gorm:"primaryKey;column:s_id"`
+	SName string 
+	Courses []Course `gorm:"many2many:score;joinForeignKey:SID;joinReferences:CID"`
+}
+var sList []model.Student 
+model.Db.Preload("Courses").Find(&sList)
+c.JSON(200, sList)
+也可以查询每个课程有哪些学生选修:
+type Course struct {
+	CID uint `gorm:"primaryKey;column:c_id"`
+	CName string 
+	Students []Student `gorm:"many2many:score;joinForeignKey:CID;joinReferences:SID"`
+}
+var cList []model.Course
+model.Db.Preload("Students").Find(&cList)
+
+
+
 
 
 

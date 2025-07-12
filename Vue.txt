@@ -4,12 +4,41 @@
 3, 虚拟DOM: 提高性能;
 
 
->>创建Vue工程
-1, 基于vue-cli
-npm install -g @vue/cli
-vue create vue_test
-2, 基于vite
+>>创建Vue工程以及插件
+1, 基于vite创建vue项目
 npm create vue@latest
+在交互中选择ts、vue-router、pinia、Prettier等功能;
+2, 安装插件
+npm i axios element-plus -S  //生产依赖
+npm i sass -D  //开发依赖
+
+
+>>环境变量
+1, 可以在根目录下创建环境变量的文件, 包括
+.env  //默认, 适用于所有环境
+.env.development  //开发环境
+.env.production  //生产环境
+.env.test  //测试环境
+2, 环境变量的文件写法
+VITE_APP_TITLE=My Vue App
+VITE_API_URL=https://api.example.com 
+3, import.meta.env 
+应用程序使用import.meta.env.VITE_API_URL 来使用环境变量;
+4, 内置环境变量
+import.meta.env默认会加载几个内置的环境变量, 如 
+import.meta.env.MODE: 'development',
+import.meta.env.BASE_URL: '/'等;
+
+
+>>vue3比vue2的改进
+1, 打包体积更小, 编译和运行的速度更快;
+2, 组合式API代替选项式API;
+3, 生命周期钩子的变化;
+4, VDOM的优化;
+5, 更好地支持ts;
+6, pinia代替vuex;
+7, vite代替webpack;
+8, elementplus代替elementUI;
 
 
 >>Vue项目结构
@@ -451,6 +480,17 @@ defineProps(['a'])
 defineProps(['a', 'b', 'c', 'd'])
 
 
+>>localStorage
+可以将内存里的数据持久化到localStorage, 为了防止多个项目的命名冲突, 
+可以采用如下的方式:
+//project1的项目
+localStorage.setItem('project1', JSON.stringify({name: 'zhao', age: 30}))
+var obj = JSON.parse(localStorage.getItem('project1'))
+obj.major = 'maths'
+localStorage.setItem('project1', JSON.stringify(obj))
+//project2的项目
+localStorage.setItem('project2', JSON.stringify({name: 'qian', age: 40}))
+
 
 
 
@@ -596,6 +636,7 @@ router.push('/about')
 router.replace('/about')  
 push()和replace()的参数与路由组件的to属性完全相同
 注: 实际项目中编程式路由比路由组件更常用;
+注: vue2中实现路由跳转直接用: this.$router.push('/about');
 
 
 
