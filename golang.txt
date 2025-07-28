@@ -1749,12 +1749,12 @@ func AuthMiddleware() gin.HandlerFunc {
 }
 2)全局中间件
 r := gin.Default()
-r.Use(middleware/AuthMiddleware)
+r.Use(middleware.AuthMiddleware)
 3)分组中间件
 adminRouter := r.Group("/admin")
-adminRouter.Use(middleware/AuthMiddleware)
+adminRouter.Use(middleware.AuthMiddleware)
 //或者 
-adminRouter := r.Group("/admin", middleware/AuthMiddleware)
+adminRouter := r.Group("/admin", middleware.AuthMiddleware)
 4)路由中间件
 r.GET("/login", middleware/AuthMiddleware, func(c *gin.Context) {
 	//...
@@ -1803,13 +1803,17 @@ type Student struct {
 func (Stduent) TableName() string {
 	return "student"
 }
-4, 查询
+4, 自动创建数据表
+model.Db.AutoMigrate(&user)
+AutoMigrate()函数会自动在mysql中创建与user对应的表, 如果表已存在, 但字段不一致, 
+则会添加不存在的字段, 但不会删除数据库表中多余的字段;
+5, 查询
 sList := []model.Student{}
 model.Db.Find(&sList)
 c.JSON(200, gin.H{
 	"data": sList,
 })
-5, 原生查询
+6, 原生查询
 复杂查询可以使用原生查询, 例如多表关联的查询, 步骤如下:
 type StudentCourseScore struct {
 	SName string 
@@ -1826,7 +1830,7 @@ sql := `
 model.Db.Raw(sql).Scan(&rs)
 c.JSON(200, rs)
 注: 自定义的结构体需要与sql返回的查询字段--对应, 与SScore对应s_score;
-6, 多表关联: 
+7, 多表关联: 
 1)has one
 //在结构体中定义关联关系: Student表与Dept表的关联
 type Student struct {

@@ -234,6 +234,29 @@ username: <input type="text" v-model="v1">  //字符串
 <Son :x="10" :y="20" />
 
 
+>>v-model
+v-model的作用是实现数据的双向绑定;
+1, 在表单元素上使用v-model
+<input type="text" v-model="message">
+<p>消息是: {{ message }}</p>
+2, 在自定义组件上使用v-model, 使子组件能够修改父组件的数据
+1)方式一: 单个v-model
+v-model默认使用modelValue作为prop, update:modelValue作为事件;
+//父组件里
+<CustomInput v-model="message" />
+//CustomInput.vue 
+defineProps(['modelValue'])
+defineEmits(['update:modelValue'])
+<input :value="modelValue" @input="$emit('update:modelValue', $event.target.value)">
+2)方式二: 多个v-model, 需要具名
+//父组件里
+<CustomInput v-model:msg="message" />
+//CustomInput.vue 
+defineProps(['msg'])
+defineEmits(['update:msg'])
+<input :value="msg" @input="$emit('update:msg', $event.target.value)">
+
+
 >>标签的ref属性
 用在普通dom标签上, 获取的是dom节点;
 用在组件标签上, 获取的是组件实例对象;
@@ -338,30 +361,29 @@ const {count, add} = useCount()
 子组件用插槽占位, 父组件调用子组件传递具体内容;
 如果子组件有多个插槽, 则要为每个插槽命名, 成为具名插槽;
 当父组件没有传递任何内容时, 子组件slot里的内容为默认显示值;
-//Son.vue 
-<template>
-	<view>
-		<slot name="header">
-			这是header区域
-		</slot>
-	</view>
-	<view>
-		<slot name="main">
-			这是main区域
-		</slot>
-	</view>
-</template>
+1, 匿名插槽
+//Son.vue
+<view>
+	<slot></slot>
+	<slot></slot>
+</view>
 //Parent.vue
-<template>
-	<Son>
-		<template #header>
-			This is header area.
-		</template>
-		<template #main>
-			This is main area.
-		</template>
-	</Son>
-</template>
+<Son>
+	<p>This is customized content</p>
+</Son>
+2, 具名插槽
+//Son.vue 
+<view>
+	<slot name="header">
+		这是header区域
+	</slot>
+</view>
+//Parent.vue
+<Son>
+	<template #header>
+		This is header area.
+	</template>
+</Son>
 注: #header是v-slot:header的简写;
 注: template标签用于占位, 不会增加额外的结构;
 
@@ -403,7 +425,7 @@ const {count, add} = useCount()
 
 >>组件间的通信
 1, 父传子props
-1)父给子传递数据
+*1)父给子传递数据
 //Parent.vue
 <Son :c1="car" />
 let car = ref('宝马')
@@ -421,8 +443,8 @@ function getToy(value) {
 //Son.vue
 <button @click=f1(toy)">Send Toy</button>
 let toy = ref('奥特曼')
-defineProps(['f1])
-2, 父传子使用自定义事件
+defineProps(['f1'])
+*2, 父传子使用自定义事件
 //Parent.vue
 toyFromSon: {{toyFrom}}
 <Son @send-toy="getToy" />
@@ -437,7 +459,7 @@ let toy = ref('奥特曼')
 方法二: 通过defineEmits()显式声明
 const emit = defineEmits(['send-toy'])
 emit('send-toy', toy.value)
-3, 任意组件的通信: mitt(消息订阅与发布)
+*3, 任意组件的通信: mitt(消息订阅与发布)
 接收数据的组件, 提前绑定好事件(订阅消息),
 提供数据的组件, 在合适的时候触发事件(发布消息);
 1)安装mitt
@@ -461,7 +483,16 @@ onUnmounted(() => {
 //B.vue
 import emitter from '@/utils/emitter.js'
 emitter.emit('send-toy', toy)  //触发事件
-4, 祖传孙 $attrs
+*4, 祖传孙 provide/inject
+1)祖先组件中
+import {provide, ref} from 'vue';
+const car = ref('宝马')
+provide('car', car)
+2)后代组件中
+import {inject} from  'vue';
+const car2 = inject('car') 
+注: 后代组件接收到的数据也是响应式的, 如果修改该数据, 祖先组件中的原始数据也是被修改;
+5, 祖传孙 $attrs
 1)$attrs是什么
 $attrs表示父给子传递的数据中, 不包含在子组件defineProps()里的其他数据;
 //Parent.vue
@@ -478,20 +509,6 @@ defineProps(['a'])
 <Sun v-bind="$attrs" />
 //Sun.vue
 defineProps(['a', 'b', 'c', 'd'])
-
-
->>localStorage
-可以将内存里的数据持久化到localStorage, 为了防止多个项目的命名冲突, 
-可以采用如下的方式:
-//project1的项目
-localStorage.setItem('project1', JSON.stringify({name: 'zhao', age: 30}))
-var obj = JSON.parse(localStorage.getItem('project1'))
-obj.major = 'maths'
-localStorage.setItem('project1', JSON.stringify(obj))
-//project2的项目
-localStorage.setItem('project2', JSON.stringify({name: 'qian', age: 40}))
-
-
 
 
 >>路由
@@ -671,8 +688,77 @@ counter.increment()
 将pinia的状态数据进行持久化存储, 可以防止刷新丢失, 具体使用请AI, 很简单;
 
 
->>登录逻辑
-1, 路由配置 
+
+----------Vue3项目从0搭建步骤-------------------------
+1, 创建项目
+npm create vue@latest
+一般选择ts、vue-router、pinia、Prettier等功能;
+2, 安装相关组件与依赖
+1)npm i element-plus axios --save
+2)在main.js中引入element-plus
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'  //中文语言包
+const app = createApp(App)
+app.use(ElementPlus, {locale: zhCn})
+3, 引入全局样式
+//assets/global.css
+...
+//main.js
+import './assets/global.css'
+4, 二次封装axios工具类
+1)二次封装
+//utils/http.js
+import axios from 'axios'
+//创建axios实例
+const http = axios.create({
+	baseURL: 'http://127.0.0.1/api/',
+	timeout: 8000,
+	headers: {
+		'Content-Type': 'application/json;charset=utf-8'
+	}
+})
+//请求拦截器
+http.interceptors.request.use(
+  config => {
+    return config
+  },
+  error => {
+    return Promise.reject(error)
+  },
+)
+//响应拦截器
+http.interceptors.response.use(
+  response => {
+    return response.data
+  },
+  error => {
+    return Promise.reject(error)
+  },
+)
+export default http
+2)将http添加到全局属性
+//main.js
+import http from '@utils/http'
+app.config.globalProperties.axios = http
+注: 或者不添加到全局属性, 在需要时导入utils/http就行;
+3)使用axios工具类
+import {getCurrentInstance} from 'vue'
+const axios = getCurrentInstance().appContext.config.globalProperties.axios
+axios.get('counselor/page?pageNum=1&pageSize=10').then(resp=>{
+	console.log(resp)
+})
+5, 二次封装localStorage工具类
+可以将内存里的数据持久化到localStorage, 为了防止多个项目的命名冲突, 
+可以采用如下的方式:
+//project1的项目
+localStorage.setItem('project1', JSON.stringify({name: 'zhao', age: 30}))
+var obj = JSON.parse(localStorage.getItem('project1'))
+obj.major = 'maths'
+localStorage.setItem('project1', JSON.stringify(obj))
+//project2的项目
+localStorage.setItem('project2', JSON.stringify({name: 'qian', age: 40}))
+6, 路由配置 
 //src/router/index.js
 const router = createRouter({
 	history: createWebHistory(),
@@ -693,7 +779,8 @@ const router = createRouter({
 		}
 	]
 })
-//添加路由守卫
+7, 登录逻辑
+1)添加前置路由守卫
 //如果用户没有登录, 不能访问/home
 router.beforeEach((to, from, next) => {
 	if(to.path == '/login') {
@@ -706,7 +793,7 @@ router.beforeEach((to, from, next) => {
 	}
 	next()
 })
-2, 登陆成功时保存后端返回的用户信息
+2)登陆成功时保存后端返回的用户信息
 //src/views/Login.vue
 const resp = await axios.get(`协议://域名:端口/项目名/资源路径/username=${loginData.username}&password=${loginData.password}&source=1`)
 if(resp.data.code == 200) {
@@ -721,6 +808,17 @@ if(resp.data.code == 200) {
 本地存储, 浏览器关闭后不会消失, 除非手动清除;
 2)sessionStorage
 会话存储, 浏览器关闭后就消失;
-3)存储到pinia
+*3)存储到pinia并进行持久化
+
+
+
+
+
+
+
+
+
+
+
 
 
