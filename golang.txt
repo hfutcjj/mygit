@@ -1873,8 +1873,56 @@ model.Db.Preload("Students").Find(&cList)
 
 
 
-
-
+>>配置文件
+config
+	config.yaml
+	config.go
+//config.yaml
+app:
+  name: "MyApp"
+  version: "1.0.0"
+  debug: true
+database:
+  host: "localhost"
+  port: 3306
+  user: "root"
+  password: "123456"
+  dbname: "test"
+  dns: "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local"
+//config.go
+type Config struct {
+	App      AppConfig
+	Database DatabaseConfig
+}
+type AppConfig struct {
+	Name    string
+	Version string
+	Debug   bool
+}
+type DatabaseConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Dbname   string
+	Dns      string
+}
+var GlobalConfig *Config
+func init() {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("./config")
+	err := viper.ReadInConfig()
+	if err != nil {
+		fmt.Println("读取yaml文件发生错误: ", err)
+		return
+	}
+	err = viper.Unmarshal(&GlobalConfig)
+	if err != nil {
+		fmt.Println("解析yaml文件发生错误: ", err)
+		return
+	}
+}
 
 
 
