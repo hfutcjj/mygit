@@ -39,6 +39,7 @@ import.meta.env.BASE_URL: '/'等;
 6, pinia代替vuex;
 7, vite代替webpack;
 8, elementplus代替elementUI;
+9, 底层响应式数据使用new Proxy(), 代替以前的Object.defineProperties();
 
 
 >>Vue项目结构
@@ -189,9 +190,8 @@ const datas = [
 </ul>
 
 
->>输入框与数据的双向绑定
-1, 基本原理
-使用ref: 数据 => 输入框, 使用v-model: 输入框 => 数据;
+>>双向绑定v-model
+1, 在表单元素上使用
 FirstName: <input type="text" v-model="firstName">
 LastName: <input type="text" v-model="lastName">
 FullName: {{firstName}}-{{lastName}}
@@ -200,45 +200,6 @@ let firstName = ref('张')
 let lastName = ref('三')
 注: v-model的底层实现如下
 <input type="text" :value="firstName" @input="firstname=$event.target.value">
-2, 分类使用
-1)单行文本框
-username: <input type="text" v-model="v1">  //字符串 
-2)多行文本框
-<textarea v-model="v2"></textarea>  //字符串 
-3)单选框
-<label><input type="radio" value="male" v-model="v3">男</label>
-<label><input type="radio" value="female" v-model="v3">女</label>  //字符串 
-*4)单个复选框
-<label><input type="checkbox" v-model="v4">同意</label>  //布尔值
-*5)多个复选框
-<label><input type="checkbox" value="足球" v-model="v5">足球</label>
-<label><input type="checkbox" value="篮球" v-model="v5">篮球</label>  //数组
-6)单个选择框
-<select v-model="v6">  //字符串
-  <option value="南京">南京</option>
-  <option value="苏州">苏州</option>
-  <option value="无锡">无锡</option>
-</select>
-7)多个复选框 
-<select v-model="v6" multiple>  //数组
-  <option value="南京">南京</option>
-  <option value="苏州">苏州</option>
-  <option value="无锡">无锡</option>
-</select>
-
-
->>v-bind
-//Parent.vue
-<Son v-bind="{x: 10, y: 20}" />
-等价于
-<Son :x="10" :y="20" />
-
-
->>v-model
-v-model的作用是实现数据的双向绑定;
-1, 在表单元素上使用v-model
-<input type="text" v-model="message">
-<p>消息是: {{ message }}</p>
 2, 在自定义组件上使用v-model, 使子组件能够修改父组件的数据
 1)方式一: 单个v-model
 v-model默认使用modelValue作为prop, update:modelValue作为事件;
@@ -257,12 +218,28 @@ defineEmits(['update:msg'])
 <input :value="msg" @input="$emit('update:msg', $event.target.value)">
 
 
->>标签的ref属性
-用在普通dom标签上, 获取的是dom节点;
-用在组件标签上, 获取的是组件实例对象;
+>>ref
+1, 用在普通dom标签上, 获取的是dom节点;
 <div ref="box">合肥</div>
 let box = ref()
 console.log(box.value)
+2, 用在组件上, 获取的是组件的实例对象, 组件需要通过defineExpose()暴露属性和方法;
+//Son.vue
+let count = ref(12)
+function f1() {
+	count.value++
+}
+defineExpose({
+	count,
+	f1
+})
+//Parent.vue
+<Son ref="son"></Son>
+const son = ref(null)
+function handleClick() {
+	son.value.f1()
+	console.log(son.value.count)
+}
 
 
 >>watch 监听
@@ -296,26 +273,6 @@ watchEffect(() => {
 })
 watch监视指定的数据, 只在监视的数据变化时执行回调函数;
 watchEffect不用指定具体的监视数据, 它在开始时、以及回调函数里用到的数据发生变化时执行;
-
-
->>组件暴露属性和方法 defineExpose
-子组件通过defineExpose()暴露属性和方法, 父组件通过ref得到子组件实例对象, 然后调用子组件的属性和方法;
-//Son.vue
-let count = ref(12)
-function f1() {
-	count.value++
-}
-defineExpose({
-	count,
-	f1
-})
-//Parent.vue
-<Son ref="son"></Son>
-const son = ref(null)
-function handleClick() {
-	son.value.f1()
-	console.log(son.value.count)
-}
 
 
 >>$event表示事件对象
@@ -491,7 +448,7 @@ provide('car', car)
 2)后代组件中
 import {inject} from  'vue';
 const car2 = inject('car') 
-注: 后代组件接收到的数据也是响应式的, 如果修改该数据, 祖先组件中的原始数据也是被修改;
+注: 后代组件接收到的数据也是响应式的, 如果修改该数据, 祖先组件中的原始数据也会被修改;
 5, 祖传孙 $attrs
 1)$attrs是什么
 $attrs表示父给子传递的数据中, 不包含在子组件defineProps()里的其他数据;
@@ -532,7 +489,7 @@ export default router
 2)修改main.ts, 在main.ts中引用路由器
 import router from './router'
 createApp(App).use(router).mount('#app')
-3)在组件中使用路由
+3)在组件中使用路由(声明式路由)
 <template>
 	//导航区
 		<div class="nav">
@@ -600,6 +557,7 @@ url不带#, 更美观, 但需要服务端配合处理路径问题(后端增加�
 	import {useRoute} from 'vue-router'
 	const route = useRoute()
 </script>
+或者, 直接在模板中使用 {{ $route.query.name }};
 2)params参数
 //修改路由规则, 加上占位符
 {
@@ -618,6 +576,7 @@ url不带#, 更美观, 但需要服务端配合处理路径问题(后端增加�
 	import {useRoute} from 'vue-router'
 	const route = useRoute()
 </script>
+或者, 直接在模板中使用 {{ $route.params.name }};
 3)路由规则的props配置, 让路由组件更方便的接收参数
 //修改路由规则, 加上props属性
 {
@@ -656,6 +615,35 @@ push()和replace()的参数与路由组件的to属性完全相同
 注: vue2中实现路由跳转直接用: this.$router.push('/about');
 
 
+>>路由守卫
+1)全局守卫
+//添加前置守卫, 如果用户没有登录, 不能访问/home
+router.beforeEach((to, from, next) => {
+	if(to.path == '/login') {
+		return next()  //放行
+	}
+	//判断用户是否登录, 如果没有登录, 则跳转到/login
+	const userInfo = sessionStorage.getItem('userInfo')
+	if(!userInfo) {
+		return next('/login')
+	}
+	next()
+})
+2)路由独享守卫
+//写在具体的路由定义里
+{
+	path: '/admin',
+	component: Admin,
+	beforeEnter: (to, from, next) => {
+		if(isAdmin()) next()
+		else next('/login')
+	}
+}
+3)组件内守卫
+beforeRouteEnter  进入前
+beforeRouteUpdate 更新前
+beforeRouteLeave  离开前
+
 
 >>pinia
 1, pinia是用于vue3的集中式状态管理, vue2中用vuex;
@@ -686,6 +674,8 @@ count.count++
 counter.increment()
 3, pinia的持久化存储
 将pinia的状态数据进行持久化存储, 可以防止刷新丢失, 具体使用请AI, 很简单;
+
+
 
 
 
