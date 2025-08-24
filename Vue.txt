@@ -645,6 +645,21 @@ beforeRouteUpdate 更新前
 beforeRouteLeave  离开前
 
 
+>>路由元数据
+1, 元数据通过meta定义
+const routes = [
+{
+	path: '/admin',
+	component: Admin,
+	meta: {requireAuth: true}
+}
+]
+2, 访问元数据
+1)route.meta对象
+2)全局守卫中访问to.meta
+3)组件内通过$route访问
+
+
 >>pinia
 1, pinia是用于vue3的集中式状态管理, vue2中用vuex;
 2, 基本使用
