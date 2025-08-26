@@ -671,9 +671,34 @@ createApp(APP).use(createPinia()).mount('#app')
 3)存储数据到store
 src
 	stores
-		counter.ts   //保存组件Count.vue里的状态
+		todos.ts   //Todos.vue里的状态
 		person.ts  //保存组件Person.vue里的状态
-//count.ts
+//todos.ts
+import {defineStore} from 'pinia'
+export const useTodosStore = defineStore('todos', {
+	state: () => ({  //响应式状态数据
+		todos: [
+			{id: 1, text: '做早操', done: false},
+		]
+	}),
+	getters: {  //相当于计算属性
+		doneTodos: (state) => state.todos.filter(todo => todo.done),
+		doneCount: (state) => state.doneTodos.length
+	},
+	actions: {  //操作
+		addTodo(text) {
+			....
+		},
+		toggleTodo(id) {
+			....
+		},
+		removeTodo(id) {
+			....
+		}
+	}	
+})
+4)简写形式
+//counter.ts
 import {defineStore} from 'pinia'
 export const useCountStore = defineStore('counter', {
 	const count = ref(0)
@@ -682,7 +707,7 @@ export const useCountStore = defineStore('counter', {
 	}
 	return {count, increment}
 })
-4)其他组件使用store中的状态数据
+5)其他组件使用store中的状态数据
 import {useCountStore} from '@/stores/counter'
 const counter = useCountStore()
 count.count++
