@@ -461,6 +461,13 @@ provide('car', car)
 import {inject} from  'vue';
 const car2 = inject('car') 
 注: 后代组件接收到的数据也是响应式的, 如果修改该数据, 祖先组件中的原始数据也会被修改;
+3)数据以及对数据的修改, 都应该放在祖先组件中, 这样更容易维护
+//祖先组件 
+const car = ref('宝马')
+const changeCar = () => {}
+provide('car', {car, changeCar})
+//后代组件 
+const {car, changeCar} = inject('car')
 5, 祖传孙 $attrs
 1)$attrs是什么
 $attrs表示父给子传递的数据中, 不包含在子组件defineProps()里的其他数据;
