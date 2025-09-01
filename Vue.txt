@@ -216,6 +216,18 @@ defineEmits(['update:modelValue'])
 defineProps(['msg'])
 defineEmits(['update:msg'])
 <input :value="msg" @input="$emit('update:msg', $event.target.value)">
+*3)方式三: 单个v-model (使用defineModel())
+//父组件里
+<CustomInput v-model="message" />
+//CustomInput.vue 
+const md = defineModel()
+<input v-model="md">
+*4)方式四: 多个v-model, 需要具名
+//父组件里
+<CustomInput v-model:msg="message" />
+//CustomInput.vue 
+const msg = defineModel('msg')
+<input v-model="msg">
 
 
 >>ref
@@ -712,6 +724,9 @@ import {useCountStore} from '@/stores/counter'
 const counter = useCountStore()
 count.count++
 counter.increment()
+6)storeToRefs(useCountStore)
+将store中的state和getters响应式解构出来;
+注意不适合将store中的actions解构, 因为会改变actions里函数的this指向;
 3, pinia的持久化存储
 将pinia的状态数据进行持久化存储, 可以防止刷新丢失, 具体使用请AI, 很简单;
 
