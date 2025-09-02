@@ -721,7 +721,7 @@ export const useTodosStore = defineStore('todos', {
 import {defineStore} from 'pinia'
 export const useCountStore = defineStore('counter', {
 	const count = ref(0)
-	const doubleCount = computed(() => count*2)
+	const doubleCount = computed(() => count.value*2)
 	function increment() {
 		count.value++
 	}
