@@ -687,7 +687,7 @@ npm i pinia
 2)在main.ts中引入pinia
 import {createPinia} from 'pinia'
 createApp(APP).use(createPinia()).mount('#app')
-3)存储数据到store
+3)存储数据到store(选项式写法)
 src
 	stores
 		todos.ts   //Todos.vue里的状态
@@ -716,15 +716,16 @@ export const useTodosStore = defineStore('todos', {
 		}
 	}	
 })
-4)简写形式
+4)简写形式(组合式写法)
 //counter.ts
 import {defineStore} from 'pinia'
 export const useCountStore = defineStore('counter', {
 	const count = ref(0)
+	const doubleCount = computed(() => count*2)
 	function increment() {
 		count.value++
 	}
-	return {count, increment}
+	return {count, doubleCount, increment}
 })
 5)其他组件使用store中的状态数据
 import {useCountStore} from '@/stores/counter'
