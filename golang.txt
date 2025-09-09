@@ -1246,6 +1246,10 @@ rwMutex.RLock() / rwMutex.RUnlock()
 因为count++并不是原子操作, 需要给count++加锁来实行并发, 
 可用sync/atomic包里的函数来执行原子操作:
 atomic.AddInt32(&count, 1);
+7, return、Exit、Goexit的区别
+return 退出当前函数;
+os.Exit(n) 退出整个程序;
+runtime.Goexit() 退出当前协程;
 
 
 >>正则匹配
@@ -1485,14 +1489,6 @@ server.ListenAndServe()
 /static/demo.html, 表示查找 ./www/demo.html;
 
 
->>使用http获取其他url的信息
-resp, _ := http.Get("http://www.baidu.com")
-var b []byte
-b, err := ioutil.ReadAll(resp.Body)
-fmt.Println(string(b))
-注: 可用于爬取其他网站的信息;
-
-
 >>处理请求和响应
 1, 获取请求信息
 1)r.Method 	 //请求方法
@@ -1524,6 +1520,24 @@ http.Redirect(w, r, "/login", 301)
 3)使用模板引擎
 t, _ := template.ParseFiles("hello.html")
 t.Execute(w, "zhao")
+
+
+>>go模拟http客户端
+client := http.Client{}
+resp, err := client.Get("https://www.baidu.com")
+也可以直接用http:
+resp, err := http.Get("https://www.baidu.com")
+1, 请求信息
+resp.Request.*
+2, 响应头信息
+resp.Header.Get("Content-Type")
+for k, v := range resp.Header {
+	//....
+}
+3, 响应体信息
+var bs []byte
+bs, err := io.ReadAll(resp.Body)
+注: 可用于爬取其他网站的信息;
 
 
 
