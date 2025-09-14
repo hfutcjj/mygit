@@ -761,6 +761,16 @@ t2.After(t1)
 使用time.Sleep()
 7, time包中与管道相关的函数
 1)time.After() //延迟执行
+//举例: 超时退出
+for {
+	select {
+		case v := <- ch1:
+			fmt.Println("Read: ", v)
+		case <- time.After(10 * time.Second):
+			fmt.Println("timeout....")
+			return
+	}
+}
 2)time.Tick() //重复执行, 底层是time.Ticker
 传入指定的时间间隔, 返回: <-time.Time
 //举例: 每2秒执行一次, 10秒后结束
@@ -1623,44 +1633,36 @@ session是在服务器端保存用户信息;
 4)服务器获取cookie并根据它的值找到服务器中对应的session, 也就知道是哪个用户了
 
 
->>RPC(远程过程调用)
-1, rpc是一种允许客户端调用服务器端函数的技术, jsonrpc是rpc的一种实现,
-它使用json作为数据交换格式, 支持通过http或websocket等协议进行通信;
-2, 实现步骤
-1)定义一个服务, 包含可以被远程调用的方法
-type Request struct {
-	A, B int
-}
-type UserService struct {}
-func (u *UserService) Add(request *Request, response *int) error {
-	*response = request.A + request.B
+>>微服务: RPC(远程过程调用)
+1, rpc是一种允许客户端调用服务器端函数的技术, go中默认采用gob编码方式(rpc)进行网络通信,
+也可以采用json编码方式(jsonrpc)或者protobuf的方式进行通信;
+2, 实现步骤(默认的gob编码-rpc)
+1)服务端
+//定义一个服务, 包含可以被远程调用的方法
+type Service struct {}
+func (s *Service) Toggle(req string, resp *string) error {
+	*response = "Hello " + req
 	return nil
 }
-注: 一般写在服务端代码里;
-注: 服务的方法接收两个参数: 第一个参数为请求结构体变量指针, 用于获取客户端提交的参数; 
-第二个参数为响应结构体变量指针, 用于计算结果的返回;
-返回值error用于告知客户端错误信息;
-2)服务端: 启动一个rpc服务端, 注册服务并监听客户端的请求
+注: 第一个参数用于获取客户端提交的参数; 第二个参数为指针, 作为响应结果; 返回值error用于告知客户端错误信息;
 func main() {
-	userService := new(UserService)
-	rpc.Register(userService)  //注册服务
-	ln, err := net.Listen("tcp", "127.0.0.1:9000")
+	rpc.Register(new(Service)) //注册服务
+	ln, err := net.Listen("tcp", "127.0.0.1:9000")  //启动监听
 	for {
 		conn, err := ln.Accept()
-		go jsonrpc.ServeConn(conn)  //处理客户端连接
+		go rpc.ServeConn(conn)  //处理客户端的连接
 	}
 }
-3)客户端: 实现一个rpc客户端, 连接到服务器并调用远程方法
-type Request struct {
-	A, B int
-}
+3)客户端
 func main() 
-	client, err := jsonrpc.Dial("tcp", "127.0.0.1:9000")  //连接到服务端
-	request := &Request{12, 3}
-	var response int
-	err := client.Call("UserService.Add", request, &response)  //调用远程方法
-	fmt.Printf("Request: %d+%d=%d\n", request.A, request.B, response)
+	client, err := rpc.Dial("tcp", "127.0.0.1:9000")  //连接到服务端
+	var rs string
+	err := client.Call("Service.Toggle", "zhao", &resp)  //调用远程方法
 }
+3, 采用jsonrpc的方式
+将服务端处理连接和客户端连接的代码改为jsonrpc:
+jsonrpc.ServeConn(conn)  //服务端
+jsonrpc.Dial("tcp", ":8080")  //客户端
 
 
 
