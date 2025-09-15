@@ -342,11 +342,14 @@ ps -aux | grep xxx
 kill [选项] 进程号
 killall 进程名称  //进程名称支持通配符
 注: 选项为 -9 表示强迫进程立即终止
-4)pstree
+4)保证进程不被中断运行
+nohup 命令 [参数] &  //&表示让进程在后台运行
+如 nohup python demo.py &
+5)pstree
 pstree [选项]   //以树状形式查看进程
--p: 显示进程PID
--u:显示进程的所属用户
-5)top
+-p 1234: 显示1234号进程以及其后代进场
+-u nginx:显示nginx用户下的所有进场
+6)top
 动态监控进程
 2, 服务命令
 1)service
@@ -382,14 +385,15 @@ firewall-cmd --query-port=端口/协议  //查看端口是否开放
 注: 本地常用选项 -tuln, 或 -anp;
 4)修改ip地址(改为固定ip)
 vim /etc/sysconfig/network-scripts/ifcfg-ens33
-BOOTPROTO="static"  //默认dhcp是动态分配
-#IP地址
-IPADDR=192.168.200.130
-#网关
-GATEWAY=192.168.200.2
-#域名解析器
-DNS1=192.168.200.2
-然后重启网络服务;
+将整个文件改为:
+DEVICE=ens33
+BOOTPROTO=static
+ONBOOT=yes
+IPADDR=192.168.2.163
+NETMASK=255.255.255.0
+GATEWAY=192.168.2.2
+然后重启网络服务:
+systemctl restart network
 
 
 >>安装包管理

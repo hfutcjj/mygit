@@ -1659,10 +1659,61 @@ func main()
 	var rs string
 	err := client.Call("Service.Toggle", "zhao", &resp)  //调用远程方法
 }
-3, 采用jsonrpc的方式
+3, 采用json通信的方式(jsonrpc)
 将服务端处理连接和客户端连接的代码改为jsonrpc:
 jsonrpc.ServeConn(conn)  //服务端
 jsonrpc.Dial("tcp", ":8080")  //客户端
+4, 采用protobuf通信的方式
+
+
+>>protobuf
+1, protobuf是一种语言无关的序列化结构化数据机制, 与xml、json类似, 但比后两者更小、更快;
+protobuf文件以.proto结尾, 使用protoc编译器生成具体语言的代码;
+2, 在go语言中的使用
+1)安装protoc编译器
+2)安装go相关的插件
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest (如果.proto中定义了rpc)
+3)定义.proto文件
+//proto/Person.proto 
+syntax = "proto3";  //协议类型
+option go_package = "/person";  //生成的go代码的路径
+package person;  //生成的go代码的包名
+message Person {  //结构化数据: 消息
+	string name = 1;
+	int32 id = 2;
+	repeated int32 score = 3;  //数组
+}
+4)使用protoc将.proto文件生成go代码
+protoc --go_out =. proto/person.proto
+protoc --go_out=. --go-grpc_out=. proto/person.proto  (如果.proto中定义了rpc)
+会在当前目录中生成person.pb.go文件, 有rpc的话还会生成person_grpc.pb.go文件;
+5)在go项目中使用上面生成的go文件
+p := &person.Person{
+	Name: "zhao",
+	Id: 1234,
+	Score: int32[]{70, 80, 90},
+}
+//序列化
+data, err := proto.Marshal(p)
+//反序列化
+p2 := new(person.Person)
+proto.Unmarsha1(data, p2)
+3, grpc: 在protobuf中使用rpc
+1)在.proto文件中定义rpc服务
+message HelloRequest {
+	string name = 1;
+}
+message HelloReply {
+	string msg = 1;
+}
+service Greeter {
+	rpc SayHello(HelloRequest) returns (HelloReply){}
+}
+然后使用protoc生成对应的go代码;
+2)编写服务端代码
+
+3)编写客户端代码
 
 
 
