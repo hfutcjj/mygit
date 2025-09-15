@@ -1707,10 +1707,21 @@ message HelloRequest {
 message HelloReply {
 	string msg = 1;
 }
-service Greeter {
-	rpc SayHello(HelloRequest) returns (HelloReply){}
+service HelloService {
+	rpc Hello(HelloRequest) returns (HelloReply){}
 }
-然后使用protoc生成对应的go代码;
+2)然后使用protoc生成对应的go代码:
+protoc --go_out=. --go-grpc_out=. proto/person.proto
+grpc插件会为服务端和客户端生成不同的接口:
+//服务端
+type HelloServiceServer interface {
+	Hello(context.Context, *HelloRequest) (*HelloReply, error)
+}
+//客户端
+type HelloServiceClient interface {
+	Hello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*PersonReply, error)
+}
+然后分别实现服务端和客户端的接口;
 2)编写服务端代码
 
 3)编写客户端代码
