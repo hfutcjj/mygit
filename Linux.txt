@@ -141,11 +141,8 @@ chown uset1:group1 test
 该命令完全可以用chown代替;
 
 
->>Linux命令之查找文件名
-1, locate 根据文件名查找文件
-快速定位文件所在目录, 该指令根据locate数据库进行搜索, 无需遍历整个文件系统, 所以速度很快;
-2, find 功能强大的搜索文件的命令
-格式: find 范围目录 [选项] 文件 
+>>Linux命令之查找文件: find
+1, 格式: find 范围目录 [选项] 文件 
 1)按文件名查找
 -name 按文件名
 -iname 不区分大小写
@@ -167,13 +164,17 @@ find . -type d/f/l  //目录/普通文件/软链接文件
 find . -size 2k -a -type f
 find . -name zhao -o -name qian
 find . -not -name zhao
+8)找到文件后再进行后续操作
+find . -name ".txt" -exec rm {} \;   //找到并删除
+find /var/log -name ".log" -exec gzip {} \;   //找到并压缩
 
 
->>Linux命令之查找文件内容
+>>Linux命令之搜索文本: grep
 1, grep 查找文件内容, 使用正则匹配
 grep [选项] '搜索内容' 文件名
 -i 忽略大小写
 -n 输出行号
+-v 反向匹配
 grep -n '^a' test
 egrep -n '[0-9]?$' test //等价于 grep -E
 注: egrep是加强版的正则查找, 能识别所有的正则符号;
