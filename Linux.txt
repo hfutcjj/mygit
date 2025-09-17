@@ -199,32 +199,14 @@ whoami  //查看当前用户
 /etc/group  //记录组信息的文件
 
 
->>Linux命令之压缩与解压缩命令
-1, Linux常见的压缩格式: .tar.gz、.tar.bz2、.tar(仅打包)、.gz(仅压缩)、.bz2(仅压缩)、.zip(兼容windows)等;
-2, 不同格式文件的压缩命令
-1).zip
-zip [选项] 压缩包名 源文件或目录 //压缩
--r 压缩目录
-注: 源文件可以指定多个, 以空格分隔;
-unzip [选项] 压缩包名 //解压缩
--d 指定解压缩位置
-unzip -d /tmp/ test.zip
-注: 默认解压缩到当前目录
-2).gz
-gzip [选项] 源文件
--d 解压缩 //等价于gunzip
-注: gzip不打包仅压缩, 所以不可用于多个文件或目录;
-3).bz2
-bzip2 [选项] 源文件 
--d 解压缩
-注: 同gzip, bzip2也是不打包仅压缩;
-4).tar
-tar [选项] [-f 压缩包名] 源文件或目录 
+>>Linux命令之压缩与解压缩: tar
+1.tar
+tar是linux下的打包工具, 单独使用只打包不压缩;
+tar [选项] 包名 源文件或目录 
 tar -cvf test.tar demo1 demo2 demo3 //打包
 tar -xvf test.tar //解包
-注: tar命令只打包不压缩;
-*5).tar.gz 和 .tar.bz2
-最常用的, 打包并压缩;
+*2.tar.gz 和 .tar.bz2
+tar命令加个选项, 就表示与gzip或gzip2压缩工具结合, 打包并压缩;
 tar [选项] 压缩包 源文件或目录 
 -z 用于.tar.gz格式
 -j 用于.tar.bz2格式
@@ -238,6 +220,8 @@ tar -zcvf tmp.tar.gz /tmp  //把/tmp目录打包压缩为.tar.gz格式
 tar -zxvd tmp.tar.gz  //解压并解包.tar.gz格式
 tar -ztvf tmp.tar.gz  //只查看, 不解压 
 tar -zxvf tmp.tar.gz -C /test  //解压到指定目录
+注: 打包时排除掉某些目录或文件
+tar -zcvf tmp.tar.gz /tmp --exclude='*.log'
 
 
 >>Linux命令之其他命令
@@ -399,27 +383,20 @@ systemctl restart network
 
 >>安装包管理
 1, rpm
-1)rpm -qa 
-查询所安装的所有rpm软件包
-rpm -qa | more 
-rpm -qa | grep xxx
-2)rpm -q 软件包名
-查询指定软件包是否安装
+1)rpm -qa  //查询所安装的所有rpm软件包
+2)rpm -q xxx //查询指定软件包是否安装
 rpm -q firefox
-3)rpm -ivh rpm包全路径名称
--i 安装 
--v 提示
--h 进度条
-4)rpm -e rpm包的名称
-卸载rmp包
+3)rpm -ivh xxx.rpm  //安装rpm包
+-i 安装  -v 提示 -h 进度条
+4)rpm -e xxx  //卸载rmp包
 rpm -e firefox 
-2, yum
-linux的在线软件包管理器, 基于rpm包管理, 可以自动下载并安装软件包;
-1)yum list | grep xxx 
-查询yum服务器是否有指定的软件
-2)yum install xxx
-下载安装软件包
-注: rpm包需要先下载, 而yum是自动在线下载并安装;
+*2, yum
+一键下载、卸载或搜索软件包, 并自动解决依赖问题;
+1)yum [-y] install xxx  //安装 
+2)yum remove xxx  //卸载
+3)yum search xxx  //搜索可用软件包
+4)yum info xxx  //显示软件包的详细信息
+5)yum list installed  //列出所有已安装的软件包
 
 
 >>Linux定时任务管理
