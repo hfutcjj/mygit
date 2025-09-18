@@ -1700,6 +1700,19 @@ data, err := proto.Marshal(p)
 p2 := new(person.Person)
 proto.Unmarsha1(data, p2)
 3, grpc: 在protobuf中使用rpc
+目录结构如下:
+myProject
+	proto  //protobuf定义文件
+		person.proto
+	person  //由protoc生成
+		person.pb.go
+		person_grpc.pb.go
+	server   //服务端实现
+		main.go 
+	client   //客户端实现
+		main.go 
+	go.mod
+	go.sum
 1)在.proto文件中定义rpc服务
 message HelloRequest {
 	string name = 1;
@@ -1721,11 +1734,52 @@ type HelloServiceServer interface {
 type HelloServiceClient interface {
 	Hello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
 }
-然后分别实现服务端和客户端的接口;
+然后在服务端实现接口, 客户端的接口已经实现, 可以直接调用;
 2)编写服务端代码
-
+// 实现HelloServiceServer接口
+type server struct {
+	person.UnimplementedHelloServiceServer
+}
+func (s *server) Hello(ctx context.Context, in *person.HelloRequest) (*person.HelloReply, error) {
+	r := "Hello " + in.GetName()
+	return &person.HelloReply{Msg: r}, nil
+}
+func main() {
+	//监听端口
+	ln, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		fmt.Println("启动监听失败: ", err)
+		return
+	}
+	defer ln.Close()
+	//创建一个gPRC服务器实例
+	s := grpc.NewServer()
+	//将我们的实现注册到gRPC服务器上
+	person.RegisterHelloServiceServer(s, &server{})
+	//阻塞等待, 直到进程被终止或调用"Stop"
+	if err := s.Serve(ln); err != nil {
+		fmt.Println("服务失败: ", err)
+	}
+}
 3)编写客户端代码
-
+func main() {
+	//连接到服务器
+	conn, err := grpc.Dial(":8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		fmt.Println("建立连接失败: ", err)
+		return
+	}
+	defer conn.Close()
+	//使用连接创建客户端
+	c := person.NewHelloServiceClient(conn)
+	//连接超时上下文
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	//调用rpc方法
+	r, _ := c.Hello(ctx, &person.HelloRequest{Name: "zhao"})
+	fmt.Println("返回的响应: ", r)
+}
+	
 
 
 
