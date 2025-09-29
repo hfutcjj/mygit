@@ -29,6 +29,9 @@ redis可以把数据定期持久化到硬盘中，这样就保证了数据的完
 保存的是数据变更记录, 当服务器重新启动时, 会把所有的写操作重新执行一遍, 从而实现数据备份;
 
 
+>>redis和nginx一样, 使用epoll的IO模型, 即非阻塞的多路复用;
+
+
 >>redis默认端口: 6379
 
 
@@ -65,7 +68,10 @@ redis中的数据都是按 key-value 来存储的;
 value的值为字符串, 字符串、整数、浮点数都属于字符串;
 select 0  //选择0号数据库
 set name zhao  //设置 name 的值为 zhao
+set name zhao nx  //只有当name不存在时才创建
+set name zhao xx  //只有当name存在时才修改
 get name  //获取 name 的值
+strlen name  //name的值的长度
 mset name zhao age 30  //一次设置多个值
 mget name age  //一次获取多个值
 keys he*  //查询符合条件的key, 使用 keys * 查看所有的key
@@ -76,6 +82,12 @@ expire hello 20  //设置 key=hello 20秒后过期
 ttl hello  //查看 key=hello 的过期剩余时间
 incr/decr count  //count值自增/自减
 incrby/decrby count 10  //自增/自减指定步长
+setbit k1 2 1  //00100000  //strlen k1 : 1
+setbit k1 9 1  //00100000 01000000  //strlen k1 : 2
+注: 这是bitmap类型, 占用空间小, 实际开发中有时非常有用;
+bitmap的应用场景:
+1)统计某个用户在指定窗口时间内的登录天数;
+2)统计某段时间有多少活跃用户;
 2, Hash
 用于存储结构化数据, 如 emp:1 -> {name: "zhao", age: 30, city: "hefei"};
 与String不同, Hash的value为结构化数据;

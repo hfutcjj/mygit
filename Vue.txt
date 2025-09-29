@@ -9,7 +9,7 @@
 npm create vue@latest
 在交互中选择ts、vue-router、pinia、Prettier等功能;
 2, 安装插件
-npm i axios element-plus -S  //生产依赖
+npm i axios element-plus [-S]  //生产依赖
 npm i sass -D  //开发依赖
 
 
@@ -18,16 +18,13 @@ npm i sass -D  //开发依赖
 .env  //默认, 适用于所有环境
 .env.development  //开发环境
 .env.production  //生产环境
-.env.test  //测试环境
 2, 环境变量的文件写法
 VITE_APP_TITLE=My Vue App
-VITE_API_URL=https://api.example.com 
-3, import.meta.env 
-应用程序使用import.meta.env.VITE_API_URL 来使用环境变量;
-4, 内置环境变量
-import.meta.env默认会加载几个内置的环境变量, 如 
-import.meta.env.MODE: 'development',
-import.meta.env.BASE_URL: '/'等;
+VITE_API_BASE_URL=https://api.example.com 
+3, 使用环境变量
+import.meta.env 是包含内置环境变量以及用户自定义环境变量的对象,
+import.meta.env.MODE  //'development', 内置环境变量
+import.meta.env.VITE_API_BASE_URL  //..., 用户自定义环境变量
 
 
 >>vue3比vue2的改进
@@ -730,7 +727,7 @@ export const useCountStore = defineStore('counter', {
 5)其他组件使用store中的状态数据
 import {useCountStore} from '@/stores/counter'
 const counter = useCountStore()
-count.count++
+counter.count++
 counter.increment()
 6)storeToRefs(useCountStore)
 将store中的state和getters响应式解构出来;
