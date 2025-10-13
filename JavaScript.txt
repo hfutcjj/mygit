@@ -1455,7 +1455,33 @@ function fn() {
 })()
 
 
-
+>>将列表数据转化为树形数据
+const data = [
+	{id: 1, pid: 0, name: '中国'},
+	{id: 2, pid: 1, name: '安徽'},
+	{id: 3, pid: 1, name: '江苏'},
+	{id: 4, pid: 2, name: '合肥'},
+	{id: 5, pid: 2, name: '安庆'},
+	{id: 6, pid: 4, name: '肥东'},
+	{id: 7, pid: 4, name: '肥西'},
+	{id: 8, pid: 3, name: '南京'},
+	{id: 9, pid: 3, name: '苏州'},
+	{id: 10, pid: 3, name: '无锡'}
+]
+function trans(list, pid = 0) {
+	const tree = []
+	list.forEach(item => {
+		if(item.pid == pid) {
+			//找到根节点
+			tree.push(item)
+			//递归
+			item.children = trans(list, item.id)
+		}
+	})
+	return tree
+}
+const t = trans(data)
+console.log(t)
 
 
 
