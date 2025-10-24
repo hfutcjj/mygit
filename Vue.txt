@@ -298,7 +298,7 @@ function fn(a, e) {
 >>事件修饰符
 1)阻止事件冒泡
 <a @click.stop="f1">..</a>
-等价于在f1函数中调用event.stopProgation();
+等价于在f1函数中调用event.stopPropagation();
 2)阻止浏览器的默认行为
 <a @click.prevent="f2">..</a>
 等价于在f2函数中调用event.preventDefault();
@@ -352,6 +352,46 @@ const {count, add} = useCount()
 </Son>
 注: #header是v-slot:header的简写;
 注: template标签用于占位, 不会增加额外的结构;
+3, 作用域插槽传参
+作用域插槽允许子组件向父组件传递数据, 父组件接收数据;
+1)匿名插槽
+//子组件定义 Son.vue
+<template>
+	<div>
+		<slot :name="name" :age="age"></slot>
+	</div>
+</template>
+<script setup>
+	const name = ref('张三')
+	const age = ref(32)
+</script>
+//父组件接收数据: 基本形式
+<template>
+	<Son>
+		<template v-slot="person">
+			<p>姓名: {{ person.name }}</p>
+			<p>年龄: {{ person.age }}</p>
+		</template>
+	</Son>
+</template>
+//父组件接收数据: es6解构形式
+<template>
+	<Son>
+		<template v-slot="{name, age}">
+			<p>姓名: {{ name }}</p>
+			<p>年龄: {{ age }}</p>
+		</template>
+	</Son>
+</template>
+2)具名插槽
+子组件定义: 
+<slot name="header" :title="title"></slot>
+父组件接收数据: 
+<template #header="{title}">
+	<p>标题: {{title}}</p>
+</template>
+注: #header是v-slot:header的简写;
+
 
 
 >>生命周期
@@ -744,7 +784,7 @@ counter.increment()
 npm create vue@latest
 一般选择ts、vue-router、pinia、Prettier等功能;
 2, 安装相关组件与依赖
-1)npm i element-plus axios --save
+1)npm i element-plus axios
 2)在main.js中引入element-plus
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -845,7 +885,7 @@ router.beforeEach((to, from, next) => {
 })
 2)登陆成功时保存后端返回的用户信息
 //src/views/Login.vue
-const resp = await axios.get(`协议://域名:端口/项目名/资源路径/username=${loginData.username}&password=${loginData.password}&source=1`)
+const resp = await axios.get('协议://域名:端口/项目名/资源路径/username=${loginData.username}&password=${loginData.password}&source=1')
 if(resp.data.code == 200) {
 	//登录成功, 将用户信息保存到sessionStorage, 并跳转到/home 
 	sessionStorage.setItem('userInfo', JSON.stringify(resp.data.data))
