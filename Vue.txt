@@ -590,6 +590,8 @@ src/components文件夹;
 4, 路由器工作模式
 1)history模式
 url不带#, 更美观, 但需要服务端配合处理路径问题(后端增加一个配置项);
+因为history模式的路径改变, 会因为页面刷新, 比如访问localhost:8080/login, 会访问login.html, 而打包后只有一个单页面文件index.html, 所以会报错;
+而hash模式的#后面的路径改变, 不会因为页面刷新;
 2)hash模式
 将createWebHistory改成createWebHashHistory, 就成为hash模式, url带有#, 优点是不需要服务端配合处理路径问题;
 注: 前台项目一般用history模式, 中后台管理项目有时用hash模式;
