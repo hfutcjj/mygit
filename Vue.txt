@@ -393,6 +393,20 @@ const {count, add} = useCount()
 注: #header是v-slot:header的简写;
 
 
+>>自定义指令
+自定义指令可以直接操作dom;
+1, 自定义指令的定义
+app.directive('permission', {
+	mounted(e1, binding) {
+		if(!hasPermission(binding.value)) {
+			e1.remove()
+		}
+	}
+})
+注: 自定义指令时最常用的三个钩子函数: mounted、updated、unmounted;
+2, 自定义指令的使用
+<button v-permission="'admin'">删除</button>
+
 
 >>生命周期
 1, vue2的生命周期
@@ -776,10 +790,7 @@ counter.increment()
 将pinia的状态数据进行持久化存储, 可以防止刷新丢失, 具体使用请AI, 很简单;
 
 
-
-
-
-----------Vue3项目从0搭建步骤-------------------------
+>>Vue3项目从0搭建步骤
 1, 创建项目
 npm create vue@latest
 一般选择ts、vue-router、pinia、Prettier等功能;
@@ -899,7 +910,11 @@ if(resp.data.code == 200) {
 2)sessionStorage
 会话存储, 浏览器关闭后就消失;
 *3)存储到pinia并进行持久化
-
+8, 项目打包分析
+使用指定命令对webpack或vite构建的项目进行打包分析, 剔除不需要的包;
+vue、element plus的包体积较大, 可在webpack的配置文件中设置排除这些包,
+然后在html.index中改为使用cdn导入;
+cdn导入比import导入的方式更小、更快、更稳;
 
 
 
