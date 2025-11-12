@@ -916,7 +916,7 @@ VITE_API_BASE_URL='/prod-api'
 >>封装axios
 //utils/request.js
 import axios from 'axios'
-import {useUserStore} from '@/stores/user'
+import {useUserStore} from '@/store/user'
 import {ElMessage} from 'element-plus'
 //创建axios实例
 export default const service = axios.create({
@@ -951,6 +951,12 @@ service.interceptors.response.use(response => {
 		return Promise.reject(new Error(message))
 	}
 }, error => {
+	//在此处处理token失效的异常(401)
+	//如果token失效, 则删除token和用户信息, 并且跳转到登录页
+	if(error.response.status === 401) {
+		user.logout()
+		router.push('/login')
+	}
 	ElMessage.error(error.message)
 	return Promise.reject(error)
 })
@@ -968,7 +974,7 @@ export function login(data) {
 }
 //调用
 import {login} from '@/api/user'
-import {useUserStore} from '@/stores/user'
+import {useUserStore} from '@/store/user'
 import {useRouter} from 'vue-router'
 async function fn() {
 	const token = await login(formData)
@@ -977,6 +983,40 @@ async function fn() {
 	const router = useRouter()
 	router.push('/home'))  //跳转到主页
 }
+
+
+>>主页鉴权: token决定访问
+逻辑: 有token时, 访问主页则放行, 访问登录页则直接跳到主页;
+无token时, 访问白名单内页面则放行, 否则跳到登录页;
+//utils/permission.js
+import router from '@/router'
+import {useUserStore} from '@/store/user'
+import nprogress from 'nprogress'
+import 'nprogress/nprogress.css'
+//白名单
+const whiteList = ['/login', '/404']
+//路由前置守卫
+router.beforeEach((to, from, next) => {
+	nprogress.start()
+	const user = useCountStore()
+	if(user.token) {  //存在token
+		if(to.path == '/login') {
+			next('/home')
+		} else {
+			next()
+		}
+	} else {  //没有token
+		if(whiteList.includes(to.path)) {
+			next()
+		} else {
+			next('/login')
+		}
+	}
+})
+//路由后置守卫
+router.afterEach(() => {
+	nprogress.done()
+})
 
 
 >>element-plus: 表单
