@@ -817,11 +817,61 @@ src
 	main.js		//入口文件
 	permission.js  		//权限管理
 	settings.js			//配置文件
-4, 路由配置
-/login: 登录组件
-/404: 404组件
-/: 布局(layout)
-/other: 布局(layout)
+
+	
+>>路由 
+//route/index.js
+export const routes = [
+	{
+		path: '/login',
+		component: () => import('@/views/login'),
+		name: 'login'
+	},
+	{
+		path: '/404',
+		component: () => import('@/views/404'),
+		name: 'notFound'
+	},
+	{
+		path: '/',
+		component: Layout,
+		redirect: '/dashboard',
+		children: [
+			{
+				path: '/dashboard',
+				name: 'dashboard',
+				component: () => import('@/views/dashboard'),
+				meta: {title: '首页', icon: 'dashboard'}
+			}
+		]
+	},
+	{
+		path: '/department',
+		component: Layout,
+		children: [
+			{
+				path: '',  //二级路由可以为空
+				component: () => import('@/views/department'),
+				name: 'department',
+				meta: {title: '组织架构', icon: 'tree'}
+			}
+		]
+	}
+	//放在最后, 当找不到时则显示404页面
+	{path: '*', redirect: '/404', hidden: true}
+]
+注: 一般将路由抽离为静态路由和动态路由, 动态路由的文件结构可以为:
+route
+	index.js
+	modules
+		department.js
+		employee.js
+		role.js
+		permission.js
+		salary.js
+		social.js
+		attendance.js
+		approval.js
 
 
 >>存储项目需要的全局变量: store
