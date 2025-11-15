@@ -1118,11 +1118,65 @@ form.validate(isOK => {
 })
 
 
+>>el-tree: 树
+<el-tree :data="depts" :props="defaultProps" default-expand-all>
+	//作用域插槽定制树的每个节点
+	<template v-slot="{ data }">
+		<el-row type="flex" justify="space-between" align="middle">
+			<el-col>{{data.name}}</el-col>
+			<el-col>
+				<span>{{data.manager}}</span>
+				<el-dropdown>
+					<span>操作</span>
+					<el-dropdown-menu slot="dropdown">
+						<el-dropdown-item>添加子部门</el-dropdown-item>
+						<el-dropdown-item>编辑</el-dropdown-item>
+						<el-dropdown-item>删除</el-dropdown-item>
+					</el-dropdown-menu>
+				</el-dropdown>
+			</el-col>
+		</el-row>
+	</template>
+</el-tree> 
+//数据
+const depts = ref([
+	{name: '总裁办'},
+	{name: '技术部', children: [
+		{name: '平台部'},
+		{name: '硬件部'},
+		{name: '软件部'}
+	]}
+])
+const defaultProps = [{label: 'name', children: 'children'}]
 
 
-
-
-
+>>将列表数据转化为树形数据
+const data = [
+	{id: 1, pid: 0, name: '中国'},
+	{id: 2, pid: 1, name: '安徽'},
+	{id: 3, pid: 1, name: '江苏'},
+	{id: 4, pid: 2, name: '合肥'},
+	{id: 5, pid: 2, name: '安庆'},
+	{id: 6, pid: 4, name: '肥东'},
+	{id: 7, pid: 4, name: '肥西'},
+	{id: 8, pid: 3, name: '南京'},
+	{id: 9, pid: 3, name: '苏州'},
+	{id: 10, pid: 3, name: '无锡'}
+]
+function trans(list, pid = 0) {
+	const tree = []
+	list.forEach(item => {
+		if(item.pid == pid) {
+			//找到根节点
+			tree.push(item)
+			//递归
+			item.children = trans(list, item.id)
+		}
+	})
+	return tree
+}
+const t = trans(data)
+console.log(t)
 
 
 
