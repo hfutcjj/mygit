@@ -1022,6 +1022,7 @@ export function login(data) {
 		data
 	})
 }
+注: data表示请求体数据, params表示放在url后的查询参数;
 //调用
 import {login} from '@/api/user'
 import {useUserStore} from '@/store/user'
@@ -1116,6 +1117,22 @@ form.validate(isOK => {
 		....
 	}
 })
+
+
+>>el-table: 表格
+<el-table :data="list">
+	<el-table-column prop="name" width="200" label="名称" />
+	<el-table-column prop="state" width="200" label="角色">
+		//自定义列结构
+		<template v-slot="{ row }">
+			<span>{{row.state==1? '启用' : '停用'}}</span>
+		</template>
+	</el-table-column>
+</el-table>
+cosnt list = ref([
+	{id: 1, name: '管理员', state: 1},
+	{id: 2, name: '普通员工', state: 1}
+])
 
 
 >>el-tree: 树
