@@ -733,6 +733,22 @@ const routes = [
 3)组件内通过$route访问
 
 
+>>nextTick(): 等待视图渲染完成后再执行其他操作
+//使用async/await
+async function fn() {
+	name.value = 'zhao'  //更新响应式数据
+	await nextTick()
+	console.log('此时DOM已更新')
+}
+//使用回调函数
+function fn() {
+	name.value = 'zhao'
+	nextTick(() => {
+		console.log('此时DOM已更新')
+	}）
+}
+
+
 >>pinia
 1, pinia是用于vue3的集中式状态管理, vue2中用vuex;
 2, 基本使用
@@ -986,11 +1002,20 @@ service.interceptors.request.use(config => {
 })
 //封装响应拦截器: 解构数据和处理异常
 //后端接口文档参考: 
-{
+1){
 	success: true,  //响应状态, true/false
 	code: 10000,   //10000成功, 其他失败
 	message: '...',   //响应消息
 	data: {...}  //响应数据
+}
+2){
+	code: 1,
+	msg: 'success',
+	data: {
+		id: 2,
+		username: 'zhao',
+		token: '...'
+	}
 }
 service.interceptors.response.use(response => {
 	const {success, message, data} = response.data
@@ -1068,6 +1093,32 @@ router.beforeEach((to, from, next) => {
 router.afterEach(() => {
 	nprogress.done()
 })
+
+
+>>文件的下载
+如果文件较大, 后端则采用二进制流的形式传输文件, 即blob格式;
+1)在api中定义接收文件的格式为blob
+//api
+export function exportEmployee() {
+	return request({
+		url: '/sys/user/export',
+		responseType: 'blob'
+	})
+}
+2)在axios的响应拦截器中增加对blob的处理
+service.interceptors.response.use(response => {
+	if(response.data instanceof Blob) {
+		return response.data
+	}	
+	//as before
+}, error => {})
+3)使用file-saver下载文件
+npm i file-saver 
+import FileSaver from 'file-saver'
+async exportEmployee() {
+	cosnt result = await exportEmployee()
+	FileSaver.saveAs(result, '员工信息表.xlsx')
+}
 
 
 >>element-plus: 表单
@@ -1194,6 +1245,19 @@ function trans(list, pid = 0) {
 }
 const t = trans(data)
 console.log(t)
+
+
+>>防抖的实现
+防抖和节流是为了避免对服务器的频繁请求;
+实现方式之一是将请求延迟, 如果在延迟时间内有新的请求, 则取消原请求, 开启新请求;
+let timer = null;
+const changeValue = () => 
+	clearTimeout(timer)
+	timer = setTimeout(() => {
+		queryParams.page = 1
+		getEmployeeList()
+	}, 1000)
+}
 
 
 
