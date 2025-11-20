@@ -811,6 +811,10 @@ counter.increment()
 
 
 
+
+
+-------------------------------------------------------------------------------------
+
 >>使用模板快速搭建vue3项目
 1, 下载vue3-element-admin模板
 2, 常用解决方案
@@ -1095,6 +1099,48 @@ router.afterEach(() => {
 })
 
 
+>>将列表数据转化为树形数据
+const data = [
+	{id: 1, pid: 0, name: '中国'},
+	{id: 2, pid: 1, name: '安徽'},
+	{id: 3, pid: 1, name: '江苏'},
+	{id: 4, pid: 2, name: '合肥'},
+	{id: 5, pid: 2, name: '安庆'},
+	{id: 6, pid: 4, name: '肥东'},
+	{id: 7, pid: 4, name: '肥西'},
+	{id: 8, pid: 3, name: '南京'},
+	{id: 9, pid: 3, name: '苏州'},
+	{id: 10, pid: 3, name: '无锡'}
+]
+function trans(list, pid = 0) {
+	const tree = []
+	list.forEach(item => {
+		if(item.pid == pid) {
+			//找到根节点
+			tree.push(item)
+			//递归
+			item.children = trans(list, item.id)
+		}
+	})
+	return tree
+}
+const t = trans(data)
+console.log(t)
+
+
+>>防抖的实现
+防抖和节流是为了避免对服务器的频繁请求;
+实现方式之一是将请求延迟, 如果在延迟时间内有新的请求, 则取消原请求, 开启新请求;
+let timer = null;
+const changeValue = () => 
+	clearTimeout(timer)
+	timer = setTimeout(() => {
+		queryParams.page = 1
+		getEmployeeList()
+	}, 1000)
+}
+
+
 >>文件的下载
 如果文件较大, 后端则采用二进制流的形式传输文件, 即blob格式;
 1)在api中定义接收文件的格式为blob
@@ -1118,6 +1164,87 @@ import FileSaver from 'file-saver'
 async exportEmployee() {
 	cosnt result = await exportEmployee()
 	FileSaver.saveAs(result, '员工信息表.xlsx')
+}
+
+
+>>文件的上传
+<input 
+	hidden
+	type="file" 
+	accept=".xls, .xlsx" 
+	ref="excelUploadRef" 
+	@change="uploadChange"
+	/>
+<el-button @click="handleUpload">点击上传</el-button>
+const excelUploadRef = ref()
+const handleClick = () => {
+	//点击上传按钮弹出文件选择框
+	excelUploadRef.click()
+}
+const uploadChange = async (e) => {
+	const files = e.target.files
+	if(files.length > 0) {
+		//使用formData上传文件
+		const data = new FormData()
+		data.append('file', files[0])
+		try {
+			await uploadExcel(data)  //调用自定义api中的上传接口
+			ElMessage.success('文件上传成功')
+		} catch(error) {
+			//...
+		} finally {
+			excelUploadRef.value = ''
+		}
+	}
+}
+
+
+>>图像上传到腾讯云
+1, 在腾讯云注册存储桶, 设置跨域, 设公有读私有写, 获取密钥
+存储桶名称: ***
+地域名称: ***
+应用标识: ***
+应用密钥: ***
+2, 上传图像文件
+1)安装腾讯云sdk: cos-js-sdk-v5
+npm i cos-js-sdk-v5
+import COS from 'cos-js-sdk-v5'
+2)<el-upload
+	class="avatar-uploader"
+	action=""
+	:show-file-list="false"
+	:before-upload="beforeUpload"  //上传前检查
+	:http-request="uploadImage"  //自定义上传
+/>
+const beforeUpload = () => {
+	const bType = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp'].includes(file.type)
+	const bSize = file.size / 1024 / 1024 < 5  //5M
+	if(!bType) {
+		ElMessage.error('上传图像的格式不正确')
+	}
+	if(!bSize) {
+		ElMessage.error('上传图像的大小超过5M')
+	}
+	return bType && bSize
+}
+const uploadImage = (params) => {
+	const cos = new COS({
+		SecretId: '应用标示',
+		SecretKey: '应用密钥'
+	})
+	cos.putObject({
+		Bucket: '存储桶名称',
+		Region: '存储桶地域',
+		Key: params.file.name,
+		StorageClass: 'STANDARD',
+		Body: params.file
+	}, (err, data) => {
+		if(data.statusCode == 200 && data.Location) {
+			//后端返回的url地址: 'http://' + data.Location
+		} else {
+			ElMessage.error('上传图像失败')
+		}
+	})
 }
 
 
@@ -1218,46 +1345,9 @@ const depts = ref([
 const defaultProps = [{label: 'name', children: 'children'}]
 
 
->>将列表数据转化为树形数据
-const data = [
-	{id: 1, pid: 0, name: '中国'},
-	{id: 2, pid: 1, name: '安徽'},
-	{id: 3, pid: 1, name: '江苏'},
-	{id: 4, pid: 2, name: '合肥'},
-	{id: 5, pid: 2, name: '安庆'},
-	{id: 6, pid: 4, name: '肥东'},
-	{id: 7, pid: 4, name: '肥西'},
-	{id: 8, pid: 3, name: '南京'},
-	{id: 9, pid: 3, name: '苏州'},
-	{id: 10, pid: 3, name: '无锡'}
-]
-function trans(list, pid = 0) {
-	const tree = []
-	list.forEach(item => {
-		if(item.pid == pid) {
-			//找到根节点
-			tree.push(item)
-			//递归
-			item.children = trans(list, item.id)
-		}
-	})
-	return tree
-}
-const t = trans(data)
-console.log(t)
+>>项目打包与上线
 
 
->>防抖的实现
-防抖和节流是为了避免对服务器的频繁请求;
-实现方式之一是将请求延迟, 如果在延迟时间内有新的请求, 则取消原请求, 开启新请求;
-let timer = null;
-const changeValue = () => 
-	clearTimeout(timer)
-	timer = setTimeout(() => {
-		queryParams.page = 1
-		getEmployeeList()
-	}, 1000)
-}
 
 
 
