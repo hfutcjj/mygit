@@ -1083,6 +1083,8 @@ router.beforeEach((to, from, next) => {
 		if(to.path == '/login') {
 			next('/home')
 		} else {
+			//此处根据权限添加动态路由
+			//todo
 			next()
 		}
 	} else {  //没有token
@@ -1097,6 +1099,48 @@ router.beforeEach((to, from, next) => {
 router.afterEach(() => {
 	nprogress.done()
 })
+
+
+>>根据权限展示前端页面
+后端接口返回的用户信息中包含了权限的数据,
+userInfo: {
+	roles: {
+		menus: ['department', ...., 'social'],  //访问权限
+		points: ['add-employee']  //操作权限
+	}
+}
+1, 访问权限(路由权限)
+1)将路由拆分成静态路由和动态路由
+//router/index.js
+export const staticRoutes = [
+	{path: 'login', ...},
+	{path: '/404', ...},
+	{path: '/', ...}
+]
+export const dynamicRoutes = [
+	departmentRouter,
+	roleRouter,
+	...,
+	socialRouter
+]
+2)在路由的前置守卫中, 根据userInfo里的menus数据对动态路由进行筛选, 通过router.addRoutes()添加筛选后的动态路由;
+//todo
+const filterRoutes = dynamicRoutes.filter(item => {
+	return userInfo.roles.menus.includes(item.name)
+})
+router.addRoutes(filterRoutes)
+2, 操作权限(按钮权限)
+根据自定义指令来实现按钮权限;
+//main.js中添加自定义指令
+app.directive('permission', {
+	mounted(el, binding) {
+		if(!userInfo.roles.points.includes(binding.value)) {
+			el.remove()
+		}
+	}
+})
+//在按钮中使用
+<el-button v-permission="'add-employee'">添加员工</el-button>
 
 
 >>将列表数据转化为树形数据
