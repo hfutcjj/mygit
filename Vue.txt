@@ -1406,7 +1406,12 @@ const defaultProps = [{label: 'name', children: 'children'}]
 location / {
 	try_files $uri $uri/ /index.html;
 }
-
+3)nginx配置跨域
+//nginx.conf
+location /prod-api {
+	proxy_pass https://heimahr-t.itheima.net;
+}	
+注: 开发时在webpack/vite中配置跨域, 部署到线上时在nginx配置跨域;
 
 
 
