@@ -1185,6 +1185,12 @@ const changeValue = () =>
 }
 
 
+>>数字的滚动
+npm i vue-count-to
+import CountTo from 'vue-count-to'
+<CountTo :start-val="0" :end-val="666" :duration="2000" />
+
+
 >>文件的下载
 如果文件较大, 后端则采用二进制流的形式传输文件, 即blob格式;
 1)在api中定义接收文件的格式为blob
@@ -1390,7 +1396,16 @@ const defaultProps = [{label: 'name', children: 'children'}]
 
 
 >>项目打包与上线
-
+1, 打包前分析
+使用rollup-plugin-visualizer插件, 具体操作AI;
+然后将体积较大的包通过cdn引入;
+2, 配置nginx, 解决前端使用history模式路由导致的访问出现404的问题
+因为打包后, 只有一个index.html文件, 而使用history模式的路由访问localhost:8080/login时, 
+会请求login.html导致出现404的错误, 需要配置nginx统一返回index.html;
+//nginx.conf
+location / {
+	try_files $uri $uri/ /index.html;
+}
 
 
 
