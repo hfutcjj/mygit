@@ -365,6 +365,7 @@ const {count, add} = useCount()
 	const name = ref('张三')
 	const age = ref(32)
 </script>
+注: 子组件给父组件传递的数据: {name: name, age: age}
 //父组件接收数据: 基本形式
 <template>
 	<Son>
@@ -789,7 +790,7 @@ export const useTodosStore = defineStore('todos', {
 4)简写形式(组合式写法)
 //counter.ts
 import {defineStore} from 'pinia'
-export const useCountStore = defineStore('counter', {
+export const useCountStore = defineStore('counter', () => {
 	const count = ref(0)
 	const doubleCount = computed(() => count.value*2)
 	function increment() {
