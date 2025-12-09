@@ -61,9 +61,7 @@ windows中启动redis服务器: 点击 redis-server.exe;
 在操作具体数据之前, 使用 select n 选择数据库;
 
 
->>redis数据类型
-redis中的数据都是按 key-value 来存储的;
-实际应用中大多使用String类型, 因为对象也可以序列化为JSON串保存为String;
+>>redis的五种基本数据类型
 1, String
 value的值为字符串, 字符串、整数、浮点数都属于字符串;
 select 0  //选择0号数据库
@@ -121,6 +119,44 @@ value的值为有序集合, 其中的元素由权和值来表示;
 zadd myzset 20 a 10 b 30 c  //给有序集合添加元素
 zrange myzset 0 -1 [withscores]  //查看有序集合中所有元素, 可选的withscores表示显示权
 zrangebyscore myzset 10 20  //查看权在指定区间的元素
+
+
+>>redis的五种高级数据类型
+1, Bitmap (位图)
+1)底层类行是String, 适用于用户签到的场景;
+2)setbit key offset val 
+给指定key的offset位赋值val
+3)getbit key offset 
+获取指定key的第offset位的值
+4)bitcount key start end
+统计指定[start, end]之间值为1的数量
+5)strlen key
+统计指定key的字节数
+6)bitop op detkey k1 k2
+对k1和k2进行指定的按位运算, 结果保存到deskey中
+2, HyperLoglog (基数统计)
+1)应用场景
+HyperLoglog是去重统计功能的基数估算法, 类似于Set, 但是比Set需要的内存空间少得多;
+底层类型为String;
+2) pfadd key e1 e2
+添加元素到指定key
+3) pfcount key
+返回指定key的基数估计
+4) pfmerge destkey k1 k2
+将多个HyperLoglog合并为一个
+3, GEO (地理空间)
+1)底层类型为ZSet
+2)geoadd city j1 w1 '故宫' j2 w2 '长城'
+添加多个经纬度
+3)geopos city 故宫 长城
+返回经纬度
+4)geohash city 故宫 长城
+将经纬度坐标通过hash映射转换为一个字符串
+5)geodist city 故宫 长城 m/km
+返回两个位置之间的距离
+6)georadius j w 10km withdist withcoord count 10
+以指定位置为中心查找附近的位置元素
+
 
 
 >>redis常用配置

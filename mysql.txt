@@ -909,6 +909,29 @@ create index idx_user_name_phone_ad on user(name asc, phone desc);  //指定索�
 则第二个查询语句就会走索引;
 
 
+>>SQL优化
+1, insert优化
+1)单条插入改为批量插入;
+2)执行多条插入语句时, 使用手动提交事务;
+3)百万级以上的数据, 改用load指令插入;
+2, 主键优化
+1)主键长度要尽量短;
+2)使用auto_increment自增主键, 不要使用uuid或身份证号等做主键;
+3, update优化
+尽量根据索引字段进行查找, 这样加的是行锁, 而根据普通字段进行查找加的是表锁, 极大降低了并发性;
+4, count优化
+count(字段)需要取字段值并判断是否为空;
+count(id)会取id;
+count(1)和count(*)不取值, mysql底层对count(*)专门做了优化, 效率最高;
+所以: count(字段) < count(id) < count(1) ~~ count(*)
+5, limit优化
+limit越往后分页, 查询速度越慢, 可以改为覆盖索引加表连接查询的方式, 如
+select * from t limit 1000000, 10; 改为
+select t.* from t join (
+	select id from t order by id limit 1000000, 10
+) t1 on t.id = t1.id;
+
+
 >>事务初级
 1, RDBMS = SQL语句 + 事务(ACID)
 2, mysql有5种日志文件，其中undo日志和redo日志是与事务有关的,
