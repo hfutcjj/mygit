@@ -1455,7 +1455,22 @@ function fn() {
 })()
 
 
-
+>>websocket
+//创建ws实例
+const ws = new WebSocket("ws://127.0.0.1:8888")
+//连接成功
+ws.onopen = () => {
+     console.log('连接成功')
+}
+//连接失败
+ws.onerror = () => {
+     console.log('连接失败')
+}
+//接收消息
+ws.onmessage = msg => {
+     let data = JSON.parse(msg)
+     console.log(data)
+}
 
 
 

@@ -117,6 +117,20 @@ git merge dev
 //删除远程分支
 git push origin --delete dev
 
+
+>>实际项目中应用分支管理
+//从main创建hotfix分支
+get checkout -b hotfix/bug
+//修复bug并提交
+git add .
+git commit -m '修复bug'
+//合并main和hotfix
+git checkout main
+git merge hotfix/bug
+//删除hotfix分支
+git branch -d hotfix/bug
+
+
 >>多人协作
 //创建远程origin的dev分支到本地
 git switch -c dev origin/dev 或 git checkout -b dev origin/dev

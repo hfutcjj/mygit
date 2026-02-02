@@ -857,6 +857,13 @@ grid-column: 同上;
 2)justify-self: stretch(默认) | start | center | end;
 align-self: stretch(默认) | start | center | end;
 设置某个子元素在对应单元格内的对其方式;
+注: 1)minmax(min, max):  给轨道尺寸设定最小和最大值
+min设定最小尺寸, 保证内容的可读性; max设定最大尺寸, 通常使用1fr等弹性单位;
+2)repeat()的第一个参数可以设为 auto-fill 或 auto-fit, 自动计算创建多少个轨道;
+auto-fill: 保守填充, 保留空轨道作为空白区域;
+auto-fit: 填满填充, 拉伸填满轨道, 更常用;
+3)上面两项组合使用可以替代媒体查询:
+grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 
 
 >>弹性布局实现水平居中与垂直居中

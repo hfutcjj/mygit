@@ -22,3 +22,26 @@ onLoad((params) => {
 >>响应式像素单位 rpx
 以750px的手机宽度为基准;
 
+
+>>小程序限制跳转层级在10次以内的解决方案
+当getCurrentPage()返回的数组长度超过10时, 使用uni.redirectTo()来跳转;
+
+
+>>tabBar页面不能传参的解决方案
+使用store或者使用本地存储uni.setStorageSync();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

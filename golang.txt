@@ -1261,6 +1261,20 @@ return 退出当前函数;
 os.Exit(n) 退出整个程序;
 runtime.Goexit() 退出当前协程;
 
+>>context
+1, context的三个作用: 超时、取消、传值
+1)context.Context的接口
+Deadline() (time.Time, bool)
+Done() <-chan struct{}
+Err() error 
+Value(key any) any
+2)5个函数
+Background()
+WithTimout()
+WithDeadline()
+WithCancel()
+WithValue()
+
 
 >>正则匹配
 1, 定义正则
