@@ -774,7 +774,7 @@ for {
 2)time.Tick() //重复执行, 底层是time.Ticker
 传入指定的时间间隔, 返回: <-time.Time
 //举例: 每2秒执行一次, 10秒后结束
-entTime := time.Add(10 * time.Second)
+entTime := time.Now().Add(10 * time.Second)
 for t := range time.Tick(2 * time.Second) {
 	fmt.Println(t)
 	if t.After(endTime) {
@@ -1254,7 +1254,7 @@ rwMutex.RLock() / rwMutex.RUnlock()
 注: Lock与Lock互斥、RLock与Lock互斥、RLock与RLock不互斥;
 6, 原子操作
 因为count++并不是原子操作, 需要给count++加锁来实行并发, 
-可用sync/atomic包里的函数来执行原子操作:
+可用sync/atomic包里的函数来执行原子操作(无锁并发):
 atomic.AddInt32(&count, 1);
 7, return、Exit、Goexit的区别
 return 退出当前函数;
@@ -1343,7 +1343,7 @@ socket_demo
 		client.go
 	go.mod
 运行:
-首先启动客户端
+首先启动服务端
 cd server
 go run server.go
 然后在一个或多个终端中启动客户端
