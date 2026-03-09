@@ -1,59 +1,48 @@
->>什么是redis
-Redis是Key-Value型的NoSQL、内存型数据库; 
-通常将实体信息、数据和页面的缓存信息等不太变动的信息存放到redis中, 提高读取速度;
-1, redis是远程的
-redis可以安装在服务端和客户端，一般指的是服务端的redis;
-2, redis是基于内存的
-redis的数据和结构都存于内存，所以速度非常快，而mysql是存于硬盘的;
-3, redis是非关系型的数据库
-关系型如mysql在使用前必须定义好数据字典，而redis不用;
+>>redis基础知识
+1, redis是存储于内存中的高性能键值对的数据库;
+2, 性能高: 内存+单线程+IO多路复用;
+3, 丰富数据类型: 5种基础+5种扩展类型;
+4, 持久化支持: RDB快照+AOF日志;
+5, 高可用性: 主从复制+哨兵+集群;
+6, 原子性操作: 单线程执行命令, 无并发竞争问题;
+7, 功能丰富: 发布订阅、事务、Lua脚本、模块扩展等;
+
+>>redis的使用场景
+1, 缓存: 热点数据放redis, 设置过期时间 => 减轻数据库压力90%+;
+2, 会话存储: 用户登陆状态存redis => 分布式系统共享Session;
+3, 排行榜: Sorted Set 按分数排序 => 实时更新, 毫秒级查询;
+4, 计数器: String类型的INCR/DECR => 原子操作, 高并发准确;
+5, 分布式锁: SET key value NX EX 10 => 防止重复执行、超卖;
+6, 消息队列: List的LPUSH/BRPOP => 简单异步任务处理;
+7, 限流防刷: INCR+EXPIRE滑动窗口 => 控制接口访问频率;
+8, 实时统计: HyperLogLog、Bitmap => 海量数据快速统计;
+9, 地理位置: Geo类型 => 附近的人、距离计算;
 
 
->>redis的特点
-1, 缓存
-将常用的且不变的数据从mysql提取出来保存到redis中, 之后应用程序直接从redis中取数据;
-2, 持久化
-redis可以把数据定期持久化到硬盘中，这样就保证了数据的完整性;
-3, 多种数据结构
-4, 广泛的语言支持
-5, 主从复制
-6, 分布式与高可用
+>>安装后修改redis的配置文件 /etc/redis/redis.conf
+1, daemonize no 改为 yes 
+2, protected-mode yes 改为 no
+3, bind 127.0.0.1 注释掉
+4, requirepass 后添加密码
 
 
->>redis持久化策略
-把数据持久化到硬盘, 当启动redis后可以从磁盘将数据加载到内存, 然后在内存中读取数据;
-实现redis持久化策略有两种方式；
-1)RDB(数据快照模式)
-保存的是数据本身;
-2)AOF(追加模式)
-保存的是数据变更记录, 当服务器重新启动时, 会把所有的写操作重新执行一遍, 从而实现数据备份;
-
-
->>redis和nginx一样, 使用epoll的IO模型, 即非阻塞的多路复用;
-
-
->>redis默认端口: 6379
-
-
->>Linux环境安装redis
-$ cd /usr/local
-$ wget https://download.redis.io/releases/redis-6.2.6.tar.gz
-$ tar xzf redis-6.2.6.tar.gz
-$ cd redis-6.2.6
-$ make
-注: 第一次使用make命令需要先下载gcc编译器: yum install -y gcc;
-Linux中启动redis服务器: 
-./redis-6.2.6/src/redis-server [./redis-6.2.6/redis.conf]
-
-
->>Windows环境安装redis
-redis官网没有提供windows的下载版本, 需要上github下载, 直接下载zip压缩文件;
-windows中启动redis服务器: 点击 redis-server.exe;
+>>redis常用配置
+daemonize yes  //让redis以守护进程的方式在后台运行, 默认为no
+port 6379  //默认端口号
+logfile ""  //日志文件, 保存redis底层的输出信息; 例如设置成 "redis.log", 那么原来输出到cmd中的信息就会保存到redis.log中;
+databases 16  //默认容量16个数据库(0-15), redis数据库的名称就是0-15中的数字, 通过 select n 来切换数据库;
+requirepass 12345  //设置redis的密码, 默认该项禁止; 在客户端通过密码认证: auth 12345;
+dir ./   //数据文件的保存目录, 数据持久化, dump.rdb 就是保存在硬盘的备份文件;
+protected-mode yes  //保护模式, 默认为yes, 如果其他主机需要连接redis, 需要修改该参数为no;
+bind 127.0.0.1  //可以访问redis的主机ip, 默认为仅本机可访问, 修改为 0.0.0.0 表示所有主机都可访问;
 
 
 >>通过客户端操作redis
 1, Linux
-./redis-6.2.6/src/redis-cli [-h 127.0.0.1] [-p 6379]
+redis-cli -a 123456
+或
+redis-cli
+auth 123456
 2, Windows
 点击 redis-cli.exe;
 注: 通过客户端操作redis需要先启动redis服务器;
@@ -168,17 +157,6 @@ xread 获取消息(阻塞/非阻塞)
 2)消费组相关命令
 xgroup create 创建消费组
 xreadgroup group 消费组读取消息
-
-
->>redis常用配置
-daemonize yes  //让redis以守护进程的方式在后台运行, 默认为no
-port 6379  //默认端口号
-logfile ""  //日志文件, 保存redis底层的输出信息; 例如设置成 "redis.log", 那么原来输出到cmd中的信息就会保存到redis.log中;
-databases 16  //默认容量16个数据库(0-15), redis数据库的名称就是0-15中的数字, 通过 select n 来切换数据库;
-requirepass 12345  //设置redis的密码, 默认该项禁止; 在客户端通过密码认证: auth 12345;
-dir ./   //数据文件的保存目录, 数据持久化, dump.rdb 就是保存在硬盘的备份文件;
-protected-mode yes  //保护模式, 默认为yes, 如果其他主机需要连接redis, 需要修改该参数为no;
-bind 127.0.0.1  //可以访问redis的主机ip, 默认为仅本机可访问, 修改为 0.0.0.0 表示所有主机都可访问;
 
 
 

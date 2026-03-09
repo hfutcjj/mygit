@@ -251,6 +251,11 @@ function handleClick() {
 }
 
 
+>>动态组件
+<component :is="A"></component>  //A组件
+<component :is="B"></component>  //B组件
+
+
 >>watch 监听
 1, watch用于监听基本类型的响应式数据、对象类型的响应式数据、一个getter函数、
 或多个数据源组成的数据;

@@ -328,29 +328,6 @@ select deptno, group_concat(ename), count(*) from t_emp where sal >= 2000
 	group by deptno;
 
 
->>索引初级
-1, 索引的基本知识
-索引是为了提高数据的查找速度的一种数据结构, 通常为B树或B+树;
-索引只添加在经常被用作检索条件的字段上, 不要在大字段上创建索引;
-索引一般以索引文件的形式存在于磁盘上, 因为索引文件也比较大;
-因为写操作频繁, 长时间后索引会失效, 所以需要定期更新索引;
-索引用于: 排序和查找;
-2, 建表时创建索引
-create table student(
-	id int unsigned primary key auto_increment,
-	name varchar(20) not null,
-	age tinyint unsigned,
-	index id_name (name) //在name字段上创建索引
-);
-3, 表已存在时添加索引
-alter table student add index [id_name] (name);
-create index [id_name] on student(name);
-4, 查看索引
-show index from student;
-5, 删除索引
-drop index id_name on student;
-
-
 >>比较运算符
 1, 基本比较运算符
 >, >=, <, <=, =, !=;
@@ -857,17 +834,46 @@ cnames ctypes
 alter table tname engine = InnoDB;
 
 
+>>索引初级
+1, 索引的基本知识
+索引是为了提高数据的查找速度的一种数据结构, 通常为B树或B+树;
+索引只添加在经常被用作检索条件的字段上, 不要在大字段上创建索引;
+索引一般以索引文件的形式存在于磁盘上, 因为索引文件也比较大;
+因为写操作频繁, 长时间后索引会失效, 所以需要定期更新索引;
+索引用于: 排序和查找;
+2, 建表时创建索引
+create table student(
+	id int unsigned primary key auto_increment,
+	name varchar(20) not null,
+	age tinyint unsigned,
+	index idx_student_name (name) //在name字段上创建索引
+);
+3, 表已存在时添加索引
+alter table student add index idx_student_name (name);
+create index idx_student_name on student(name);
+4, 查看索引
+show index from student;
+5, 删除索引
+drop index idx_student_name on student;
+
+
 >>索引高级
+1, 索引的语法
 primary key InverterModel_PK using btree(ManufacturerID, ID)
 key Product_Name_IX using btree(Name)
 key InverterDevice_IX using btree(InverterID, DeviceID)
-1, mysql的索引使用B+树, B+树的特点:
+2, 索引的优缺点
+1)优点
+提高查询速度; 提高排序速度;
+2)缺点
+索引也要占用空间; 索引虽然提高了查询速度, 但是却降低了更新速度;
+3, mysql的索引使用B+树, B+树的特点:
 1)一个结点存多条数据, 通常为一页, InnoDB中一页的大小为16KB, 3层的B+树就可以保存大约
 2000万条数据;
 2)非叶子结点只存索引字段, 并且非叶子节点的数据在叶子节点中冗余保存一份;
 3)叶子节点包含索引字段, 和主键(或指向数据的指针或数据记录本身);
 4)叶子节点通过双向指针进行连接;
-2, 聚集索引与非聚集索引
+4, 聚集索引与非聚集索引
 1)非聚集索引: 索引文件与数据文件分离
 MyISAM采用非聚集索引, 叶子结点存索引字段与指向数据记录的指针, 一个MyISAM表由三个文件
 组成: test.frm(表结构)、test.myi(表索引文件)、test.myd(表数据文件);
@@ -876,20 +882,20 @@ InnoDB的主键索引与其他索引的存储方式不同;
 对于主键索引, 叶子结点包含主键字段与整条数据记录;
 对于其他索引, 叶子结点包含索引字段与对应的主键值, 通过主键值进行回表查找数据记录;
 一个InnoDB表只包含两个文件: test.frm(表结构)、test.ibd(索引与数据在一起);
-3, 为什么主键要用自增的整型, 而不建议用uuid
+5, 为什么主键要用自增的整型, 而不建议用uuid
 1)整型占用空间小;
 2)整型比较大小时速度更快;
 3)索引文件在插入时就会进行排序, 使用自增的主键可以避免插入数据时频繁移动数据, 
 大大提高性能;
-4, 联合索引的最左前缀匹配
+6, 联合索引的最左前缀匹配
 是指使用联合索引的最左前缀来匹配查询条件, 如联合索引为(A, B, C), 则只是用A列、
 或(A, B)列、或(A, B, C)列来进行查询;
-5, 前缀索引
+7, 前缀索引
 对于长字符串或大文本字段建立索引, 可以使用前缀索引;
 create index idx_user_name_5 on user(name(5));
 前缀索引是非聚集索引(或二级索引、辅助索引), 叶子节点保存的是主键值, 需要通过回表
 进行二次查询;
-6, 索引失效的几种情况
+8, 索引失效的几种情况
 1)联合索引中不符合最左前缀原则;
 2)where中对索引列进行运算;
 3)where中字符串不加引号;
@@ -897,9 +903,9 @@ create index idx_user_name_5 on user(name(5));
 5)or连接的条件中其中一侧没有索引;
 6)mysql评估走索引会比全表扫描更慢的情形;
 注: 在业务场景中, 推荐使用联合索引, 而非单列索引, 避免回表查询;
-7, 使用explain对查询进行查询计划分析;
+9, 使用explain对查询进行查询计划分析;
 explain select id, name from user where name = 'zhao';
-8, 联合排序的索引优化
+10, 联合排序的索引优化
 联合索引默认都是升序排列的, 所以联合排序的字段同为升序或同为降序的效率最高, 否则会不走索引：
 create index idx_user_name_phone on user(name, phone);  //索引默认为升序
 select id, name, phone from user group by name desc, phone desc;  //走索引
@@ -1437,8 +1443,6 @@ show replica status\G;
 检查如下两个指标是否为yes:
 Replica_IO_Running  //IO线程, 用于读取主库的binlog日志
 Replica_SQL_Running  //SQL线程, 用于读取本地的中继日志, 将里面的sql内容写入到从库中
-
-
 
 
 

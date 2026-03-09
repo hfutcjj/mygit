@@ -30,6 +30,11 @@ go env查看go的环境变量;
 安装命令源码文件会在当前工作区的bin目录下生成可执行文件;
 5, go get
 用来动态获取远程代码包;
+加 -u 表示如果包已存在则升级已有包;
+6, go mod init test 
+在当前目录初始化mod, 生成go.mod文件
+7, go mod tidy
+下载缺少的模块, 移除不用的模块
 
 
 >>package
@@ -518,6 +523,16 @@ func fn(s string) map[string]int {
 	return m
 }
 注: golang中没有set数据类型;
+
+
+>>sync.Map  并发的Map
+var m sync.Map
+m.Store("name", "zhao")  //新增或修改
+m.Load("name")  //读取 
+m.Delete("name")  //删除 
+m.Range(func(key, value any) bool {  //遍历
+	....
+})
 
 
 >>内建方法
@@ -1252,9 +1267,9 @@ var rwMutex sync.RWMutex
 rwMutex.Lock() / rwMutex.Unlock()  
 rwMutex.RLock() / rwMutex.RUnlock()  
 注: Lock与Lock互斥、RLock与Lock互斥、RLock与RLock不互斥;
-6, 原子操作
+6, 原子操作(无锁并发)
 因为count++并不是原子操作, 需要给count++加锁来实行并发, 
-可用sync/atomic包里的函数来执行原子操作(无锁并发):
+可用sync/atomic包里的函数来执行原子操作:
 atomic.AddInt32(&count, 1);
 7, return、Exit、Goexit的区别
 return 退出当前函数;
@@ -1670,7 +1685,7 @@ func main() {
 3)客户端
 func main() 
 	client, err := rpc.Dial("tcp", "127.0.0.1:9000")  //连接到服务端
-	var rs string
+	var resp string
 	err := client.Call("Service.Toggle", "zhao", &resp)  //调用远程方法
 }
 3, 采用json通信的方式(jsonrpc)
