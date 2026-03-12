@@ -149,6 +149,19 @@ fmt.Scanf("%s-%d-%f", &name, &age, &salary)  //用户输入: zhao-32-8000
 注: 以上三个函数都返回输入成功的数量和错误原因, 使用时需要对错误进行处理;
 
 
+>>log输出
+1, 三种基本输出
+print: log.Print()/Println/Printf, 正常输出
+panic: log.Panic()/Panicln/Panicf, panic异常, 前面的defer能执行
+fatal: log.Fatal()/Fatalln/Fatalf, 强制结束, 前面的defer不执行
+2, 设置输出格式和前缀
+log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
+log.SetPrefix("[MyLog]")
+3, 输出到文件
+file, _ := os.OpenFile("test.txt", os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0644)
+log.SetOutput(file)
+
+
 >>变量
 1, 变量声明
 1)同一行声明多个变量和赋值
@@ -284,6 +297,7 @@ ss := strings.ReplaceAll(s, "o", "*")
 7)是否包含指定前缀/后缀: strings.HasPrefix(s, "o"), strings.HasSuffix(s, "o")
 8)分割(返回[]string): strings.Split(s, "|")
 9)连接(返回string): strings.Join(a []string, "|")
+6, bytes包和strings包的操作一样, 对字节切片进行操作;
 
 
 >>类型转换
