@@ -60,10 +60,11 @@ keys he*  //查询符合条件的key, 使用 keys * 查看所有的key
 dbsize  //返回当前库中key的个数
 help @类型  //查询指定类型的所有操作命令
 1, String
-value的值为字符串, 字符串、整数、浮点数都属于字符串;
-set name zhao  //设置 name 的值为 zhao
-set name zhao nx  //只有当name不存在时才创建
-set name zhao xx  //只有当name存在时才修改
+set key value [nx | xx] [get] [ex 秒数 | px 毫秒数] [keepttl]
+~ nx: 键不存在时设置  xx 键存在时设置
+~ get: 返回设置前的值
+~ ex 秒数 | px 毫秒数: 设置过期时间 
+~ keepttl: 保留设置前键的生存时间
 get name  //获取 name 的值
 strlen name  //name的值的长度
 mset name zhao age 30  //一次设置多个值

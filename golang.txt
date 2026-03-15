@@ -848,6 +848,16 @@ type Person struct {
 }
 注: `json:"age"`表示序列化时给字段取一个别名, 底层是用反射技术来实现的;
 注: 结构体序列化时会自动省略以小写字母开头的字段;
+4, 解析json文件
+file, _ := os.Open("test.json")
+defer file.Close()
+var m map[string]any
+json.NewDecoder(file).Decode(&m)
+5, 写入json文件
+file, _ := os.OpenFile("test.json", os.O_CREATE | os.O_WRONLY, 0644)
+defer file.Close()
+m := Person{"zhao", 32}
+json.NewEncoder(file).Encode(m)
 
 
 >>结构体
@@ -1353,9 +1363,9 @@ var (
 	host string
 	port int
 )
-flag.StringVar(&user, "u", "", "")  //第三个参数为默认值, 第四个参数为说明
-flag.StringVar(&host, "h", "", "")
-flag.IntVar(&port, "port", 3306, "")
+flag.String(&user, "u", "")  //第三个参数为默认值
+flag.String(&host, "h", "")
+flag.Int(&port, "port", 3306)
 flag.Parse()  //*必须调用该方法才能解析生效
 fmt.Printf("user: %s, host: %s, port: %d\n", user, host, port)
 运行: 
