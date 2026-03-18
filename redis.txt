@@ -66,6 +66,9 @@ set key value [nx | xx] [get] [ex 秒数 | px 毫秒数] [keepttl]
 ~ ex 秒数 | px 毫秒数: 设置过期时间 
 ~ keepttl: 保留设置前键的生存时间
 get name  //获取 name 的值
+setnx name zhao   //不存在时则设置值, 可用于分布式锁
+setex name 20 zhao  //设置值的同时设置过期时间 
+getset name zhao  //先get再set
 strlen name  //name的值的长度
 mset name zhao age 30  //一次设置多个值
 mget name age  //一次获取多个值
@@ -73,6 +76,9 @@ expire hello 20  //设置 key=hello 20秒后过期
 ttl hello  //查看 key=hello 的过期剩余时间
 exists a  //返回 key=a 是否存在
 del a  //删除 key=a 的数据
+getrange name 1 4   //截取字符串: abcd1234 => bcd1 
+setrange name 1 ooo  //设置子字符串: abcd1234 => aooo1234
+append name ooo  //在字符串后追加
 incr/decr count  //count值自增/自减
 incrby/decrby count 10  //自增/自减指定步长
 setbit k1 2 1  //00100000  //strlen k1 : 1
@@ -91,8 +97,11 @@ hmget emp:1 name age / hgetall emp:1  //一次获取1号员工的多个值 / 获
 hdel emp:1 age  //删除1号员工的age
 hexists emp:1 age  //返回1号员工的age是否存在
 hlen emp:1  //返回1号员工有多少个属性值
-注: hdel emp:1 age 是删除1号员工的age属性, 而 del emp:1 是删除整个1号员工;
-当把emp:1中所有属性都删除, 那么emp:1这个key也自动移除;
+hkeys emp:1  //返回1号员工所有的键
+hvals emp:1  //返回1号员工所有的值
+hgetall emp:1  //返回所有的键和值
+hincrby/hincrbyfloat emp:1 age 10  //给指定属性增加一个数
+hsetnx emp:1 age 20  //只有当指定属性不存在时才赋值
 3, List
 value的值为列表, 如 mylist -> {d, e, f, c, b, a};
 rpush mylist c b a  //右侧插入
@@ -101,19 +110,45 @@ rpop mylist  //右侧弹出
 lpop mylist  //左侧弹出
 lrange mylist 0 -1  //输出列表中所有元素
 llen mylist  //列表中元素个数
+lindex mylist 2  //获得指定下标的元素
+lset key index value  //设置指定下标的值
+linsert mylist before/after zhao qian  //在指定的值前或后插入值
+lrem mylist n value  //删除n个指定value, n为0表示删除所有
+ltrim key start end  //截取key中子字符串重新赋值给key
+rpoplpush source dest  //从dest中右pop一个元素左push到source中
+注: 应用举例
+微信公众号消息订阅;
 4, Set
 value的值为集合, 与List不同, 集合的元素无序且唯一;
-sadd myset a b a c  //给集合添加元素
-smembers  //查看集合中所有元素
-sinter set1 set2  //交集
-sunion set1 set2  //并集
-sdiff set1 set2  //差集
-sismember myset a  //判断元素是否在集合中
+sadd s1 a b a c  //给集合添加元素
+smembers s1 //查看集合中所有元素
+sismember s1 a  //判断元素是否在集合中
+scard s1  //获取集合里的元素个数
+srem s1 a  //删除集合中的元素
+srandmember s1 [n]  //从集合中随机展现n个元素(省略n表示1个), 不删除
+spop s1 [n] //从集合中随机弹出n个元素, 删除
+sinter s1 s2  //交集
+sunion s1 s2  //并集
+sdiff s1 s2  //差集
+smove s1 s2 a  //将s1中的a元素移到s2中
+sintercard 2 s1 s2  //返回两个集合s1和s2交集的元素个数
+注: 应用举例 
+抽奖程序; 朋友圈查看同赞的好友; 推荐可能认识的人;
 5, Zset(Sort Set, 有序集合)
 value的值为有序集合, 其中的元素由权和值来表示;
-zadd myzset 20 a 10 b 30 c  //给有序集合添加元素
-zrange myzset 0 -1 [withscores]  //查看有序集合中所有元素, 可选的withscores表示显示权
-zrangebyscore myzset 10 20  //查看权在指定区间的元素
+zadd z1 20 a 10 b 30 c  //给有序集合添加元素
+zcard z1  //获取有序集合的元素个数
+zrange z1 0 -1 [withscores]  //查看有序集合中所有元素, 可选的withscores表示显示分数
+zrevrange z1 0 -1  //逆序显示 
+zrangebyscore z1 10 20  //查看指定分数范围内的元素
+zcount z1 60 90  //获取指定分数范围内的元素个数
+zscore z1 a  //获取指定元素的分数
+zrem z1 a  //删除指定元素
+zincreby z1 10 a  //将a元素的分数加10
+zrank z1 a  //获取按分数排名(从小到大)a的名次
+zrevrank z1 a  //获取按分数排名(从大到小)a的名次
+注: 应用举例
+根据销售额对商品排序;
 
 
 >>redis的五种高级数据类型
@@ -164,6 +199,49 @@ xread 获取消息(阻塞/非阻塞)
 xgroup create 创建消费组
 xreadgroup group 消费组读取消息
 5, Bitfield(位域)
+
+
+>>持久化: RDB & AOF 
+1, rdb(默认)
+1)把某一时刻的数据集快照(snapshot)以文件的形式写到磁盘上, 该文件为dump.rdb;
+写入时机分为自动触发与手动触发两种方式;
+2)自动触发
+在指定时间间隔内修改指定的次数就会触发持久化操作:
+save seconds changes
+redis6: save 900 1 300 10 60 1000
+redis7: save 3600 1 300 100 60 10000
+3)手动触发
+bgsave(默认) / save 
+两者区别: 
+save会阻塞当前redis服务器, 生产时禁止使用; 而bgsave会fork一个子进程来异步处理保存操作, 
+不会阻塞服务器;
+4)常用配置选项
+save 3600 1  //持久化规则
+dir /etc/redis/dumpfiles   //rdb文件保存路径
+dbfilename dump.rdb   //rdb文件名
+stop-writes-on-bgsave-error yes  //保存失败时则停止更新数据
+rdbcompression yes  //对rdb文件进行压缩
+rdbchecksum yes  //对rdb文件进行数据校验
+5)rdb的优缺点
+优点: 适合大规模的数据恢复、定时备份、rdb文件在内存中的加载速度要比aof文件快得多;
+缺点: 宕机会丢失最近一次快照期间的数据;
+6)修复rdb文件
+redis-check-rdb /etc/redis/dumpfiles/dump.rdb
+7)触发rdb快照的情形
+自动配置、手动配置、
+flushdb/flushall(此时dump.rdb为空)、
+执行shutdown且没有开启aof、
+主从复制时主节点自动触发;
+8)禁用rdb方式
+修改配置文件: save ""
+2, aof
+
+
+
+
+
+
+
 
 
 

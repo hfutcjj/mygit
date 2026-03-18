@@ -860,6 +860,14 @@ m := Person{"zhao", 32}
 json.NewEncoder(file).Encode(m)
 
 
+>>runtime包
+runtime.Gosched()  //让本协程让出时间片;
+runtime.Goexit()   //让本协程退出;
+runtime.GOMAXPROC(n)  //设置程序能并行执行的CPU数
+runtime.GC()  //手动执行垃圾清理
+
+
+
 >>结构体
 重点: 结构体的嵌套;
 1, 定义
@@ -1177,7 +1185,7 @@ golang在主线程(main)中开启多个协程;
 同一时间多个线程同时执行, 叫并行, 如多核CPU上的多任务并行执行;
 同一时间只有一个线程执行, 多个线程分片轮流执行, 叫并发, 如单核CPU上的多任务并发执行;
 2, main主线程与其他线程的同步
-有以下三种方式:
+有以下方式:
 1)sync.WaitGroup 可以实现主线程等待协程执行完毕;
 Add(1)  //开启新协程时, 将WaitGroup的计数器加1
 Done()  //一个协程结束时, 将WaitGroup的计数器减1, 同 Add(-1)
@@ -1195,8 +1203,6 @@ func fn() {
 	//...
 }
 *2)使用管道来实现主线程与协程的同步;
-3)使用runtime.Gosched()来让主进程让出时间片;
-协程中使用runtime.Goexit()来让协程退出;
 3, 协程的通信与同步
 1)管道
 协程之间的通信与同步是通过管道来完成的;
@@ -1301,18 +1307,62 @@ os.Exit(n) 退出整个程序;
 runtime.Goexit() 退出当前协程;
 
 >>context
-1, context的三个作用: 超时、取消、传值
-1)context.Context的接口
-Deadline() (time.Time, bool)
-Done() <-chan struct{}
-Err() error 
-Value(key any) any
-2)5个函数
-Background()
-WithTimout()
-WithDeadline()
-WithCancel()
-WithValue()
+1, context用于在函数之间或Goroutine之间的信号传递机制, 主要做三件事:
+1)超时控制
+2)取消信号
+3)传值
+2, 基本使用
+context.Background()   //创建根Context
+context.WithTimeout()  //设置超时
+context.WithCancel()   //手动取消 
+context.WithValue()    //传值
+ctx.Done()  //监听取消信号
+3, 基本案例
+1)超时控制案例
+ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+defer cancel()
+fn(ctx)
+func fn(ctx context.Context) {
+	select {
+		case <- time.After(3*time.Second):
+			fmt.Println("外卖到了")
+		case <- ctx.Done():
+			fmt.Println("超时了, 不要了")
+	}
+}
+2)取消信号案例
+ctx, cancel := context.WithCancel(context.Background())
+go fn(ctx)
+fmt.Println("1秒后改变主意不买了")
+time.Sleep(1*time.Second)
+cancel()
+func fn(ctx context.Context) {
+	select {
+		case <- time.After(2*time.Second):
+			fmt.Println("购票成功")
+		case <- ctx.Done():
+			fmt.Println("取消购票")
+	}
+}
+3)传值案例(如传递用户id)
+ctx := context.WithValue(context.Background(), "userID", 12345)
+f1(ctx)
+func f1(ctx context.Context) {
+	userID := ctx.Value("userID")
+	if userID == nil {
+		fmt.Println("没有用户ID")
+		return
+	}
+	f2(ctx)
+}
+func f2(ctx context.Context) {
+	userID := ctx.Value("userID")
+	//....
+}
+4, 最佳实践
+1)通常将ctx作为函数的第一个参数
+2)Context应该传递, 而不是存储
+3)使用WithCancel、WithTimeout时, 记得defer cancel()
 
 
 >>正则匹配
