@@ -37,17 +37,21 @@ protected-mode yes  //保护模式, 默认为yes, 如果其他主机需要连接
 bind 127.0.0.1  //可以访问redis的主机ip, 默认为仅本机可访问, 修改为 0.0.0.0 表示所有主机都可访问;
 
 
->>通过客户端操作redis
-1, Linux
+>>redis的启动与连接
+1, 启动redis服务器
+systemctl start redis 
+systemctl enable redis 
+2, 客户端连接redis
 redis-cli -a 123456
 或
 redis-cli
 auth 123456
-2, Windows
-点击 redis-cli.exe;
-注: 通过客户端操作redis需要先启动redis服务器;
-通过客户端关闭redis服务: ./src/redis-cli shutdown;
-在操作具体数据之前, 使用 select n 选择数据库;
+3, 客户端关闭redis服务器
+shutdown
+4, redis启动失败的常见原因
+可能是aof文件的所有者是root, 而不是redis, 导致rdis没有读取aof文件的权限, 修改:
+chown -R redis:redis /etc/redis/dumpfiles/appendonlydir
+
 
 
 >>redis的五种基本数据类型
@@ -210,13 +214,14 @@ xreadgroup group 消费组读取消息
 save seconds changes
 redis6: save 900 1 300 10 60 1000
 redis7: save 3600 1 300 100 60 10000
+注: save "" 表示禁用rdb;
 3)手动触发
 bgsave(默认) / save 
 两者区别: 
 save会阻塞当前redis服务器, 生产时禁止使用; 而bgsave会fork一个子进程来异步处理保存操作, 
 不会阻塞服务器;
-4)常用配置选项
-save 3600 1  //持久化规则
+4)rdb常用配置选项
+save 3600 1  //rdb持久化规则
 dir /etc/redis/dumpfiles   //rdb文件保存路径
 dbfilename dump.rdb   //rdb文件名
 stop-writes-on-bgsave-error yes  //保存失败时则停止更新数据
@@ -232,18 +237,51 @@ redis-check-rdb /etc/redis/dumpfiles/dump.rdb
 flushdb/flushall(此时dump.rdb为空)、
 执行shutdown且没有开启aof、
 主从复制时主节点自动触发;
-8)禁用rdb方式
-修改配置文件: save ""
 2, aof
-
-
-
-
-
-
-
-
-
+1)把对redis的每次写操作保存到appendonly.aof文件中, 该文件只追加, 不修改;
+aof持久化功能默认不开启, 要在配置文件中设置 appendonly yes;
+2)aof文件的三种写回策略
+对redis的写操作先存放在内存的缓冲区, 何时将缓冲区的内容写到aof文件有以下三种策略:
+appendfsync always: 同步写回, 不会丢数据, 但影响性能;
+appendfsync everysec(默认):每秒写回, 折衷方案;
+appendfsync no: 由操作系统决定, 宕机时会丢数据;
+3)aof常用配置选项
+appendonly yes   //开启aof持久化
+appendfsync everysec  //写回策略
+appendfilename "appendonly.aof"  //aof文件名
+appenddirname "appendonlydir"  //aof文件存放目录, 该目录会拼接在设置rdb时的dir目录后面
+redis6只有一个aof文件, 但在redis7中, aof文件包含3个:
+appendonly.aof.1.base.rdb  //base, 表示基础aof, 该文件只有一个
+appendonly.aof.1.incr.aof  //incr, 表示增量aof, 该文件可以有多个
+appendonly.aof.manifest  //清单, 用于管理所有aof文件
+4)aof的优缺点
+优点: 默认的everysec写回策略保证最多只丢失一秒钟的写入数据;
+aof文件太大时能够在后台自动重写;
+如果不小心执行了清空命令, 可以在aof文件中手动删除该命令, 然后重新加载aof文件就可以找回数据;
+缺点: aof文件比同级的rdb文件大, 恢复时的速度也比rdb慢;
+5)aof文件异常修复
+redis-check-aof --fix /etc/redis/dumpfiles/appendonlydir/appendonly.aof.1.incr.aof 
+注: base和manifest文件不用修复, 只需要修复incr文件;
+6)aof重写机制
+分为自动重写和手动重写两种;
+//自动重写
+aof文件大小超过了配置文件中设定的峰值, 则会自动进行重写:
+auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64mb
+//手动重写
+bgrewriteaof
+3, rdb和aof混合持久化(推荐)
+1)开启混合持久化(默认开启)
+aof-use-rdb-preamble yes  
+2)加载流程
+开启混合持久化时, 只从aof文件中恢复数据; 只有当aof文件不存在时, 才加载rdb文件;
+3)推荐使用混合持久化
+rdb镜像做全量持久化, aof做增量持久化;
+混合持久化产生的文件一部分时rdb格式, 一部分是aof格式;
+4, 纯缓存模式
+可以同时关闭rdb和aof的持久化功能, 将redis数据库作为纯高速缓存来用:
+save ""  //禁用rdb
+appendonly no  //禁用aof
 
 
 
