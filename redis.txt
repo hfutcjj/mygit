@@ -145,64 +145,129 @@ zcard z1  //获取有序集合的元素个数
 zrange z1 0 -1 [withscores]  //查看有序集合中所有元素, 可选的withscores表示显示分数
 zrevrange z1 0 -1  //逆序显示 
 zrangebyscore z1 10 20  //查看指定分数范围内的元素
+zrevrangebyscore z1 20 10  //从大到小查看
 zcount z1 60 90  //获取指定分数范围内的元素个数
 zscore z1 a  //获取指定元素的分数
 zrem z1 a  //删除指定元素
-zincreby z1 10 a  //将a元素的分数加10
+zincrby z1 10 a  //将a元素的分数加10
 zrank z1 a  //获取按分数排名(从小到大)a的名次
 zrevrank z1 a  //获取按分数排名(从大到小)a的名次
 注: 应用举例
 根据销售额对商品排序;
 
 
->>redis的五种高级数据类型
-1, Bitmap (位图)
-1)底层类行是String, 适用于用户签到的场景;
-2)setbit key offset val 
-给指定key的offset位赋值val
-3)getbit key offset 
-获取指定key的第offset位的值
-4)bitcount key start end
-统计指定[start, end]之间值为1的数量
-5)strlen key
-统计指定key的字节数
-6)bitop op detkey k1 k2
-对k1和k2进行指定的按位运算, 结果保存到deskey中
-2, HyperLoglog (基数统计)
-1)应用场景
-HyperLoglog是去重统计功能的基数估算法, 类似于Set, 但是比Set需要的内存空间少得多;
-底层类型为String;
-2) pfadd key e1 e2
-添加元素到指定key
-3) pfcount key
-返回指定key的基数估计
-4) pfmerge destkey k1 k2
-将多个HyperLoglog合并为一个
-3, GEO (地理空间)
-1)底层类型为ZSet
-2)geoadd city j1 w1 '故宫' j2 w2 '长城'
-添加多个经纬度
-3)geopos city 故宫 长城
-返回经纬度
-4)geohash city 故宫 长城
-将经纬度坐标通过hash映射转换为一个字符串
-5)geodist city 故宫 长城 m/km
-返回两个位置之间的距离
-6)georadius j w 10km withdist withcoord count 10
-以指定位置为中心查找附近的位置元素
-4, Stream (流-redis版本的消息队列)
-1)在对List实现简单的点对点消息队列、以及pub/sub的基础上, 增加了持久化、签收等新特性;
-2)基本命令
-//队列相关命令
-xadd 添加消息到队列末尾
-xdel 删除消息
-xlen 获取消息的长度
-xrange 获取消息列表
-xread 获取消息(阻塞/非阻塞)
-//消费组相关命令
-xgroup create 创建消费组
-xreadgroup group 消费组读取消息
-5, Bitfield(位域)
+>>Bitmap类型(位图)
+1, 用二进制位来保存0和1的数据, 以字节为单位来分配长度, 底层是String类型;
+常用于统计用户登陆、签到, 广告点击等场景;
+2, 常用操作
+1)setbit bm n 1  //将第n位设为1, 此时strlen(bm)为1
+2)getbit bm n    //取第n位的值
+3)bitcount bm [m n] [byte|bit]  //返回[m, n]个byte或bit中1的数量, 默认是byte 
+bitcount bm 表示返回bm中1的个数
+4)bitop and|or|not|xor bm bm1 bm2  //对bm1和bm2进行位运算, 结果保存到bm
+3, 应用场景
+1)记录用户每月的签到
+setbit uid:1001:202601 2 1
+setbit uid:1001:202601 30 1
+bitcount uid:1001:202601  //统计该用户本月签到的天数
+2)记录某天有哪些用户登陆
+hmset uid:map 0 1001 1 1002 2 1003  //将用户和位置的映射保存到一个hash中
+setbit 20260101 1 1 
+setbit 20260101 5 1
+bitcount 20260101  //统计该天有多少用户登陆
+bitop and bm 20260101 20260102  //统计0101和0102这两天连续登陆的用户数
+bitcount bm  
+
+
+>>HyperLogLog类型(基数统计)
+1, 是一种去重统计功能的基数估计算法, 有以下特征: 
+1)类似于Set, 但Set保存具体元素, 而HyperLogLog不保存具体元素, 只计算基数;
+2)用于元素的个数非常大的情形, 该算法所需内存是固定的且很小, 12KB左右;
+3)是估算, 不精确, 误差在0.81%左右;
+4)底层也是String类型;
+注: 基数是指一种数据集去重后的个数;
+2, 常用操作
+1)pfadd k a b c ...  //添加元素
+2)pfcount k  //返回基数估算值
+3)pfmerge k k1 k2 ...  //合并多个HyperLogLog
+3, 应用场景
+统计天猫网站首页亿级UV的方案(UV: unique visitor);
+
+
+>>GEO类型(地理空间)
+1, 一种能存储经纬度坐标的类型;
+GEO的底层类型是Zset;
+2, 常用操作 
+1)geoadd cities 10 1 beijing 11 2 shanghai 12 3 hefei  //添加一个或多个位置的经纬度, 如果位置已存在则更新
+2)geopos cities hefei  //返回指定位置的经纬度
+3)geodist cities beijing hefei km|m  //计算两个位置的距离
+4)geohash cities hefei  //返回指定位置的hash字符串
+5)geosearch cities frommember beijing byradius 100 km   //以指定位置为中心, 按圆形搜索
+geosearch cities frommember beijing bybox 500 300 km  //以指定位置为中心, 按矩形搜索
+geosearch cities fromlonlat 116 39 byradius 100 km  //以指定经纬度为中心, 按圆形搜索
+注: zset类型的基本操作也适用于GEO类型;
+
+
+>>Stream类型(流)
+1, redis版本的消息队列, 其底层就是stream类型, 而不是基于前面的基础类型;
+Stream类型实现消息队列, 它支持消息的持久化、支持自动生成全局唯一的ID、支持ack确认消息的模式、
+支持消费组模式, 让消息队列更加稳定和可靠;
+2, redis实现消息队列的三种方案:
+1)List方式, 只能用于点对点的模式, 不能用于广播, 常用来做异步队列;
+2)pub/sub方式, 可用于广播, 但缺点是消息无法持久化, 而且无法保证数据的可靠性;
+3)Stream类型, redis版的MQ消息中间件+阻塞队列, 克服了上面两种方式的缺点;
+3, Stream的结构
+Stream: 用一条链表存储所有消息, 每条消息有一条唯一ID, ID类似于主键;
+消息ID: 格式为 时间戳-序列号, 可自动生成或手动指定;
+消费组: 多个消费者建的群;
+消费者: 消费组中的消费者;
+last_delivered_id: 消费组所有, 游标, 表示消费者组已消费到的消息队列的位置;
+pending_ids: 消费者所有, 消费者已读已确认的消息这叫ack, 已读未确认的消息放在 pending_ids[] 数组中;
+4, 常用操作
+//生产消息的命令
+1)xadd   //添加消息到队列末尾, 消息ID必须比上个ID大, 可以用*来自动生成ID
+xadd s * name zhao age 30  //返回自动生成的ID
+xadd s 1774307538574-0 name zhao age 30  //手动指定ID
+注: 一定要保证后面的ID比前面的大;
+2)xlen s  //消息列表的长度
+3)xrange s - + [count n]  //获取消息列表, -表示最小ID, +表示最大ID, 可选的n表示最多获取n条消息
+4)xrevrange s + - [count n]  //按ID从大到小获取
+5)xdel s id  //删除指定id的消息
+6)xtrim  //截取消息队列
+xtrim s maxlen n  //截取最后n条消息赋给sm
+xtrim s minid id  //截取大于等于指定id的消息
+7)xread [count n] [block m] streams s $|0   //获取消息(阻塞/非阻塞)
+count n 最多读取n条, 不指定则表示所有
+block m 是否以阻塞的方式读取, 默认不阻塞, m为0表示永远阻塞 
+0|0-0表示大于最小ID
+$表示大于最大ID, 配合阻塞方式读取下一条最新消息:
+xread count 1 block 0 streams s $
+注: 使用xadd存入消息和xread循环阻塞读取消息的方式可以实现简易版的消息队列, 同List;
+//消费消息的命令
+1)xgroup create  //创建消费组
+xgroup create s groupA id|0|$  //0表示从stream的头部开始消费, $表示从尾部开始消费(即只消费最新消息)
+注: 创建消费组时必须指定id, 通常设为0或$;
+2)xreadgroup group  //消费组消费消息
+xreadgroup group groupA A1 [count n] [block m] streams s >
+'>' 表示从第一条尚未被消费的消息开始读取;
+省略count则表示读取全部未读消息;
+stream中的消息一旦被消费组里的一个消费者读取了, 就不能在被同组内的其他消费者读取;
+不同消费组的消费者可以读取同一条消息;
+3)xack  //消费者对读取消息的确认
+xack s groupA id  //确认指定id的消息
+4)xpending  //查询消费组
+xpending s groupA  //查询消费组groupA所有消费者已读取但未确认的消息
+xpending s groupA - + n A1  //查询消费组groupA的消费者A1已读取未确认的前n条消息
+5)xinfo  //查询stream/group/consumer的详细信息
+xinfo stream s 
+xinfo groups s 
+xinfo consumers s groupA
+
+
+>>bitfield类型(位域)
+1, 将一个redis字符串看成是一个由二进制位组成的数组, 将其划分为多个区域, 每个区域独立存储整数;
+底层是String类型; 实际开发中使用较少; 
+
 
 
 >>持久化: RDB & AOF 
