@@ -6,6 +6,8 @@
 5, 高可用性: 主从复制+哨兵+集群;
 6, 原子性操作: 单线程执行命令, 无并发竞争问题;
 7, 功能丰富: 发布订阅、事务、Lua脚本、模块扩展等;
+注: redis是单线程架构;
+
 
 >>redis的使用场景
 1, 缓存: 热点数据放redis, 设置过期时间 => 减轻数据库压力90%+;
@@ -347,6 +349,72 @@ rdb镜像做全量持久化, aof做增量持久化;
 可以同时关闭rdb和aof的持久化功能, 将redis数据库作为纯高速缓存来用:
 save ""  //禁用rdb
 appendonly no  //禁用aof
+
+
+>>redis事务
+1, redis事务是指将多个命令按顺序、一次性、排他性地执行, 它通过multi、exec、discard、watch、unwatch
+命令来实现;
+redis事务只保证依次执行不会被其他命令插入, 不保证原子性, 也就是没有回滚的操作;
+redis事务也没有隔离级别的概念;
+2, 常用命令
+1)mutli; exec; discard  //开始一个事务; 执行; 取消
+multi 
+set name zhao
+set age 20
+incr age 
+exec | discard
+注: 开始事务后, 每条指令会被放入队列中, 等执行事务时再依次执行;
+2)watch k1 k2 ... ; unwatch   //监视一个或多个key; 取消监视
+redis使用watch来实现乐观锁;
+watch age 
+multi
+set name qian
+set age 30
+exec
+watch后的事务, 如果被其他操作加塞修改, 则事务整体失败;
+注: 悲观锁: 每次拿数据时都会加锁;
+乐观锁: 每次拿数据时不加锁, 只在更新时判断一下在此期间别人有没有修改过;
+乐观锁的策略: 提交版本必须大于当前记录的版本, 更新操作才能成功;
+3, redis事务执行的几种情况
+1)exec正常执行
+2)discard取消执行
+3)中间某个命令语法错误, 则所有命令都不执行
+4)中间某个命令执行失败, 则其他命令都正常执行
+
+
+>>redis管道(pipeline)
+1, 将多个Redis命令打包，一次性发送给服务器，服务器按顺序执行后，将结果批量返回给客户端;
+2, 基本操作
+将多条命令写在一个文件中, 然后批量执行:
+cat cmd.txt | redis-cli -a 123456 --pipe 
+3, golang中使用
+pipe := client.Pipeline()
+pipe.Set(ctx, "name", "zhao", 0)
+pipe.Set(ctx, "age", 30, 0)
+rs, err := pipe.Exec(ctx)
+
+
+>>redis发布订阅(pub/sub)
+1, 发送者发送消息, 接收者接收消息, 从而实现进程间通信;
+轻量级的队列, 是Stream类型的前身, 目前使用较少;
+2, 基本操作
+1)subscribe|unsubscribe ch1 ch2 ...  //订阅或取消订阅给定的一个或多个频道的消息
+2)psubscribe|unpsubscribe pattern  //订阅符合指定模式的频道
+3)publish ch1 msg  //发布消息到指定的频道
+4)pubsub  //查看订阅与发布的系统状态
+pubsub channels  //查看有哪些活跃频道
+pubsub numsub ch1  //查看某个频道有几个订阅者
+注: 客户端1先订阅, 客户端2再发布;
+3, 缺点
+消息不能持久化, 且没有确认机制, 所以被Stream替代, 更高级的场景用其他专业的消息中间件;
+
+
+>>redis主从复制
+
+
+
+
+
 
 
 

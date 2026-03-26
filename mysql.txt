@@ -15,6 +15,7 @@
 
 
 >>使用yum安装mysql后, 配置文件为 /etc/my.cnf
+日志文件为 /var/log/mysqld.log
 
 
 >>字符集设置
@@ -1105,6 +1106,41 @@ mysqldump -uroot -p123456 数据库名(imooc) > 路径(E:/demo.sql)
 数据的备份需要在linux环境，并且没有图形用户界面，具体操作另行百度;
 
 
+>>mysql日志
+1, 错误日志 
+mysl安装后, 日志文件默认放在 /var/log/mysqld.log 中, 可查看此日志来定位[error]级别的错误;
+2, 二进制日志
+1)二进制日志(binlog)记录了所有的DDL语句和DML中的增删改操作, 作用有两点:
+灾难时的数据恢复; mysql的主从复制;
+2)二进制日志的位置
+/var/lib/mysql/binlog.index   //里面记录着有哪些二进制文件
+/var/lib/mysql/binlog.00001   //具体的二进制文件, 有多个
+3)查看二进制日志
+mysqlbinlog [-d|-v] filename
+-d: 只输出指定数据库的操作
+-v: 将行的数据变更重构为sql语句
+4)二进制日志的格式
+binlog_format: row(默认) | statement | mixed;
+row记录每行数据的变化, statement记录修改数据的sql语句;
+5)二进制日志的清除
+reset master  //删除全部binlog日志
+purge master logs to 'binlog.00005'  //删除00005编号之前的二进制日志
+purge master logs before '2026-03-26 00:00:00'  //删除指定时间之前的二进制日志
+也可以在配置文件中设置二进制日志的过期时间, 二进制日志到期会自动删除:
+binlog_expire_logs_seconds: 2592000;  //默认单位秒
+3, 查询日志
+二进制日志不包含查询语句, 而查询日志包含所有DDL以及所有DML语句; 
+查询日志默认不开启, 需要在配置文件中设置开启查询日志:
+general_log=1
+general_log_file=/var/lib/mysql/localhost.log  //名字自定义
+4, 慢查询日志 
+慢查询日志默认不开启, 需要在配置文件中设置开启慢查询日志:
+slow_query_log=1
+long_query_time=10  //默认为10秒
+慢查询日志一般放在 /var/lib/mysql/localhost-slow.log;
+
+
+
 >>分库分表
 1, 单表数据量太大的缺点
 1)千万条数据, 查询速度下降;
@@ -1135,9 +1171,9 @@ default-storage-engine=INNODB #默认存储引擎
 sql-mode="STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION" #开启严格模式
 log-output=FILE #用文件记录日志
 general-log=0 #关闭日志输出
-general_log_file="DESKTOP-D5J8UKO.log" #日志文件名称
+general_log_file="localhost.log" #日志文件名称
 slow-query-log=1 #开启慢查询日志
-slow_query_log_file="DESKTOP-D5J8UKO-slow.log" #慢查询日志文件名称
+slow_query_log_file="localhost-slow.log" #慢查询日志文件名称
 long_query_time=10 #大于多少秒的执行SQL被记录在慢查询日志
 log-error="DESKTOP-D5J8UKO.err" #错误日志名称
 log-bin="DESKTOP-D5J8UKO-bin" #
